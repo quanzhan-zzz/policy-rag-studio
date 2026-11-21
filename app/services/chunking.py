@@ -9,6 +9,11 @@ HEADING_RE = re.compile(
 )
 
 
+def _is_heading_only(text: str) -> bool:
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    return len(lines) == 1 and bool(HEADING_RE.match(lines[0]))
+
+
 @dataclass(slots=True)
 class ChunkDraft:
     text: str
@@ -71,7 +76,11 @@ def heading_chunks(
 
     def flush() -> None:
         body = "\n".join(buffer).strip()
-        if body and body not in {document_title, f"# {document_title}"}:
+        if (
+            body
+            and body not in {document_title, f"# {document_title}"}
+            and not _is_heading_only(body)
+        ):
             drafts.append(ChunkDraft(text=body, heading_path=current_heading))
 
     for raw_line in text.splitlines():
