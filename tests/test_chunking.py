@@ -29,3 +29,11 @@ def test_heading_chunks_skip_heading_only_title_chunk() -> None:
     chunks = chunk_document(text, "upload-test", "upload-file-name", ChunkStrategy.HEADING)
     assert [chunk.heading_path for chunk in chunks] == ["一、适用范围"]
     assert all(chunk.text.strip() != "# 测试政策" for chunk in chunks)
+
+
+def test_heading_chunks_fall_back_to_recursive_when_no_headings_exist() -> None:
+    text = "就业技能培训\n\n" + "办理地点在常州市政务服务中心。" * 30
+    chunks = chunk_document(text, "plain-pdf", "就业技能培训", ChunkStrategy.HEADING)
+    assert len(chunks) > 1
+    assert all(chunk.strategy is ChunkStrategy.HEADING for chunk in chunks)
+    assert all("自动递归切片" in chunk.heading_path for chunk in chunks)

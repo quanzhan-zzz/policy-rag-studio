@@ -73,6 +73,7 @@ def heading_chunks(
     drafts: list[ChunkDraft] = []
     current_heading = "全文"
     buffer: list[str] = []
+    recognized_headings = 0
 
     def flush() -> None:
         body = "\n".join(buffer).strip()
@@ -93,13 +94,51 @@ def heading_chunks(
             flush()
             buffer = [line]
             current_heading = line.removeprefix("#").strip()
+            recognized_headings += 1
         else:
             buffer.append(line)
     flush()
 
-    if not drafts:
-        return fixed_chunks(text, document_id, document_title)
+    if recognized_headings == 0:
+        fallback_drafts = _recursive_drafts(
+            text,
+            heading_path="自动递归切片（未识别到标题）",
+        )
+        return _make_chunks(document_id, document_title, ChunkStrategy.HEADING, fallback_drafts)
     return _make_chunks(document_id, document_title, ChunkStrategy.HEADING, drafts)
+
+
+def _recursive_drafts(
+    text: str,
+    max_chars: int = 240,
+    heading_path: str = "递归切片",
+) -> list[ChunkDraft]:
+    paragraphs = [part.strip() for part in re.split(r"\n\s*\n", text) if part.strip()]
+    drafts: list[ChunkDraft] = []
+    current: list[str] = []
+
+    def flush() -> None:
+        if current:
+            drafts.append(ChunkDraft(text="\n\n".join(current), heading_path=heading_path))
+            current.clear()
+
+    for paragraph in paragraphs:
+        if len(paragraph) > max_chars:
+            flush()
+            for start in range(0, len(paragraph), max_chars):
+                drafts.append(
+                    ChunkDraft(
+                        text=paragraph[start : start + max_chars],
+                        heading_path=heading_path,
+                    )
+                )
+            continue
+        candidate = "\n\n".join([*current, paragraph])
+        if current and len(candidate) > max_chars:
+            flush()
+        current.append(paragraph)
+    flush()
+    return drafts
 
 
 def recursive_chunks(
@@ -108,29 +147,7 @@ def recursive_chunks(
     document_title: str,
     max_chars: int = 240,
 ) -> list[ChunkRecord]:
-    paragraphs = [part.strip() for part in re.split(r"\n\s*\n", text) if part.strip()]
-    drafts: list[ChunkDraft] = []
-    current: list[str] = []
-
-    def flush() -> None:
-        if current:
-            drafts.append(ChunkDraft(text="\n\n".join(current), heading_path="递归切片"))
-            current.clear()
-
-    for paragraph in paragraphs:
-        if len(paragraph) > max_chars:
-            flush()
-            for start in range(0, len(paragraph), max_chars):
-                drafts.append(
-                    ChunkDraft(text=paragraph[start : start + max_chars], heading_path="递归切片")
-                )
-            continue
-        candidate = "\n\n".join([*current, paragraph])
-        if current and len(candidate) > max_chars:
-            flush()
-        current.append(paragraph)
-    flush()
-
+    drafts = _recursive_drafts(text, max_chars=max_chars)
     if not drafts:
         return fixed_chunks(text, document_id, document_title)
     return _make_chunks(document_id, document_title, ChunkStrategy.RECURSIVE, drafts)
