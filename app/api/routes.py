@@ -13,6 +13,7 @@ from app.schemas import (
     RetrievalResponse,
     TraceRecord,
 )
+from app.services.embedding import get_embedding_provider
 from app.services.evaluation import evaluate_store
 from app.services.parsing import UnsupportedDocumentError
 from app.services.retrieval import run_retrieval
@@ -35,7 +36,7 @@ def overview() -> OverviewResponse:
         chunk_count=store.count_chunks(),
         evaluation_case_count=evaluation.case_count,
         retrieval_runs=store.retrieval_runs,
-        model_provider="Hash embedding · Demo adapter",
+        model_provider=get_embedding_provider().name,
         vector_backend="PostgreSQL + pgvector · interface ready",
         last_evaluation=evaluation,
     )

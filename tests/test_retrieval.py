@@ -1,4 +1,5 @@
 from app.schemas import ChunkStrategy, RetrievalStrategy
+from app.services.embedding import HashEmbeddingProvider
 from app.services.retrieval import run_retrieval
 from app.store import InMemoryStore
 
@@ -12,11 +13,14 @@ def test_hybrid_returns_ranked_results() -> None:
         strategy=RetrievalStrategy.HYBRID,
         chunk_strategy=ChunkStrategy.HEADING,
         top_k=5,
+        embedding_provider=HashEmbeddingProvider(),
     )
     assert run.results
     assert run.results[0].document_id == "individual-registration"
     assert any("申请材料" in result.heading_path for result in run.results)
     assert any(stage.key == "rrf" for stage in trace.stages)
+    dense_stage = next(stage for stage in trace.stages if stage.key == "dense")
+    assert "Hash embedding" in dense_stage.detail
 
 
 def test_all_strategies_return_results() -> None:
@@ -29,5 +33,6 @@ def test_all_strategies_return_results() -> None:
             strategy=strategy,
             chunk_strategy=ChunkStrategy.HEADING,
             top_k=3,
+            embedding_provider=HashEmbeddingProvider(),
         )
         assert len(run.results) == 3

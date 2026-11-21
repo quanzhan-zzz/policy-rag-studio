@@ -30,11 +30,11 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - FastAPI 后端提供文档、Chunk、检索、Trace 和评测 API
 - React + TypeScript 研究工作台包含 6 个核心页面
 - 内置 3 份演示政策，支持固定长度、标题层级、递归三种切片
-- 实现 BM25、演示哈希向量、RRF 融合和启发式重排
+- 实现 BM25、可配置 Embedding Provider、RRF 融合和启发式重排
 - 评测指标由后端在固定演示集上实时计算
 - Docker Compose 已配置 PostgreSQL/pgvector、Redis、API 和 Web
 
-> 注意：当前 Dense 与 Reranker 是确定性演示适配器，不是 BGE-M3 / BGE Reranker。生产适配器接口将在后续替换，前端数据契约无需改变。上传文档当前保存在进程内，重启后重置。
+> 注意：默认 `EMBEDDING_PROVIDER=hash` 使用确定性演示向量，保证克隆后无需模型即可运行；可切换为本地 BGE-M3 或 OpenAI 兼容 Embeddings API。Reranker 目前仍是启发式实现。上传文档当前保存在进程内，重启后重置。
 
 ## 核心页面
 
@@ -78,7 +78,7 @@ flowchart LR
     API --> R[(Redis)]
     API --> TRACE[Trace & Evaluation]
     MEM --> CHUNK[Chunking Service]
-    MEM --> DENSE[Hash Embedding Demo]
+    MEM --> DENSE[Embedding Provider]
     MEM --> BM25[BM25]
     DENSE --> RRF[RRF Fusion]
     BM25 --> RRF
@@ -86,6 +86,33 @@ flowchart LR
 ```
 
 当前数据库容器已经就绪，但 API 默认使用内存存储以保证克隆后即可运行。持久化仓储是下一步工作。
+
+## Embedding Provider 配置
+
+默认配置无需模型即可启动：
+
+```bash
+EMBEDDING_PROVIDER=hash
+```
+
+本地 BGE-M3：
+
+```bash
+uv sync --extra local
+EMBEDDING_PROVIDER=bge
+BGE_EMBEDDING_MODEL=BAAI/bge-m3
+```
+
+OpenAI 兼容 Embeddings API：
+
+```bash
+EMBEDDING_PROVIDER=openai
+EMBEDDING_API_BASE=https://api.openai.com/v1
+EMBEDDING_API_KEY=your-key
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+```
+
+Provider 会对相同文本做进程内缓存；批量文档向量化会尽量合并为一次批处理请求。
 
 ## 技术栈
 
@@ -206,7 +233,7 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 
 ## Roadmap
 
-- [ ] 接入真实 BGE-M3 Embedding Provider
+- [x] 接入可配置 Hash / BGE-M3 / OpenAI Embedding Provider
 - [ ] 接入 BGE Reranker
 - [ ] 将内存存储迁移到 PostgreSQL + pgvector
 - [ ] 使用 Celery 执行异步解析、索引和批量评测

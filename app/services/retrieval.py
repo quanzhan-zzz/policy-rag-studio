@@ -1,4 +1,3 @@
-import hashlib
 import math
 import time
 from collections import Counter
@@ -15,6 +14,7 @@ from app.schemas import (
     TraceRecord,
     TraceStage,
 )
+from app.services.embedding import EmbeddingProvider, get_embedding_provider
 from app.services.text import tokenize
 
 STRATEGY_LABELS = {
@@ -23,9 +23,6 @@ STRATEGY_LABELS = {
     RetrievalStrategy.HYBRID: "Hybrid · RRF",
     RetrievalStrategy.HYBRID_RERANK: "Hybrid · Rerank",
 }
-VECTOR_SIZE = 192
-
-
 class BM25Index:
     def __init__(self, chunks: list[ChunkRecord], k1: float = 1.5, b: float = 0.75):
         self.chunks = chunks
@@ -56,18 +53,6 @@ class BM25Index:
                     score += self.idf.get(term, 0.0) * tf * (self.k1 + 1) / (tf + norm)
             scores.append(score)
         return scores
-
-
-def _hash_vector(text: str) -> list[float]:
-    vector = [0.0] * VECTOR_SIZE
-    for token in tokenize(text):
-        digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
-        value = int.from_bytes(digest, "big")
-        index = value % VECTOR_SIZE
-        sign = 1.0 if (value >> 8) & 1 else -1.0
-        vector[index] += sign
-    norm = math.sqrt(sum(value * value for value in vector)) or 1.0
-    return [value / norm for value in vector]
 
 
 def _cosine(left: list[float], right: list[float]) -> float:
@@ -116,6 +101,7 @@ def run_retrieval(
     strategy: RetrievalStrategy,
     chunk_strategy: ChunkStrategy,
     top_k: int,
+    embedding_provider: EmbeddingProvider | None = None,
 ) -> tuple[RetrievalRun, TraceRecord]:
     started = time.perf_counter()
     trace_id = f"tr_{uuid4().hex[:10]}"
@@ -132,9 +118,11 @@ def run_retrieval(
         )
     )
 
+    provider = embedding_provider or get_embedding_provider()
     dense_started = time.perf_counter()
-    query_vector = _hash_vector(query)
-    dense_scores = [_cosine(query_vector, _hash_vector(chunk.text)) for chunk in chunks]
+    query_vector = provider.embed_query(query)
+    chunk_vectors = provider.embed_documents([chunk.text for chunk in chunks])
+    dense_scores = [_cosine(query_vector, vector) for vector in chunk_vectors]
     dense_ranked = _ranked_indices(dense_scores)
     dense_rank_map = {index: rank for rank, index in enumerate(dense_ranked, start=1)}
     stages.append(
@@ -144,7 +132,7 @@ def run_retrieval(
             duration_ms=(time.perf_counter() - dense_started) * 1000,
             input_count=len(chunks),
             output_count=min(20, len(chunks)),
-            detail="演示使用可复现哈希向量；生产环境替换为真实 Embedding Provider",
+            detail=f"{provider.name}；Provider 可通过环境变量替换",
         )
     )
 

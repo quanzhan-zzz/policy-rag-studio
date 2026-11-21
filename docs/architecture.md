@@ -15,7 +15,8 @@
 
 The repository deliberately separates demo implementations from the public contract:
 
-- Hash embedding responds deterministically without model credentials.
+- The default hash embedding responds deterministically without model credentials.
+- BGE-M3 and OpenAI-compatible embedding providers are selected through environment configuration.
 - Heuristic reranking is local and reproducible.
 - The API schemas already contain retrieval ranks, trace stages and citations.
 
