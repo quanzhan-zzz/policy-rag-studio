@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+web/dist/
+web/.vite/
+web/playwright-report/
+web/test-results/
+
+# Environment / runtime
+.env
+.env.local
+data/uploads/
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
