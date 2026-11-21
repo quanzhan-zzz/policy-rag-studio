@@ -1,0 +1,10 @@
+{"id":"eval-01","query":"个体工商户登记需要准备哪些申请材料","expected_document_id":"individual-registration","expected_heading":"三、申请材料","failure_type":"材料清单召回不足"}
+{"id":"eval-02","query":"个体工商户多久能办完","expected_document_id":"individual-registration","expected_heading":"五、办理时限","failure_type":"时限条款排名偏低"}
+{"id":"eval-03","query":"没有固定经营场所可以申请个体工商户吗","expected_document_id":"individual-registration","expected_heading":"二、申请条件","failure_type":"同义表达召回失败"}
+{"id":"eval-04","query":"青年人才租房补贴的申报条件是什么","expected_document_id":"talent-housing-subsidy","expected_heading":"二、申报条件","failure_type":"条件条款召回失败"}
+{"id":"eval-05","query":"硕士租房补贴每月多少钱","expected_document_id":"talent-housing-subsidy","expected_heading":"三、补贴标准","failure_type":"金额相关语义召回不足"}
+{"id":"eval-06","query":"换工作以后人才补贴要更新吗","expected_document_id":"talent-housing-subsidy","expected_heading":"五、动态管理","failure_type":"口语化查询召回不足"}
+{"id":"eval-07","query":"企业名称变更要提交哪些材料","expected_document_id":"business-license-change","expected_heading":"三、申请材料","failure_type":"精确条款匹配不足"}
+{"id":"eval-08","query":"营业执照变更多久办结","expected_document_id":"business-license-change","expected_heading":"五、办理时限","failure_type":"时限信息排序偏低"}
+{"id":"eval-09","query":"营业执照变更需要股东会决议吗","expected_document_id":"business-license-change","expected_heading":"三、申请材料","failure_type":"材料语义召回不足"}
+{"id":"eval-10","query":"个体工商户经营范围有许可项目怎么办","expected_document_id":"individual-registration","expected_heading":"二、申请条件","failure_type":"条件跳转召回失败"}

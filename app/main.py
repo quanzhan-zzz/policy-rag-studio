@@ -1,10 +1,28 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.routes import router
+from app.config import get_settings
+
+settings = get_settings()
 
 app = FastAPI(
-    title="PolicyRAG Studio API",
+    title=settings.app_name,
     version="0.1.0",
-    description="A reproducible workbench for policy retrieval experiments.",
+    description=(
+        "PolicyRAG Studio demo API. The repository ships with a deterministic in-memory "
+        "demo backend so the workbench can run without model credentials."
+    ),
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(router)
 
 
 @app.get("/")
@@ -13,13 +31,4 @@ def root() -> dict[str, str]:
         "name": "PolicyRAG Studio",
         "docs": "/docs",
         "health": "/api/v1/health",
-    }
-
-
-@app.get("/api/v1/health")
-def health() -> dict[str, str]:
-    return {
-        "status": "ok",
-        "service": "policy-rag-studio",
-        "mode": "development",
     }

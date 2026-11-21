@@ -2,10 +2,16 @@
 name = "policy-rag-studio"
 version = "0.1.0"
 description = "A reproducible policy retrieval workbench for chunking, hybrid search, reranking and evaluation."
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+  "celery>=5.4.0",
   "fastapi>=0.115.0",
   "pydantic-settings>=2.7.0",
+  "pypdf>=5.1.0",
+  "python-docx>=1.1.2",
+  "python-multipart>=0.0.20",
+  "redis>=5.2.0",
   "uvicorn[standard]>=0.34.0",
 ]
 
@@ -13,13 +19,18 @@ dependencies = [
 dev = [
   "httpx>=0.28.1",
   "pytest>=8.3.4",
+  "pytest-asyncio>=0.25.2",
   "ruff>=0.9.2",
+  "sqlalchemy[asyncio]>=2.0.37",
+  "asyncpg>=0.30.0",
+  "pgvector>=0.3.6",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 line-length = 100
