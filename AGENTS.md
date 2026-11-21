@@ -15,3 +15,9 @@ Single-context layout with `GLOSSARY.md` and ADRs in `docs/adr/`. See `docs/agen
 ### External peers
 
 Use `auto` mode with Claude and Codex effort set to `high`. See `docs/agents/cross-model.json`.
+
+## Git commits
+
+Use Chinese Conventional Commits: `<type>(<scope>): <中文摘要>`.
+Keep one concern per commit, run the relevant checks first, and commit only runnable states.
+See `docs/git-commit-convention.md` for allowed types, scopes, and examples.
