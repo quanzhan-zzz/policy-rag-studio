@@ -246,18 +246,15 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 
 ## Roadmap
 
-- [x] 接入可配置 Hash / BGE-M3 / OpenAI Embedding Provider
-- [ ] 接入 BGE Reranker
-- [ ] 将内存存储迁移到 PostgreSQL + pgvector
-- [ ] 使用 Celery 执行异步解析、索引和批量评测
-- [ ] 增加文档版本和增量索引
-- [ ] 增加查询改写
-- [ ] 增加父子 Chunk
-- [ ] 增加权限过滤与审计
-- [ ] 增加 Dify 适配器
-- [ ] 增加 CI 中的 Playwright 端到端测试
+当前开发按 [Development Roadmap](docs/development-roadmap.md) 推进：
 
-详细开发计划见 [PROJECT_PLAN.md](PROJECT_PLAN.md)。
+- [ ] M0：PostgreSQL + pgvector 持久化
+- [ ] M1：Redis + Celery 异步索引
+- [ ] M2：真实 Reranker 与可信评测
+- [ ] M3：流式回答与引用校验
+- [ ] M4：CI、E2E、监控与发布
+
+`PROJECT_PLAN.md` 保留为项目设计方案；实际执行顺序、验收标准和当前状态以开发路线图为准。
 
 ## License
 

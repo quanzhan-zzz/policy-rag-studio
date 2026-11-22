@@ -16,6 +16,11 @@ Single-context layout with `GLOSSARY.md` and ADRs in `docs/adr/`. See `docs/agen
 
 Use `auto` mode with Claude and Codex effort set to `high`. See `docs/agents/cross-model.json`.
 
+## Development planning
+
+Read `docs/development-roadmap.md` before choosing or starting the next milestone.
+It is the source of truth for milestone order, acceptance criteria, and current scope.
+
 ## Git commits
 
 Use Chinese Conventional Commits: `<type>(<scope>): <中文摘要>`.

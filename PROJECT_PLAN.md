@@ -561,6 +561,8 @@ hybrid candidates top_n
 
 ## 14. 开发里程碑
 
+> 本节保留最初的分周方案。当前执行顺序、依赖关系、验收标准和状态已收敛到 [`docs/development-roadmap.md`](docs/development-roadmap.md)，冲突时以路线图为准。
+
 ### 第 1 周：项目骨架与文档入库
 
 目标：上传文档后能看到可检索内容。
