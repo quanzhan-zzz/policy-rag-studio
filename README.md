@@ -130,7 +130,7 @@ LLM_API_KEY=your-key
 LLM_MODEL=glm-5.3-flash
 ```
 
-`POST /api/v1/answer` 会把 Hybrid + Rerank 检索结果组装成带编号引用的上下文，再调用文本模型生成回答。`POST /api/v1/answer/stream` 使用同一套 Context Pack，通过 SSE 增量输出，并返回首字延迟、总耗时和无效引用编号。
+`POST /api/v1/answer` 会把 Hybrid + Rerank 检索结果组装成带编号引用的上下文，再调用文本模型生成回答。`POST /api/v1/answer/stream` 使用同一套 Context Pack，通过 SSE 增量输出，并返回首字延迟、总耗时、Token usage、Grounding 状态和无效引用编号；生成阶段会写回 Trace。
 
 Provider 会对相同文本做进程内缓存；批量文档向量化会尽量合并为一次批处理请求。
 
@@ -322,7 +322,7 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 - [x] M0：PostgreSQL + pgvector 持久化
 - [x] M1：Redis + Celery 异步索引
 - [x] M2：真实 Reranker 与可信评测
-- [ ] M3：流式回答与引用校验（进行中）
+- [x] M3：流式回答与引用校验
 - [ ] M4：CI、E2E、监控与发布
 
 `PROJECT_PLAN.md` 保留为项目设计方案；实际执行顺序、验收标准和当前状态以开发路线图为准。

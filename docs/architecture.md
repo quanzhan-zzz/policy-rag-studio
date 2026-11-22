@@ -79,5 +79,6 @@ answer API. Citation identifiers are validated before `done`; unknown IDs are re
 
 ## Next Adapter Boundary
 
-M2 now has a valid zero-fallback local BGE run on the frozen 38-case test split. M3 still needs token
-usage, generation Trace spans and cancellation propagation when the client disconnects.
+M2 has a valid zero-fallback local BGE run on the frozen 38-case test split. M3 now records actual
+stream usage, appends a generation stage to Trace, applies grounding guards and stops the producer
+when the SSE consumer disconnects. The next boundary is reproducible delivery and CI automation.

@@ -89,6 +89,12 @@ export function AnswerPanel({
             <span>{data.citations.length} 条引用</span>
             {data.first_token_ms ? <span>首字 {data.first_token_ms.toFixed(1)} ms</span> : null}
             {data.total_ms ? <span>总计 {data.total_ms.toFixed(1)} ms</span> : null}
+            {data.total_tokens ? (
+              <span>
+                tokens {data.prompt_tokens ?? 0}/{data.completion_tokens ?? 0}
+              </span>
+            ) : null}
+            {data.grounding_status ? <span>{data.grounding_status}</span> : null}
             <Link className="text-link" to={`/traces/${data.retrieval.trace_id}`}>
               查看这次回答的 Trace
             </Link>

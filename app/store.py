@@ -15,6 +15,7 @@ from app.schemas import (
     IndexTaskKind,
     IndexTaskStatus,
     TraceRecord,
+    TraceStage,
 )
 from app.services.chunking import chunk_document
 from app.services.embedding import EmbeddingProvider, get_embedding_provider
@@ -147,6 +148,13 @@ class Store(Protocol):
     async def record_trace(self, trace: TraceRecord) -> None: ...
 
     async def get_trace(self, trace_id: str) -> TraceRecord | None: ...
+
+    async def complete_trace_generation(
+        self,
+        trace_id: str,
+        stage: TraceStage,
+        total_ms: float,
+    ) -> None: ...
 
     async def record_evaluation(self, evaluation: EvaluationSummary) -> EvaluationSummary: ...
 
@@ -635,6 +643,23 @@ class InMemoryStore:
     async def get_trace(self, trace_id: str) -> TraceRecord | None:
         with self.lock:
             return self.traces.get(trace_id)
+
+    async def complete_trace_generation(
+        self,
+        trace_id: str,
+        stage: TraceStage,
+        total_ms: float,
+    ) -> None:
+        with self.lock:
+            trace = self.traces.get(trace_id)
+            if trace is None:
+                return
+            self.traces[trace_id] = trace.model_copy(
+                update={
+                    "stages": [*trace.stages, stage],
+                    "total_ms": round(total_ms, 3),
+                }
+            )
 
     async def record_evaluation(self, evaluation: EvaluationSummary) -> EvaluationSummary:
         stored = evaluation.model_copy(update={"id": evaluation.id or f"eval_{uuid4().hex[:12]}"})

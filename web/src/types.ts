@@ -107,7 +107,11 @@ export type AnswerResponse = {
   citations: AnswerCitation[]
   first_token_ms?: number | null
   total_ms?: number | null
+  prompt_tokens?: number
+  completion_tokens?: number
+  total_tokens?: number
   invalid_citation_ids?: number[]
+  grounding_status?: string
 }
 
 export type TraceStage = {

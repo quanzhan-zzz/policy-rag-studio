@@ -637,6 +637,20 @@ class PostgresStore:
             stages=[TraceStage.model_validate(stage) for stage in row.stages],
         )
 
+    async def complete_trace_generation(
+        self,
+        trace_id: str,
+        stage: TraceStage,
+        total_ms: float,
+    ) -> None:
+        async with self.sessions() as session:
+            row = await session.get(TraceRow, trace_id)
+            if row is None:
+                return
+            row.stages = [*row.stages, stage.model_dump(mode="json")]
+            row.total_ms = round(total_ms, 3)
+            await session.commit()
+
     async def record_evaluation(self, evaluation: EvaluationSummary) -> EvaluationSummary:
         stored = evaluation.model_copy(
             update={"id": evaluation.id or f"eval_{uuid4().hex[:12]}"}

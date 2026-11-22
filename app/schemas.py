@@ -155,7 +155,11 @@ class AnswerResponse(BaseModel):
     citations: list[AnswerCitation]
     first_token_ms: float | None = None
     total_ms: float | None = None
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
     invalid_citation_ids: list[int] = Field(default_factory=list)
+    grounding_status: str = "supported"
 
 
 class TraceStage(BaseModel):
