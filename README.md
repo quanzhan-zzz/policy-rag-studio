@@ -329,6 +329,7 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 
 ## 演示与发布
 
+- GitHub Release：[v0.2.0](https://github.com/quanzhan-zzz/policy-rag-studio/releases/tag/v0.2.0)
 - 3 分钟演示脚本：[docs/demo-script.md](docs/demo-script.md)
 - v0.2.0 发布说明：[docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)
 - CI 覆盖后端、前端、PostgreSQL 契约和 5 条 Playwright 用户路径
