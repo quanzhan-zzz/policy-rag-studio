@@ -33,10 +33,10 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - 实现 BM25、可配置 Embedding Provider、RRF 融合和启发式重排
 - 检索工作台可生成带编号引用的回答，并可直接查看对应 Trace
 - 评测指标由后端在固定演示集上实时计算
-- PostgreSQL 持久化文档、Chunk 和 Trace；内存适配器用于测试与离线演示
+- PostgreSQL 持久化文档、Chunk、Trace 和 Chunk 向量；内存适配器用于测试与离线演示
 - Docker Compose 已配置 PostgreSQL/pgvector、Redis、API 和 Web
 
-> 注意：默认 `EMBEDDING_PROVIDER=hash` 使用确定性演示向量；可切换为本地 BGE-M3 或 OpenAI 兼容 Embeddings API。Reranker 目前仍是启发式实现。文档、Chunk 和 Trace 已持久化到 PostgreSQL，pgvector 向量检索与 Alembic 迁移仍在 M0 中推进。
+> 注意：默认 `EMBEDDING_PROVIDER=hash` 使用确定性演示向量；可切换为本地 BGE-M3 或 OpenAI 兼容 Embeddings API。Reranker 目前仍是启发式实现。Dense 检索使用 pgvector 余弦距离，Schema 由 Alembic 管理。
 
 ## 核心页面
 
@@ -77,7 +77,7 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 flowchart LR
     UI[React Research Workbench] --> API[FastAPI API]
     API --> REPO[Repository Interface]
-    REPO --> PG[(PostgreSQL)]
+    REPO --> PG[(PostgreSQL + pgvector)]
     REPO --> MEM[In-memory Adapter]
     API --> R[(Redis)]
     API --> TRACE[Trace & Evaluation]
@@ -89,7 +89,7 @@ flowchart LR
     RRF --> RERANK[Heuristic Reranker]
 ```
 
-默认 `STORE_BACKEND=postgres`。同一套 Repository 契约测试同时覆盖 PostgreSQL 和内存适配器；Dense 向量仍由检索流程实时计算，下一阶段将迁移到 pgvector。
+默认 `STORE_BACKEND=postgres`。同一套 Repository 契约测试同时覆盖 PostgreSQL 和内存适配器；Dense 查询从 `chunk_embeddings` 读取 pgvector 向量并按余弦距离排序。Embedding 不可用时回退到运行时计算。
 
 ## Embedding Provider 配置
 
@@ -114,6 +114,8 @@ EMBEDDING_PROVIDER=openai
 EMBEDDING_API_BASE=https://your-endpoint/v1
 EMBEDDING_API_KEY=your-key
 OPENAI_EMBEDDING_MODEL=qwen3.7-text-embedding-flash
+EMBEDDING_DIMENSIONS=1024
+EMBEDDING_BATCH_SIZE=16
 ```
 
 文本模型使用同一个 OpenAI 兼容协议；本地无需鉴权的服务可以不填 `LLM_API_KEY`：
@@ -156,8 +158,11 @@ Provider 会对相同文本做进程内缓存；批量文档向量化会尽量�
 ```bash
 uv sync
 docker compose up -d db redis
+uv run alembic upgrade head
 uv run uvicorn app.main:app --reload --port 8000
 ```
+
+`EMBEDDING_DIMENSIONS` 必须与当前 Provider 的输出维度一致。初始迁移使用 `vector(1024)`；切换维度时需要新增迁移并重建向量。
 
 另开一个终端：
 
@@ -190,9 +195,11 @@ docker compose up --build
 uv run ruff check app tests
 uv run pytest
 
-# PostgreSQL Repository 契约测试
-TEST_DATABASE_URL=postgresql+asyncpg://policyrag:policyrag@127.0.0.1:5432/policyrag \
-  uv run pytest tests/test_store_contract.py -q
+# PostgreSQL Repository 契约测试（使用独立数据库，避免污染开发数据）
+make test-postgres
+
+# Schema 迁移
+make migrate
 
 # 前端
 cd web
@@ -255,7 +262,7 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 
 当前开发按 [Development Roadmap](docs/development-roadmap.md) 推进：
 
-- [ ] M0：PostgreSQL + pgvector 持久化
+- [x] M0：PostgreSQL + pgvector 持久化
 - [ ] M1：Redis + Celery 异步索引
 - [ ] M2：真实 Reranker 与可信评测
 - [ ] M3：流式回答与引用校验

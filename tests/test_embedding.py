@@ -1,6 +1,10 @@
 import math
 
-from app.services.embedding import CachedEmbeddingProvider, HashEmbeddingProvider
+from app.services.embedding import (
+    CachedEmbeddingProvider,
+    HashEmbeddingProvider,
+    OpenAICompatibleEmbeddingProvider,
+)
 
 
 class CountingProvider:
@@ -54,3 +58,23 @@ def test_cached_documents_use_one_batch_and_reuse_cache() -> None:
     assert len(first) == 3
     assert second == [first[1]]
     assert delegate.batch_calls == 1
+
+
+def test_openai_embedding_provider_batches_documents(monkeypatch) -> None:
+    provider = OpenAICompatibleEmbeddingProvider(
+        api_base="http://embedding.test/v1",
+        api_key="test",
+        model="test-model",
+        batch_size=2,
+    )
+    calls: list[list[str]] = []
+
+    def fake_embed(texts):
+        calls.append(list(texts))
+        return [[float(len(text)), 1.0] for text in texts]
+
+    monkeypatch.setattr(provider, "_embed", fake_embed)
+    vectors = provider.embed_documents(["甲", "乙", "丙", "丁", "戊"])
+
+    assert [len(call) for call in calls] == [2, 2, 1]
+    assert len(vectors) == 5

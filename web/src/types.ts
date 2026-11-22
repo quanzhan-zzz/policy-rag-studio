@@ -109,6 +109,7 @@ export type FailureBucket = {
 }
 
 export type EvaluationSummary = {
+  id?: string
   dataset_name: string
   case_count: number
   rows: MetricRow[]

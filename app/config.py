@@ -15,7 +15,9 @@ class Settings(BaseSettings):
     seed_demo_data: bool = True
     redis_url: str = "redis://localhost:6379/0"
     embedding_provider: Literal["hash", "openai", "bge"] = "hash"
-    hash_embedding_dimensions: int = 192
+    hash_embedding_dimensions: int = 1024
+    embedding_dimensions: int = 1024
+    embedding_batch_size: int = 16
     bge_embedding_model: str = "BAAI/bge-m3"
     openai_embedding_model: str = "text-embedding-3-small"
     embedding_api_base: str = "https://api.openai.com/v1"

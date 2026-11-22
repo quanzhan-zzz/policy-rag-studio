@@ -1,9 +1,20 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import (
+    JSON,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.config import get_settings
 from app.db.base import Base
 
 
@@ -70,3 +81,38 @@ class TraceRow(Base):
         DateTime(timezone=True), nullable=False, index=True
     )
     stages: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+
+
+class EmbeddingRow(Base):
+    __tablename__ = "chunk_embeddings"
+    __table_args__ = (
+        Index(
+            "ix_chunk_embeddings_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
+
+    chunk_id: Mapped[str] = mapped_column(
+        ForeignKey("chunks.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    model_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    embedding: Mapped[list[float]] = mapped_column(
+        Vector(get_settings().embedding_dimensions),
+        nullable=False,
+    )
+
+
+class EvaluationRunRow(Base):
+    __tablename__ = "evaluation_runs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    dataset_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    case_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    rows: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    failures: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )

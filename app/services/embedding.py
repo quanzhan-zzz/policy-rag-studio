@@ -48,11 +48,13 @@ class OpenAICompatibleEmbeddingProvider:
         api_base: str,
         api_key: str,
         model: str,
+        batch_size: int = 16,
         timeout_seconds: float = 60.0,
     ) -> None:
         self.api_base = api_base.rstrip("/")
         self.api_key = api_key
         self.model = model
+        self.batch_size = batch_size
         self.timeout_seconds = timeout_seconds
         self.name = f"OpenAI-compatible embedding · {model}"
 
@@ -67,7 +69,11 @@ class OpenAICompatibleEmbeddingProvider:
                 headers={"Authorization": f"Bearer {self.api_key}"},
                 json={"model": self.model, "input": list(texts)},
             )
-            response.raise_for_status()
+            if response.is_error:
+                detail = response.text[:500].strip()
+                raise RuntimeError(
+                    f"Embedding API 返回 HTTP {response.status_code}: {detail}"
+                )
             payload = response.json()
         ordered = sorted(payload["data"], key=lambda item: item["index"])
         return [item["embedding"] for item in ordered]
@@ -78,7 +84,10 @@ class OpenAICompatibleEmbeddingProvider:
     def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
         if not texts:
             return []
-        return self._embed(texts)
+        vectors: list[list[float]] = []
+        for start in range(0, len(texts), self.batch_size):
+            vectors.extend(self._embed(texts[start : start + self.batch_size]))
+        return vectors
 
 
 class BGEEmbeddingProvider:
@@ -161,6 +170,7 @@ def get_embedding_provider() -> EmbeddingProvider:
             api_base=settings.embedding_api_base,
             api_key=settings.embedding_api_key or "",
             model=settings.openai_embedding_model,
+            batch_size=settings.embedding_batch_size,
         )
     elif provider == "bge":
         delegate = BGEEmbeddingProvider(settings.bge_embedding_model)

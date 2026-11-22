@@ -43,6 +43,16 @@ def test_document_detail_api(client: TestClient) -> None:
     assert response.json()["id"] == document["id"]
 
 
+def test_evaluation_api_persists_snapshot(client: TestClient) -> None:
+    response = client.get("/api/v1/evaluations/summary")
+    assert response.status_code == 200
+    evaluation = response.json()
+    assert evaluation["id"].startswith("eval_")
+
+    overview = client.get("/api/v1/overview").json()
+    assert overview["last_evaluation"]["id"] == evaluation["id"]
+
+
 def test_overview_api(client: TestClient) -> None:
     response = client.get("/api/v1/overview")
     assert response.status_code == 200

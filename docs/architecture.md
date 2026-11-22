@@ -5,7 +5,8 @@
 - `app/main.py`: FastAPI app and CORS
 - `app/api/routes.py`: HTTP API
 - `app/store.py`: `Store` interface and deterministic in-memory adapter
-- `app/db/postgres.py`: PostgreSQL adapter for documents, chunks and traces
+- `app/db/postgres.py`: PostgreSQL adapter for documents, chunks, traces and pgvector embeddings
+- `migrations/`: Alembic schema history, including pgvector HNSW index
 - `app/dependencies.py`: request-scoped repository access through application state
 - `app/services/chunking.py`: fixed, heading and recursive chunkers
 - `app/services/retrieval.py`: dense demo, BM25, RRF and heuristic reranking
@@ -21,7 +22,8 @@ The repository deliberately separates demo implementations from the public contr
 - BGE-M3 and OpenAI-compatible embedding providers are selected through environment configuration.
 - Heuristic reranking is local and reproducible.
 - The API schemas already contain retrieval ranks, trace stages and citations.
-- Documents, chunks and traces are persisted through the PostgreSQL adapter.
+- Documents, chunks, traces and embeddings are persisted through the PostgreSQL adapter.
+- Dense retrieval queries stored vectors with pgvector cosine distance.
 - Unit tests switch to the in-memory adapter with `STORE_BACKEND=memory`.
 
 ## Repository Seam
@@ -34,7 +36,21 @@ The repository deliberately separates demo implementations from the public contr
 Repository contract tests run against both adapters. The PostgreSQL variant is enabled with
 `TEST_DATABASE_URL`.
 
-## Next Persistence Step
+## Retrieval Data Flow
 
-Add pgvector-backed chunk embeddings and Alembic migrations behind the existing Store seam. Dense
-retrieval should consume stored vectors without changing the API response contract or frontend.
+1. Upload or seed creates three chunk profiles and stores all chunks.
+2. Embedding vectors are written to `chunk_embeddings`.
+3. Dense retrieval sends the query vector to PostgreSQL and orders candidates by `<=>`.
+4. Hybrid retrieval reuses the same dense ranking, then applies BM25 and RRF.
+5. Trace records whether vectors came from pgvector or a live fallback.
+
+## Schema Changes
+
+Alembic owns the production schema. `PostgresStore` does not create tables at application startup;
+the Docker entrypoint runs `alembic upgrade head` before Uvicorn. Repository contract tests use a
+dedicated database created by `make test-postgres`.
+
+## Next Adapter Boundary
+
+M1 keeps the Store seam intact and adds an indexing-task seam around parsing, chunking and
+embedding. The HTTP request creates a durable task; a Celery worker owns its state transitions.

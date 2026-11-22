@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -9,13 +11,26 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from app.config import get_settings
 from app.db.base import Base
-from app.db.models import ChunkRow, DocumentRow, TraceRow
-from app.schemas import ChunkRecord, ChunkStrategy, DocumentSummary, TraceRecord, TraceStage
+from app.db.models import ChunkRow, DocumentRow, EmbeddingRow, EvaluationRunRow, TraceRow
+from app.schemas import (
+    ChunkRecord,
+    ChunkStrategy,
+    DocumentSummary,
+    EvaluationSummary,
+    FailureBucket,
+    MetricRow,
+    TraceRecord,
+    TraceStage,
+)
 from app.services.chunking import chunk_document
+from app.services.embedding import EmbeddingProvider, get_embedding_provider
 from app.services.parsing import parse_document
 from app.services.seed import SEED_DOCUMENTS
 from app.services.text import tokenize
+
+logger = logging.getLogger(__name__)
 
 
 class PostgresStore:
@@ -27,9 +42,11 @@ class PostgresStore:
         self,
         engine: AsyncEngine,
         sessions: async_sessionmaker[AsyncSession],
+        embedding_provider: EmbeddingProvider,
     ) -> None:
         self.engine = engine
         self.sessions = sessions
+        self.embedding_provider = embedding_provider
 
     @classmethod
     async def create(
@@ -37,17 +54,62 @@ class PostgresStore:
         database_url: str,
         *,
         seed_demo_data: bool = True,
+        embedding_provider: EmbeddingProvider | None = None,
+        initialize_schema: bool = False,
     ) -> "PostgresStore":
         engine = create_async_engine(database_url, pool_pre_ping=True)
-        store = cls(engine, async_sessionmaker(engine, expire_on_commit=False))
-        await store.initialize(seed_demo_data=seed_demo_data)
+        store = cls(
+            engine,
+            async_sessionmaker(engine, expire_on_commit=False),
+            embedding_provider or get_embedding_provider(),
+        )
+        await store.initialize(
+            seed_demo_data=seed_demo_data,
+            initialize_schema=initialize_schema,
+        )
         return store
 
-    async def initialize(self, *, seed_demo_data: bool) -> None:
-        async with self.engine.begin() as connection:
-            await connection.run_sync(Base.metadata.create_all)
+    async def initialize(
+        self,
+        *,
+        seed_demo_data: bool,
+        initialize_schema: bool,
+    ) -> None:
+        if initialize_schema:
+            async with self.engine.begin() as connection:
+                await connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+                await connection.run_sync(Base.metadata.create_all)
         if seed_demo_data:
             await self._seed()
+            await self._backfill_embeddings()
+
+    async def _backfill_embeddings(self) -> None:
+        async with self.sessions() as session:
+            await session.execute(
+                delete(EmbeddingRow).where(
+                    EmbeddingRow.model_name != self.embedding_provider.name
+                )
+            )
+            chunk_rows = (
+                await session.scalars(
+                    select(ChunkRow)
+                    .outerjoin(EmbeddingRow, EmbeddingRow.chunk_id == ChunkRow.id)
+                    .where(EmbeddingRow.chunk_id.is_(None))
+                    .order_by(ChunkRow.document_id, ChunkRow.strategy, ChunkRow.position)
+                )
+            ).all()
+            await session.commit()
+        if not chunk_rows:
+            return
+        chunks = [self._to_chunk(row) for row in chunk_rows]
+        try:
+            embedding_rows = await self._new_embedding_rows(chunks)
+        except Exception:
+            logger.exception("Embedding backfill failed; retrieval will fall back to live vectors")
+            return
+        async with self.sessions() as session:
+            session.add_all(embedding_rows)
+            await session.commit()
 
     async def ping(self) -> bool:
         try:
@@ -99,13 +161,18 @@ class PostgresStore:
             updated_at=now,
             tags=tags,
         )
+        all_chunks: list[ChunkRecord] = []
         for strategy in ChunkStrategy:
             chunks = chunk_document(content_text, document_id, title, strategy)
             if strategy is ChunkStrategy.HEADING:
                 document.chunk_count = len(chunks)
+            all_chunks.extend(chunks)
             document.chunks.extend(self._new_chunk_rows(chunks))
+        embedding_rows = await self._new_embedding_rows(all_chunks)
         async with self.sessions() as session:
             session.add(document)
+            await session.flush()
+            session.add_all(embedding_rows)
             await session.commit()
         return self._to_document(document)
 
@@ -153,6 +220,28 @@ class PostgresStore:
             ).all()
         return [self._to_chunk(row) for row in rows]
 
+    async def dense_scores(
+        self,
+        strategy: ChunkStrategy,
+        query_vector: list[float],
+        limit: int = 64,
+    ) -> list[tuple[str, float]]:
+        distance = EmbeddingRow.embedding.cosine_distance(query_vector).label("distance")
+        async with self.sessions() as session:
+            rows = (
+                await session.execute(
+                    select(ChunkRow.id, distance)
+                    .join(EmbeddingRow, EmbeddingRow.chunk_id == ChunkRow.id)
+                    .where(
+                        ChunkRow.strategy == strategy.value,
+                        EmbeddingRow.model_name == self.embedding_provider.name,
+                    )
+                    .order_by(distance)
+                    .limit(limit)
+                )
+            ).all()
+        return [(chunk_id, 1.0 - float(value)) for chunk_id, value in rows]
+
     async def update_chunk(self, chunk_id: str, text: str) -> ChunkRecord | None:
         async with self.sessions() as session:
             row = await session.get(ChunkRow, chunk_id)
@@ -163,6 +252,13 @@ class PostgresStore:
             document = await session.get(DocumentRow, row.document_id)
             if document is not None:
                 document.updated_at = datetime.now(UTC)
+            embedding = await session.get(EmbeddingRow, chunk_id)
+            if embedding is None:
+                embedding = EmbeddingRow(chunk_id=chunk_id)
+                session.add(embedding)
+            embedding.model_name = self.embedding_provider.name
+            vector = await asyncio.to_thread(self.embedding_provider.embed_query, text)
+            embedding.embedding = self._validated_vector(vector)
             await session.commit()
             return self._to_chunk(row)
 
@@ -193,6 +289,7 @@ class PostgresStore:
                 return None
             await session.execute(delete(ChunkRow).where(ChunkRow.document_id == document_id))
             all_new_chunks: list[ChunkRow] = []
+            all_chunk_records: list[ChunkRecord] = []
             for strategy in ChunkStrategy:
                 chunks = chunk_document(
                     document.content_text,
@@ -203,7 +300,10 @@ class PostgresStore:
                 if strategy is ChunkStrategy.HEADING:
                     document.chunk_count = len(chunks)
                 all_new_chunks.extend(self._new_chunk_rows(chunks))
+                all_chunk_records.extend(chunks)
             session.add_all(all_new_chunks)
+            await session.flush()
+            session.add_all(await self._new_embedding_rows(all_chunk_records))
             document.updated_at = datetime.now(UTC)
             await session.commit()
             return self._to_document(document)
@@ -237,6 +337,39 @@ class PostgresStore:
             stages=[TraceStage.model_validate(stage) for stage in row.stages],
         )
 
+    async def record_evaluation(self, evaluation: EvaluationSummary) -> EvaluationSummary:
+        stored = evaluation.model_copy(
+            update={"id": evaluation.id or f"eval_{uuid4().hex[:12]}"}
+        )
+        row = EvaluationRunRow(
+            id=stored.id or "",
+            dataset_name=stored.dataset_name,
+            case_count=stored.case_count,
+            rows=[metric.model_dump(mode="json") for metric in stored.rows],
+            failures=[failure.model_dump(mode="json") for failure in stored.failures],
+            generated_at=stored.generated_at,
+        )
+        async with self.sessions() as session:
+            session.add(row)
+            await session.commit()
+        return stored
+
+    async def get_latest_evaluation(self) -> EvaluationSummary | None:
+        async with self.sessions() as session:
+            row = await session.scalar(
+                select(EvaluationRunRow).order_by(EvaluationRunRow.generated_at.desc()).limit(1)
+            )
+        if row is None:
+            return None
+        return EvaluationSummary(
+            id=row.id,
+            dataset_name=row.dataset_name,
+            case_count=row.case_count,
+            rows=[MetricRow.model_validate(item) for item in row.rows],
+            failures=[FailureBucket.model_validate(item) for item in row.failures],
+            generated_at=row.generated_at,
+        )
+
     async def count_chunks(self) -> int:
         async with self.sessions() as session:
             return int(await session.scalar(select(func.count()).select_from(ChunkRow)) or 0)
@@ -244,6 +377,29 @@ class PostgresStore:
     async def count_retrieval_runs(self) -> int:
         async with self.sessions() as session:
             return int(await session.scalar(select(func.count()).select_from(TraceRow)) or 0)
+
+    async def _new_embedding_rows(self, chunks: list[ChunkRecord]) -> list[EmbeddingRow]:
+        if not chunks:
+            return []
+        vectors = await asyncio.to_thread(
+            self.embedding_provider.embed_documents,
+            [chunk.text for chunk in chunks],
+        )
+        return [
+            EmbeddingRow(
+                chunk_id=chunk.id,
+                model_name=self.embedding_provider.name,
+                embedding=self._validated_vector(vector),
+            )
+            for chunk, vector in zip(chunks, vectors, strict=True)
+        ]
+
+    @staticmethod
+    def _validated_vector(vector: list[float]) -> list[float]:
+        expected = get_settings().embedding_dimensions
+        if len(vector) != expected:
+            raise ValueError(f"Embedding 维度不匹配：期望 {expected}，实际 {len(vector)}")
+        return vector
 
     @staticmethod
     def _new_chunk_rows(chunks: list[ChunkRecord]) -> list[ChunkRow]:

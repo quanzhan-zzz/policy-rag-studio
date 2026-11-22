@@ -9,7 +9,7 @@ from app.schemas import (
     RetrievedChunk,
 )
 from app.services.llm import LLMProvider, get_llm_provider
-from app.services.retrieval import run_retrieval
+from app.services.retrieval import prepare_dense_scores, run_retrieval
 from app.store import Store
 
 SYSTEM_PROMPT = """你是政务政策检索助手。
@@ -49,6 +49,12 @@ async def answer_query(
     chunks = await store.all_chunks(request.chunk_strategy)
     if not chunks:
         raise ValueError("当前切片策略下没有可检索内容")
+    embedding_provider, dense_scores, dense_latency_ms = await prepare_dense_scores(
+        store,
+        chunks,
+        request.query,
+        request.chunk_strategy,
+    )
     run, trace = await asyncio.to_thread(
         run_retrieval,
         chunks=chunks,
@@ -56,6 +62,9 @@ async def answer_query(
         strategy=RetrievalStrategy.HYBRID_RERANK,
         chunk_strategy=request.chunk_strategy,
         top_k=request.top_k,
+        embedding_provider=embedding_provider,
+        dense_scores_by_chunk=dense_scores,
+        precomputed_latency_ms=dense_latency_ms,
     )
     await store.record_trace(trace)
     provider = llm_provider or get_llm_provider()

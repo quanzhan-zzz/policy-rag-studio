@@ -5,8 +5,18 @@ from uuid import uuid4
 import pytest
 import pytest_asyncio
 
+from app.config import get_settings
 from app.db.postgres import PostgresStore
-from app.schemas import ChunkStrategy, RetrievalStrategy, TraceRecord, TraceStage
+from app.schemas import (
+    ChunkStrategy,
+    EvaluationSummary,
+    FailureBucket,
+    MetricRow,
+    RetrievalStrategy,
+    TraceRecord,
+    TraceStage,
+)
+from app.services.embedding import HashEmbeddingProvider
 from app.store import InMemoryStore, Store
 
 
@@ -18,7 +28,11 @@ async def store(request: pytest.FixtureRequest):
     database_url = os.getenv("TEST_DATABASE_URL")
     if not database_url:
         pytest.skip("TEST_DATABASE_URL 未配置")
-    postgres_store = await PostgresStore.create(database_url, seed_demo_data=False)
+    postgres_store = await PostgresStore.create(
+        database_url,
+        seed_demo_data=False,
+        initialize_schema=True,
+    )
     try:
         yield postgres_store
     finally:
@@ -53,6 +67,16 @@ async def _assert_document_lifecycle(store: Store) -> None:
     assert updated is not None
     assert updated.text.startswith("一、适用范围")
     assert updated.tokens > 0
+
+    settings = get_settings()
+    provider = HashEmbeddingProvider(dimensions=settings.hash_embedding_dimensions)
+    dense_scores = await store.dense_scores(
+        ChunkStrategy.HEADING,
+        provider.embed_query(updated.text),
+    )
+    scores_by_id = dict(dense_scores)
+    assert {chunk.id for chunk in heading_chunks}.issubset(scores_by_id)
+    assert scores_by_id[updated.id] == max(scores_by_id.values())
 
     before_reindex = len(await store.list_chunks(document.id, ChunkStrategy.HEADING))
     reindexed = await store.reindex_document(document.id)
@@ -91,3 +115,30 @@ async def test_store_trace_contract(store: Store) -> None:
     await store.record_trace(trace)
     assert await store.get_trace(trace_id) == trace
     assert await store.count_retrieval_runs() == before + 1
+
+
+@pytest.mark.asyncio
+async def test_store_evaluation_contract(store: Store) -> None:
+    evaluation = EvaluationSummary(
+        dataset_name="contract-eval",
+        case_count=1,
+        rows=[
+            MetricRow(
+                strategy=RetrievalStrategy.HYBRID,
+                label="Hybrid",
+                recall_at_5=1.0,
+                mrr=1.0,
+                ndcg_at_5=1.0,
+                p95_ms=1.0,
+            )
+        ],
+        failures=[FailureBucket(type="contract", count=0)],
+        generated_at=datetime.now(UTC),
+    )
+
+    stored = await store.record_evaluation(evaluation)
+    assert stored.id
+    latest = await store.get_latest_evaluation()
+    assert latest is not None
+    assert latest.id == stored.id
+    assert latest.rows[0].strategy is RetrievalStrategy.HYBRID

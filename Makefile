@@ -1,4 +1,4 @@
-.PHONY: dev-api dev-web test lint build up down
+.PHONY: dev-api dev-web migrate test test-postgres lint build up down
 
 dev-api:
 	uv run uvicorn app.main:app --reload --port 8000
@@ -6,9 +6,21 @@ dev-api:
 dev-web:
 	cd web && pnpm dev
 
+migrate:
+	uv run alembic upgrade head
+
 test:
 	uv run pytest
 	cd web && pnpm test
+
+test-postgres:
+	docker compose up -d db
+	docker compose exec -T db dropdb --if-exists -U policyrag policyrag_test
+	docker compose exec -T db createdb -U policyrag policyrag_test
+	TEST_DATABASE_URL=postgresql+asyncpg://policyrag:policyrag@127.0.0.1:5432/policyrag_test \
+	EMBEDDING_PROVIDER=hash EMBEDDING_DIMENSIONS=1024 HASH_EMBEDDING_DIMENSIONS=1024 \
+	uv run pytest tests/test_store_contract.py -q
+	-docker compose exec -T db dropdb -U policyrag policyrag_test
 
 lint:
 	uv run ruff check app tests

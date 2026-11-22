@@ -22,7 +22,7 @@ from app.services.embedding import get_embedding_provider
 from app.services.evaluation import evaluate_store
 from app.services.llm import LLMProviderError, get_llm_provider
 from app.services.parsing import UnsupportedDocumentError
-from app.services.retrieval import run_retrieval
+from app.services.retrieval import prepare_dense_scores, run_retrieval
 from app.store import Store
 
 router = APIRouter(prefix="/api/v1")
@@ -41,7 +41,9 @@ async def health(store: StoreDep) -> dict[str, str]:
 
 @router.get("/overview", response_model=OverviewResponse)
 async def overview(store: StoreDep) -> OverviewResponse:
-    evaluation = await evaluate_store(store)
+    evaluation = await store.get_latest_evaluation()
+    if evaluation is None:
+        evaluation = await store.record_evaluation(await evaluate_store(store))
     return OverviewResponse(
         service_status="operational" if await store.ping() else "degraded",
         document_count=len(await store.list_documents()),
@@ -117,6 +119,12 @@ async def compare_retrieval(payload: RetrievalRequest, store: StoreDep) -> Retri
     chunks = await store.all_chunks(payload.chunk_strategy)
     if not chunks:
         raise HTTPException(status_code=400, detail="当前切片策略下没有可检索内容")
+    embedding_provider, dense_scores, dense_latency_ms = await prepare_dense_scores(
+        store,
+        chunks,
+        payload.query,
+        payload.chunk_strategy,
+    )
     runs = []
     for strategy in payload.strategies:
         run, trace = await asyncio.to_thread(
@@ -126,6 +134,9 @@ async def compare_retrieval(payload: RetrievalRequest, store: StoreDep) -> Retri
             strategy=strategy,
             chunk_strategy=payload.chunk_strategy,
             top_k=payload.top_k,
+            embedding_provider=embedding_provider,
+            dense_scores_by_chunk=dense_scores,
+            precomputed_latency_ms=dense_latency_ms,
         )
         await store.record_trace(trace)
         runs.append(run)
@@ -157,4 +168,4 @@ async def get_trace(trace_id: str, store: StoreDep) -> TraceRecord:
 
 @router.get("/evaluations/summary", response_model=EvaluationSummary)
 async def evaluation_summary(store: StoreDep) -> EvaluationSummary:
-    return await evaluate_store(store)
+    return await store.record_evaluation(await evaluate_store(store))

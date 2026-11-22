@@ -1,6 +1,8 @@
+import asyncio
 import math
 import time
 from collections import Counter
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -16,6 +18,7 @@ from app.schemas import (
 )
 from app.services.embedding import EmbeddingProvider, get_embedding_provider
 from app.services.text import tokenize
+from app.store import Store
 
 STRATEGY_LABELS = {
     RetrievalStrategy.DENSE: "Dense",
@@ -95,6 +98,28 @@ def _to_result(
     )
 
 
+async def prepare_dense_scores(
+    store: Store,
+    chunks: list[ChunkRecord],
+    query: str,
+    strategy: ChunkStrategy,
+    embedding_provider: EmbeddingProvider | None = None,
+) -> tuple[EmbeddingProvider, dict[str, float] | None, float]:
+    provider = embedding_provider or get_embedding_provider()
+    started = time.perf_counter()
+    query_vector = await asyncio.to_thread(provider.embed_query, query)
+    stored = dict(await store.dense_scores(strategy, query_vector))
+    latency_ms = (time.perf_counter() - started) * 1000
+    if not stored:
+        return provider, None, latency_ms
+    fallback_score = min(stored.values()) - 0.01
+    dense_scores = {
+        chunk.id: stored.get(chunk.id, fallback_score)
+        for chunk in chunks
+    }
+    return provider, dense_scores, latency_ms
+
+
 def run_retrieval(
     chunks: list[ChunkRecord],
     query: str,
@@ -102,8 +127,10 @@ def run_retrieval(
     chunk_strategy: ChunkStrategy,
     top_k: int,
     embedding_provider: EmbeddingProvider | None = None,
+    dense_scores_by_chunk: Mapping[str, float] | None = None,
+    precomputed_latency_ms: float = 0.0,
 ) -> tuple[RetrievalRun, TraceRecord]:
-    started = time.perf_counter()
+    started = time.perf_counter() - precomputed_latency_ms / 1000
     trace_id = f"tr_{uuid4().hex[:10]}"
     stages: list[TraceStage] = []
 
@@ -119,10 +146,15 @@ def run_retrieval(
     )
 
     provider = embedding_provider or get_embedding_provider()
-    dense_started = time.perf_counter()
-    query_vector = provider.embed_query(query)
-    chunk_vectors = provider.embed_documents([chunk.text for chunk in chunks])
-    dense_scores = [_cosine(query_vector, vector) for vector in chunk_vectors]
+    dense_started = time.perf_counter() - precomputed_latency_ms / 1000
+    if dense_scores_by_chunk is not None:
+        dense_scores = [dense_scores_by_chunk[chunk.id] for chunk in chunks]
+        dense_detail = f"{provider.name}；PostgreSQL pgvector cosine"
+    else:
+        query_vector = provider.embed_query(query)
+        chunk_vectors = provider.embed_documents([chunk.text for chunk in chunks])
+        dense_scores = [_cosine(query_vector, vector) for vector in chunk_vectors]
+        dense_detail = f"{provider.name}；Provider 实时计算"
     dense_ranked = _ranked_indices(dense_scores)
     dense_rank_map = {index: rank for rank, index in enumerate(dense_ranked, start=1)}
     stages.append(
@@ -132,7 +164,7 @@ def run_retrieval(
             duration_ms=(time.perf_counter() - dense_started) * 1000,
             input_count=len(chunks),
             output_count=min(20, len(chunks)),
-            detail=f"{provider.name}；Provider 可通过环境变量替换",
+            detail=dense_detail,
         )
     )
 

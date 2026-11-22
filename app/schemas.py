@@ -150,6 +150,7 @@ class FailureBucket(BaseModel):
 
 
 class EvaluationSummary(BaseModel):
+    id: str | None = None
     dataset_name: str
     case_count: int
     rows: list[MetricRow]
