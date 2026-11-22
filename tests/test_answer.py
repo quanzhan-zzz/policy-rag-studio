@@ -1,3 +1,5 @@
+import pytest
+
 from app.schemas import AnswerRequest, ChunkStrategy, RetrievalStrategy
 from app.services.answer import answer_query, build_context
 from app.services.retrieval import run_retrieval
@@ -13,9 +15,10 @@ class FakeLLM:
         return "办理地点是常州市政务服务中心。[1]"
 
 
-def test_build_context_numbers_citations() -> None:
+@pytest.mark.asyncio
+async def test_build_context_numbers_citations() -> None:
     store = InMemoryStore()
-    chunks = store.all_chunks(ChunkStrategy.HEADING)
+    chunks = await store.all_chunks(ChunkStrategy.HEADING)
     run, _ = run_retrieval(
         chunks=chunks,
         query="办理地点",
@@ -29,9 +32,10 @@ def test_build_context_numbers_citations() -> None:
     assert citations[0].chunk_id == run.results[0].chunk_id
 
 
-def test_answer_query_uses_injected_provider() -> None:
+@pytest.mark.asyncio
+async def test_answer_query_uses_injected_provider() -> None:
     store = InMemoryStore()
-    response = answer_query(
+    response = await answer_query(
         store,
         AnswerRequest(query="青年人才租房补贴在哪里办理", top_k=3),
         llm_provider=FakeLLM(),

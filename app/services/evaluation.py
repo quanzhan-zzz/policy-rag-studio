@@ -1,3 +1,4 @@
+import asyncio
 import math
 from datetime import UTC, datetime
 
@@ -10,7 +11,7 @@ from app.schemas import (
 )
 from app.services.retrieval import STRATEGY_LABELS, run_retrieval
 from app.services.seed import EVALUATION_CASES
-from app.store import InMemoryStore
+from app.store import Store
 
 
 def _p95(values: list[float]) -> float:
@@ -21,7 +22,7 @@ def _p95(values: list[float]) -> float:
     return round(ordered[index], 3)
 
 
-def evaluate_store(store: InMemoryStore) -> EvaluationSummary:
+async def evaluate_store(store: Store) -> EvaluationSummary:
     strategies = [
         RetrievalStrategy.DENSE,
         RetrievalStrategy.BM25,
@@ -36,13 +37,14 @@ def evaluate_store(store: InMemoryStore) -> EvaluationSummary:
         strategy: [] for strategy in strategies
     }
 
+    chunks = await store.all_chunks(ChunkStrategy.HEADING)
     for strategy in strategies:
         recall = 0.0
         mrr = 0.0
         ndcg = 0.0
-        chunks = store.all_chunks(ChunkStrategy.HEADING)
         for case in EVALUATION_CASES:
-            run, trace = run_retrieval(
+            run, _ = await asyncio.to_thread(
+                run_retrieval,
                 chunks=chunks,
                 query=case.query,
                 strategy=strategy,

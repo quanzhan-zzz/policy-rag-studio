@@ -28,7 +28,7 @@
 
 | 里程碑 | 结果 | 依赖 | 状态 |
 | --- | --- | --- | --- |
-| M0 持久化 | 重启不丢数据，pgvector 成为真实检索后端 | 当前 `InMemoryStore` 契约 | **下一步** |
+| M0 持久化 | 重启不丢数据，pgvector 成为真实检索后端 | 当前 `InMemoryStore` 契约 | **进行中** |
 | M1 异步索引 | 上传与索引解耦，状态、进度、重试可见 | M0 | 待开始 |
 | M2 重排与评测 | 真实 Reranker 与可信实验报告 | M0、M1 | 待开始 |
 | M3 回答可靠性 | 流式回答、引用校验、异常降级 | M0、M2 | 待开始 |
@@ -68,13 +68,16 @@ M1 与 M2 有部分工作可并行，但 M1 先完成，避免评测建立在不
 - 写入文档、Chunk 和向量时保持事务一致性
 - 检索结果继续返回现有 `RetrievedChunk` 契约，前端无需感知存储变化
 
-### 验收
+### 当前进度
 
-- [ ] Docker 重启后文档、Chunk、Trace 和评测结果仍然存在
-- [ ] Dense 检索不再遍历进程内数组
-- [ ] 同一 Repository 契约测试同时通过内存实现和 PostgreSQL 实现
-- [ ] Alembic 可从空库完成初始化
-- [ ] 现有 API 与前端不需要修改调用路径
+- [x] 定义 `Store` 接口并保留 `InMemoryStore` 测试适配器
+- [x] 实现文档、Chunk 和 Trace 的 PostgreSQL 适配器
+- [x] Docker 重启后文档、Chunk 和 Trace 仍然存在
+- [x] 同一 Repository 契约测试同时通过内存实现和 PostgreSQL 实现
+- [ ] Dense 检索迁移到 pgvector
+- [ ] 持久化评测结果
+- [ ] 接入 Alembic 并从空库完成迁移
+- [ ] 现有 API 与前端完成全链路回归
 
 ## 5. M1：异步索引流水线
 

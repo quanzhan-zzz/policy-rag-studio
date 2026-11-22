@@ -1,17 +1,25 @@
+from collections.abc import Iterator
+
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
 
-client = TestClient(app)
+
+@pytest.fixture(scope="module")
+def client() -> Iterator[TestClient]:
+    with TestClient(app) as test_client:
+        yield test_client
 
 
-def test_health() -> None:
+def test_health(client: TestClient) -> None:
     response = client.get("/api/v1/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+    assert response.json()["mode"] == "memory"
 
 
-def test_compare_api() -> None:
+def test_compare_api(client: TestClient) -> None:
     response = client.post(
         "/api/v1/retrieval/compare",
         json={
@@ -27,7 +35,15 @@ def test_compare_api() -> None:
     assert payload["runs"][-1]["results"]
 
 
-def test_overview_api() -> None:
+def test_document_detail_api(client: TestClient) -> None:
+    documents = client.get("/api/v1/documents").json()
+    document = documents[0]
+    response = client.get(f"/api/v1/documents/{document['id']}")
+    assert response.status_code == 200
+    assert response.json()["id"] == document["id"]
+
+
+def test_overview_api(client: TestClient) -> None:
     response = client.get("/api/v1/overview")
     assert response.status_code == 200
     payload = response.json()

@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Sequence
 
 from app.schemas import (
@@ -9,7 +10,7 @@ from app.schemas import (
 )
 from app.services.llm import LLMProvider, get_llm_provider
 from app.services.retrieval import run_retrieval
-from app.store import InMemoryStore
+from app.store import Store
 
 SYSTEM_PROMPT = """你是政务政策检索助手。
 你只能依据给出的政策片段回答，不得补充片段之外的事实。
@@ -39,23 +40,24 @@ def build_context(results: Sequence[RetrievedChunk]) -> tuple[str, list[AnswerCi
     return "\n\n".join(context_parts), citations
 
 
-def answer_query(
-    store: InMemoryStore,
+async def answer_query(
+    store: Store,
     request: AnswerRequest,
     *,
     llm_provider: LLMProvider | None = None,
 ) -> AnswerResponse:
-    chunks = store.all_chunks(request.chunk_strategy)
+    chunks = await store.all_chunks(request.chunk_strategy)
     if not chunks:
         raise ValueError("当前切片策略下没有可检索内容")
-    run, trace = run_retrieval(
+    run, trace = await asyncio.to_thread(
+        run_retrieval,
         chunks=chunks,
         query=request.query,
         strategy=RetrievalStrategy.HYBRID_RERANK,
         chunk_strategy=request.chunk_strategy,
         top_k=request.top_k,
     )
-    store.record_trace(trace)
+    await store.record_trace(trace)
     provider = llm_provider or get_llm_provider()
     context, citations = build_context(run.results)
     messages = [
@@ -65,7 +67,8 @@ def answer_query(
             "content": f"用户问题：{request.query}\n\n检索到的政策片段：\n{context}",
         },
     ]
-    answer = provider.chat(
+    answer = await asyncio.to_thread(
+        provider.chat,
         messages,
         temperature=request.temperature,
         max_tokens=900,

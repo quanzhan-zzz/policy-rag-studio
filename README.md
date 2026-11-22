@@ -33,9 +33,10 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - 实现 BM25、可配置 Embedding Provider、RRF 融合和启发式重排
 - 检索工作台可生成带编号引用的回答，并可直接查看对应 Trace
 - 评测指标由后端在固定演示集上实时计算
+- PostgreSQL 持久化文档、Chunk 和 Trace；内存适配器用于测试与离线演示
 - Docker Compose 已配置 PostgreSQL/pgvector、Redis、API 和 Web
 
-> 注意：默认 `EMBEDDING_PROVIDER=hash` 使用确定性演示向量，保证克隆后无需模型即可运行；可切换为本地 BGE-M3 或 OpenAI 兼容 Embeddings API。Reranker 目前仍是启发式实现。上传文档当前保存在进程内，重启后重置。
+> 注意：默认 `EMBEDDING_PROVIDER=hash` 使用确定性演示向量；可切换为本地 BGE-M3 或 OpenAI 兼容 Embeddings API。Reranker 目前仍是启发式实现。文档、Chunk 和 Trace 已持久化到 PostgreSQL，pgvector 向量检索与 Alembic 迁移仍在 M0 中推进。
 
 ## 核心页面
 
@@ -75,19 +76,20 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 ```mermaid
 flowchart LR
     UI[React Research Workbench] --> API[FastAPI API]
-    API --> MEM[In-memory Demo Store]
-    API --> PG[(PostgreSQL + pgvector)]
+    API --> REPO[Repository Interface]
+    REPO --> PG[(PostgreSQL)]
+    REPO --> MEM[In-memory Adapter]
     API --> R[(Redis)]
     API --> TRACE[Trace & Evaluation]
-    MEM --> CHUNK[Chunking Service]
-    MEM --> DENSE[Embedding Provider]
-    MEM --> BM25[BM25]
+    REPO --> CHUNK[Chunking Service]
+    REPO --> DENSE[Embedding Provider]
+    REPO --> BM25[BM25]
     DENSE --> RRF[RRF Fusion]
     BM25 --> RRF
     RRF --> RERANK[Heuristic Reranker]
 ```
 
-当前数据库容器已经就绪，但 API 默认使用内存存储以保证克隆后即可运行。持久化仓储是下一步工作。
+默认 `STORE_BACKEND=postgres`。同一套 Repository 契约测试同时覆盖 PostgreSQL 和内存适配器；Dense 向量仍由检索流程实时计算，下一阶段将迁移到 pgvector。
 
 ## Embedding Provider 配置
 
@@ -153,6 +155,7 @@ Provider 会对相同文本做进程内缓存；批量文档向量化会尽量�
 
 ```bash
 uv sync
+docker compose up -d db redis
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
@@ -183,9 +186,13 @@ docker compose up --build
 ## 测试与检查
 
 ```bash
-# 后端
+# 后端（默认使用内存适配器）
 uv run ruff check app tests
 uv run pytest
+
+# PostgreSQL Repository 契约测试
+TEST_DATABASE_URL=postgresql+asyncpg://policyrag:policyrag@127.0.0.1:5432/policyrag \
+  uv run pytest tests/test_store_contract.py -q
 
 # 前端
 cd web

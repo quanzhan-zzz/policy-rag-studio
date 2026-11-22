@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     app_env: str = "development"
     api_cors_origins: str = "http://localhost:5173,http://localhost:4173"
     database_url: str = "postgresql+asyncpg://policyrag:policyrag@localhost:5432/policyrag"
+    store_backend: Literal["memory", "postgres"] = "postgres"
+    seed_demo_data: bool = True
     redis_url: str = "redis://localhost:6379/0"
     embedding_provider: Literal["hash", "openai", "bge"] = "hash"
     hash_embedding_dimensions: int = 192

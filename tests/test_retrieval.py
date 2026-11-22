@@ -1,12 +1,15 @@
+import pytest
+
 from app.schemas import ChunkStrategy, RetrievalStrategy
 from app.services.embedding import HashEmbeddingProvider
 from app.services.retrieval import run_retrieval
 from app.store import InMemoryStore
 
 
-def test_hybrid_returns_ranked_results() -> None:
+@pytest.mark.asyncio
+async def test_hybrid_returns_ranked_results() -> None:
     store = InMemoryStore()
-    chunks = store.all_chunks(ChunkStrategy.HEADING)
+    chunks = await store.all_chunks(ChunkStrategy.HEADING)
     run, trace = run_retrieval(
         chunks=chunks,
         query="个体工商户登记需要哪些申请材料",
@@ -23,9 +26,10 @@ def test_hybrid_returns_ranked_results() -> None:
     assert "Hash embedding" in dense_stage.detail
 
 
-def test_all_strategies_return_results() -> None:
+@pytest.mark.asyncio
+async def test_all_strategies_return_results() -> None:
     store = InMemoryStore()
-    chunks = store.all_chunks(ChunkStrategy.HEADING)
+    chunks = await store.all_chunks(ChunkStrategy.HEADING)
     for strategy in RetrievalStrategy:
         run, _ = run_retrieval(
             chunks=chunks,
