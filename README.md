@@ -155,15 +155,25 @@ RERANKER_PROVIDER=bge
 RERANKER_MODEL=BAAI/bge-reranker-v2-m3
 ```
 
+评测集包含 152 条合成政策问题，其中开发集 114 条、测试集 38 条。标签固定到真实 Chunk 标题，生成规则见 `data/eval/README.md`。
+
 统一重排实验命令：
 
 ```bash
 uv run python -m app.experiments.reranker_benchmark \
   --providers heuristic,none \
-  --output docs/experiments/20261122-reranker-smoke.md
+  --dataset policy-synthetic-v1 \
+  --split test \
+  --output docs/experiments/20261122-reranker-synthetic-test.md
 ```
 
-当前 10 条内部样本上，启发式 Reranker 的 MRR 为 `0.7033`，低于纯 RRF 的 `0.7117`，说明重排并非天然带来收益。LLM Reranker 的实测受到上游 `429` 限流，报告已标记为无效，不作为效果结论。
+当前 38 条测试集上：
+
+- 启发式 Reranker：Recall@5 `0.9474`，MRR `0.6447`
+- 纯 RRF：Recall@5 `0.9474`，MRR `0.6390`
+- 启发式 Reranker 的 MRR 仅提升 `0.0057`，不足以单独证明重排价值
+
+LLM Reranker 的实测仍受到上游 `429` 限流，报告已标记为无效，不作为效果结论。
 
 ## 技术栈
 

@@ -143,6 +143,7 @@ export type FailureBucket = {
 export type EvaluationSummary = {
   id?: string
   dataset_name: string
+  split?: string | null
   reranker_provider?: string | null
   case_count: number
   rows: MetricRow[]

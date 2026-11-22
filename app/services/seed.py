@@ -118,6 +118,7 @@ class EvaluationCase:
     expected_document_id: str
     expected_heading: str
     failure_type: str
+    split: str = "smoke"
 
 
 EVALUATION_CASES: tuple[EvaluationCase, ...] = (

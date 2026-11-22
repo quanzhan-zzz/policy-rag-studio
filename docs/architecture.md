@@ -65,7 +65,13 @@ include `none`, heuristic, OpenAI-compatible LLM listwise reranking and local BG
 Retrieval records provider name, rank deltas and latency. Provider failures degrade to the
 deterministic heuristic and are marked in the Trace.
 
+## Evaluation Dataset Boundary
+
+`data/eval/policy-synthetic-v1.jsonl` contains 152 frozen synthetic cases with a 114/38
+development-test split. Test cases are not used for parameter tuning. The benchmark runner records
+the dataset, split, provider and fallback count in every report.
+
 ## Next Adapter Boundary
 
-M2 still needs a larger frozen evaluation set and a valid zero-fallback model reranker run. Only
-then should the experiment result be promoted to README or resume metrics.
+M2 still needs a valid zero-fallback model reranker run with token and cost accounting. The current
+valid test-set comparison only establishes a small heuristic-reranker MRR gain.

@@ -1,5 +1,6 @@
 import asyncio
 import math
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -12,7 +13,7 @@ from app.schemas import (
 )
 from app.services.reranker import RerankerProvider, get_reranker_provider
 from app.services.retrieval import STRATEGY_LABELS, prepare_dense_scores, run_retrieval
-from app.services.seed import EVALUATION_CASES
+from app.services.seed import EVALUATION_CASES, EvaluationCase
 from app.store import Store
 
 
@@ -27,8 +28,12 @@ def _p95(values: list[float]) -> float:
 async def evaluate_store(
     store: Store,
     *,
+    cases: Sequence[EvaluationCase] | None = None,
+    dataset_name: str = "smoke",
+    split: str = "smoke",
     reranker_provider: RerankerProvider | None = None,
 ) -> EvaluationSummary:
+    active_cases = tuple(cases or EVALUATION_CASES)
     active_reranker = reranker_provider or get_reranker_provider()
     strategies = [
         RetrievalStrategy.DENSE,
@@ -48,7 +53,7 @@ async def evaluate_store(
     }
 
     chunks = await store.all_chunks(ChunkStrategy.HEADING)
-    for case in EVALUATION_CASES:
+    for case in active_cases:
         embedding_provider, dense_scores, dense_latency_ms = await prepare_dense_scores(
             store,
             chunks,
@@ -83,7 +88,7 @@ async def evaluate_store(
                 strategy_totals[strategy]["mrr"] += 1.0 / rank
                 strategy_totals[strategy]["ndcg"] += 1.0 / math.log2(rank + 1)
 
-    count = max(1, len(EVALUATION_CASES))
+    count = max(1, len(active_cases))
     for strategy in strategies:
         totals = strategy_totals[strategy]
         rows.append(
@@ -110,9 +115,10 @@ async def evaluate_store(
     ]
     return EvaluationSummary(
         id=f"eval_{uuid4().hex[:12]}",
-        dataset_name="政策检索演示评测集",
+        dataset_name=dataset_name,
+        split=split,
         reranker_provider=active_reranker.name,
-        case_count=len(EVALUATION_CASES),
+        case_count=len(active_cases),
         rows=rows,
         failures=failures,
         generated_at=datetime.now(UTC),

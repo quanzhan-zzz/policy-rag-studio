@@ -45,7 +45,9 @@ export function EvaluationPage() {
           <div className="date-block">
             <span>DATASET</span>
             <strong>{data.case_count} cases</strong>
-            <small>{data.dataset_name}</small>
+            <small>
+              {data.dataset_name} / {data.split ?? 'all'}
+            </small>
             <small>reranker: {data.reranker_provider ?? 'not recorded'}</small>
           </div>
         }

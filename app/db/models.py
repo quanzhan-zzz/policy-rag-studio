@@ -116,6 +116,7 @@ class EvaluationRunRow(Base):
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     dataset_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    split: Mapped[str | None] = mapped_column(String(32), nullable=True)
     reranker_provider: Mapped[str | None] = mapped_column(String(255), nullable=True)
     case_count: Mapped[int] = mapped_column(Integer, nullable=False)
     rows: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)

@@ -11,6 +11,7 @@ COPY pyproject.toml uv.lock README.md alembic.ini ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
 COPY migrations ./migrations
+COPY data ./data
 COPY app ./app
 
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app

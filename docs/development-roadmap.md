@@ -141,13 +141,13 @@ M1 与 M2 有部分工作可并行，但 M1 先完成，避免评测建立在不
 - [x] 增加可复现 Reranker 实验脚本
 - [x] 四种检索策略在同一数据集上完成对比
 - [x] 生成 Recall@5、MRR、nDCG@5 和 P95 的实验报告
-- [x] 启发式 Reranker 对比纯 RRF 的真实小样本结论
-- [ ] 将评测集扩充到至少 150 条并区分开发集 / 测试集
+- [x] 评测集扩充到 152 条并区分开发集 114 / 测试集 38
+- [x] 启发式 Reranker 对比纯 RRF 的合成测试集结论
 - [ ] 获得零降级的真实 LLM 或 BGE Reranker 实验
 - [ ] 记录 Token 与成本
-- [ ] 至少分析 5 个失败案例
+- [x] 至少分析 5 个 Top-5 漏召回或非 Rank-1 案例
 
-当前有效报告：`docs/experiments/20261122-reranker-smoke.md`。LLM 限流实验保留在 `docs/experiments/20261122-reranker-llm-rate-limited.md`，明确标记无效。
+当前有效报告：`docs/experiments/20261122-reranker-synthetic-test.md`。测试集上启发式 Reranker 的 MRR 为 `0.6447`，纯 RRF 为 `0.6390`，提升仅 `0.0057`。LLM 限流实验保留在 `docs/experiments/20261122-reranker-llm-rate-limited.md`，明确标记无效。
 
 ## 7. M3：回答可靠性
 
@@ -215,15 +215,15 @@ M1 已完成，下一步进入 M2。以下内容不进入 M2 主分支：
 
 ## 10. 下一次开发入口
 
-继续 M2 的评测数据工作：
+继续 M2 的模型重排与成本实验：
 
 ```text
-冻结当前 10 条案例为 smoke set
-→ 从三份政策中扩展 150 条问题并标注证据
-→ 按问题类型划分开发集 / 测试集
-→ 先跑 none / heuristic 基线
-→ 在低限流条件下运行 LLM 或 BGE Reranker
-→ 对零降级结果生成最终报告
+固定 policy-synthetic-v1 测试集
+→ 在开发集上选择单一 Reranker 配置
+→ 对测试集运行零降级的 LLM 或 BGE Reranker
+→ 记录 Token、成本、P50 / P95
+→ 分析至少 5 个 Top-5 漏召回或排名下降案例
+→ 生成最终实验报告
 ```
 
-只有零降级、完整记录配置和原始结果的实验，才能进入 README 或简历指标。
+测试集不参与参数调整。模型限流导致降级的运行继续标记为无效。

@@ -23,6 +23,7 @@ from app.schemas import (
 from app.services.answer import answer_query
 from app.services.embedding import get_embedding_provider
 from app.services.evaluation import evaluate_store
+from app.services.evaluation_dataset import get_evaluation_dataset
 from app.services.llm import LLMProviderError, get_llm_provider
 from app.services.parsing import UnsupportedDocumentError, validate_document_type
 from app.services.retrieval import prepare_dense_scores, run_retrieval
@@ -225,5 +226,22 @@ async def get_trace(trace_id: str, store: StoreDep) -> TraceRecord:
 
 
 @router.get("/evaluations/summary", response_model=EvaluationSummary)
-async def evaluation_summary(store: StoreDep) -> EvaluationSummary:
-    return await store.record_evaluation(await evaluate_store(store))
+async def evaluation_summary(
+    store: StoreDep,
+    dataset: Annotated[
+        str,
+        Query(pattern="^(smoke|policy-synthetic-v1)$"),
+    ] = "policy-synthetic-v1",
+    split: Annotated[str, Query(pattern="^(dev|test|all)$")] = "test",
+) -> EvaluationSummary:
+    try:
+        evaluation_set = get_evaluation_dataset(dataset, split)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    evaluation = await evaluate_store(
+        store,
+        cases=evaluation_set.cases,
+        dataset_name=evaluation_set.name,
+        split=evaluation_set.split,
+    )
+    return await store.record_evaluation(evaluation)

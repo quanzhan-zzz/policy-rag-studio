@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.db.postgres import PostgresStore
 from app.schemas import ChunkStrategy, RetrievalStrategy
 from app.services.embedding import EmbeddingProvider
+from app.services.evaluation_dataset import get_evaluation_dataset
 from app.services.llm import get_llm_provider
 from app.services.reranker import (
     HeuristicReranker,
@@ -18,7 +19,7 @@ from app.services.reranker import (
     RerankerProvider,
 )
 from app.services.retrieval import prepare_dense_scores, run_retrieval
-from app.services.seed import EVALUATION_CASES, EvaluationCase
+from app.services.seed import EvaluationCase
 from app.store import Store
 
 
@@ -38,6 +39,7 @@ class ProviderMetrics:
     ndcg_at_5: float
     p95_ms: float
     failures: list[str]
+    ranks: dict[str, int | None]
     fallback_count: int
 
 
@@ -58,10 +60,13 @@ def _provider(name: str) -> RerankerProvider:
     raise ValueError(f"未知 Reranker Provider：{name}")
 
 
-async def prepare_cases(store: Store) -> list[PreparedCase]:
+async def prepare_cases(
+    store: Store,
+    cases: Sequence[EvaluationCase],
+) -> list[PreparedCase]:
     chunks = await store.all_chunks(ChunkStrategy.HEADING)
     prepared: list[PreparedCase] = []
-    for case in EVALUATION_CASES:
+    for case in cases:
         embedding_provider, dense_scores, dense_latency = await prepare_dense_scores(
             store,
             chunks,
@@ -91,6 +96,7 @@ async def evaluate_provider(
     mrr = 0.0
     ndcg = 0.0
     fallback_count = 0
+    ranks: dict[str, int | None] = {}
 
     for prepared in prepared_cases:
         case = prepared.case
@@ -122,6 +128,7 @@ async def evaluate_provider(
             ),
             None,
         )
+        ranks[case.id] = rank
         if rank is None:
             failures.append(case.id)
             continue
@@ -129,7 +136,7 @@ async def evaluate_provider(
         mrr += 1.0 / rank
         ndcg += 1.0 / math.log2(rank + 1)
 
-    count = max(1, len(EVALUATION_CASES))
+    count = max(1, len(prepared_cases))
     return ProviderMetrics(
         name=provider.name,
         recall_at_5=recall / count,
@@ -137,18 +144,28 @@ async def evaluate_provider(
         ndcg_at_5=ndcg / count,
         p95_ms=_p95(latencies),
         failures=failures,
+        ranks=ranks,
         fallback_count=fallback_count,
     )
 
 
-def render_report(metrics: Sequence[ProviderMetrics], generated_at: datetime) -> str:
+def render_report(
+    metrics: Sequence[ProviderMetrics],
+    generated_at: datetime,
+    *,
+    dataset_name: str,
+    split: str,
+    case_count: int,
+    cases: Sequence[EvaluationCase],
+) -> str:
     baseline = metrics[0]
     lines = [
         "# Reranker Comparison",
         "",
         f"- Generated: {generated_at.isoformat()}",
-        f"- Dataset cases: {len(EVALUATION_CASES)}",
-        "- Dataset source: `app/services/seed.py::EVALUATION_CASES`",
+        f"- Dataset: {dataset_name} / {split}",
+        f"- Dataset cases: {case_count}",
+        "- Dataset source: `data/eval/policy-synthetic-v1.jsonl`",
         "- Strategy: Hybrid RRF + Top-30 candidate reranking + Top-5 evaluation",
         "",
         "## Results",
@@ -175,12 +192,32 @@ def render_report(metrics: Sequence[ProviderMetrics], generated_at: datetime) ->
     for item in metrics:
         failed = ", ".join(item.failures) if item.failures else "none"
         lines.append(f"- **{item.name}**: {failed}")
+    case_map = {case.id: case for case in cases}
+    lines.extend(["", "## Ranking Weak Spots", ""])
+    for item in metrics:
+        weak = sorted(
+            (
+                (case_id, rank)
+                for case_id, rank in item.ranks.items()
+                if rank is None or rank > 1
+            ),
+            key=lambda entry: 999 if entry[1] is None else entry[1],
+            reverse=True,
+        )[:5]
+        lines.append(f"### {item.name}")
+        lines.append("")
+        if not weak:
+            lines.append("- none")
+        for case_id, rank in weak:
+            label = "miss" if rank is None else f"rank {rank}"
+            lines.append(f"- `{case_id}` {label} — {case_map[case_id].query}")
+        lines.append("")
     lines.extend(
         [
             "",
             "## Limitations",
             "",
-            "- This is the internal 10-case demonstration set, not the final 150-case benchmark.",
+            "- This is a synthetic policy retrieval set, not observed production traffic.",
             "- Token usage and monetary cost are not yet recorded by the shared LLM provider.",
             "- A non-zero fallback count means reranker errors affected the measured result.",
             "",
@@ -189,14 +226,21 @@ def render_report(metrics: Sequence[ProviderMetrics], generated_at: datetime) ->
     return "\n".join(lines)
 
 
-async def run_benchmark(provider_names: Sequence[str], output: Path | None) -> int:
+async def run_benchmark(
+    provider_names: Sequence[str],
+    output: Path | None,
+    *,
+    dataset_name: str,
+    split: str,
+) -> int:
     settings = get_settings()
+    evaluation_set = get_evaluation_dataset(dataset_name, split)
     if settings.store_backend != "postgres":
         raise SystemExit("Reranker benchmark requires STORE_BACKEND=postgres")
     store = await PostgresStore.create(settings.database_url, seed_demo_data=False)
     try:
         provider_list = [_provider(name) for name in provider_names]
-        prepared_cases = await prepare_cases(store)
+        prepared_cases = await prepare_cases(store, evaluation_set.cases)
         metrics = [
             await evaluate_provider(store, provider, prepared_cases)
             for provider in provider_list
@@ -205,7 +249,14 @@ async def run_benchmark(provider_names: Sequence[str], output: Path | None) -> i
         await store.close()
 
     generated_at = datetime.now(UTC)
-    report = render_report(metrics, generated_at)
+    report = render_report(
+        metrics,
+        generated_at,
+        dataset_name=evaluation_set.name,
+        split=evaluation_set.split,
+        case_count=len(evaluation_set.cases),
+        cases=evaluation_set.cases,
+    )
     if output is None:
         stamp = generated_at.strftime("%Y%m%d-%H%M%S")
         output = Path("docs/experiments") / f"{stamp}-reranker-comparison.md"
@@ -223,9 +274,20 @@ def main() -> None:
         help="Comma-separated provider order; first item is the baseline",
     )
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--dataset", default="policy-synthetic-v1")
+    parser.add_argument("--split", default="test", choices=["dev", "test", "all"])
     args = parser.parse_args()
     providers = [name.strip() for name in args.providers.split(",") if name.strip()]
-    raise SystemExit(asyncio.run(run_benchmark(providers, args.output)))
+    raise SystemExit(
+        asyncio.run(
+            run_benchmark(
+                providers,
+                args.output,
+                dataset_name=args.dataset,
+                split=args.split,
+            )
+        )
+    )
 
 
 if __name__ == "__main__":
