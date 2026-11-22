@@ -90,7 +90,7 @@ export function AppShell() {
               <span className="live-dot" />
               <span>{health.data?.status === 'ok' ? 'API ONLINE' : 'API OFFLINE'}</span>
             </div>
-            <span className="version-chip">v0.1 / scaffold</span>
+            <span className="version-chip">v0.2.0 / release</span>
           </div>
         </header>
         <main className="page-stage">

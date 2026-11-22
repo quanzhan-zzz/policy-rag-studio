@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 1,
   reporter: 'list',
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: process.env.E2E_BASE_URL ?? 'http://127.0.0.1:5173',
     trace: 'on-first-retry',
   },
   projects: [

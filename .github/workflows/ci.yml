@@ -13,14 +13,10 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - name: Install Python
-        run: uv python install 3.12
-      - name: Sync dependencies
-        run: uv sync --frozen
-      - name: Lint
-        run: uv run ruff check app tests
-      - name: Test
-        run: uv run pytest
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - run: uv run ruff check app tests migrations
+      - run: uv run pytest
 
   frontend:
     runs-on: ubuntu-latest
@@ -37,11 +33,83 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Lint
-        run: pnpm lint
-      - name: Test
-        run: pnpm test
-      - name: Build
-        run: pnpm build
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+  postgres-contract:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: policyrag
+          POSTGRES_USER: policyrag
+          POSTGRES_PASSWORD: policyrag
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U policyrag -d policyrag"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://policyrag:policyrag@127.0.0.1:5432/policyrag
+      DATABASE_URL: postgresql+asyncpg://policyrag:policyrag@127.0.0.1:5432/policyrag
+      EMBEDDING_PROVIDER: hash
+      EMBEDDING_DIMENSIONS: "1024"
+      HASH_EMBEDDING_DIMENSIONS: "1024"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - name: Migrate empty database
+        run: uv run alembic upgrade head
+      - name: Repository contract
+        run: uv run pytest tests/test_store_contract.py -q
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Start application
+        working-directory: .
+        run: |
+          cp .env.example .env
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8000/api/v1/health; then exit 0; fi
+            sleep 2
+          done
+          docker compose logs
+          exit 1
+      - name: Playwright
+        env:
+          E2E_BASE_URL: http://127.0.0.1:8080
+        run: pnpm test:e2e
+      - name: Dump logs on failure
+        if: failure()
+        working-directory: .
+        run: docker compose logs --tail=300
+      - name: Stop application
+        if: always()
+        working-directory: .
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v

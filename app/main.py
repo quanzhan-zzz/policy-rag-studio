@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.config import get_settings
 from app.db.postgres import PostgresStore
+from app.observability import RequestContextMiddleware
 from app.services.task_publisher import CeleryTaskPublisher, NoopTaskPublisher
 from app.store import InMemoryStore
 
@@ -34,7 +35,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(
     title=settings.app_name,
-    version="0.1.0",
+    version=settings.app_version,
     description=(
         "PolicyRAG Studio API with selectable in-memory and PostgreSQL repository adapters."
     ),
@@ -48,6 +49,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RequestContextMiddleware)
 app.include_router(router)
 
 
@@ -57,4 +59,5 @@ def root() -> dict[str, str]:
         "name": "PolicyRAG Studio",
         "docs": "/docs",
         "health": "/api/v1/health",
+        "version": settings.app_version,
     }

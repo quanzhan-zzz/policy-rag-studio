@@ -13,10 +13,12 @@ def client() -> Iterator[TestClient]:
 
 
 def test_health(client: TestClient) -> None:
-    response = client.get("/api/v1/health")
+    response = client.get("/api/v1/health", headers={"x-request-id": "req_test"})
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
     assert response.json()["mode"] == "memory"
+    assert response.json()["version"] == "0.2.0"
+    assert response.headers["x-request-id"] == "req_test"
 
 
 def test_compare_api(client: TestClient) -> None:

@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 
+from app.config import get_settings
 from app.dependencies import get_store, get_task_publisher
 from app.schemas import (
     AnswerRequest,
@@ -59,6 +60,7 @@ async def health(store: StoreDep) -> dict[str, str]:
         "status": "ok" if online else "degraded",
         "service": "policy-rag-studio",
         "mode": store.backend,
+        "version": get_settings().app_version,
     }
 
 

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_name: str = "PolicyRAG Studio API"
+    app_version: str = "0.2.0"
     app_env: str = "development"
     api_cors_origins: str = "http://localhost:5173,http://localhost:4173"
     database_url: str = "postgresql+asyncpg://policyrag:policyrag@localhost:5432/policyrag"

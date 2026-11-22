@@ -25,7 +25,7 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 
 ## 当前状态
 
-这是一个 **可运行的 v0.1 骨架**：
+这是一个 **可运行的 v0.2.0 版本**：
 
 - FastAPI 后端提供文档、Chunk、检索、Trace 和评测 API
 - React + TypeScript 研究工作台包含 6 个核心页面
@@ -37,7 +37,7 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - Redis + Celery Worker 异步执行解析、切片、Embedding 与索引，支持进度、失败重试、取消和 stale-task 恢复
 - Docker Compose 已配置 PostgreSQL/pgvector、Redis、API、Worker、Beat 和 Web
 
-> 注意：默认 `EMBEDDING_PROVIDER=hash` 使用确定性演示向量；可切换为本地 BGE-M3 或 OpenAI 兼容 Embeddings API。Reranker 目前仍是启发式实现。Dense 检索使用 pgvector 余弦距离，Schema 由 Alembic 管理。
+> 注意：默认 `EMBEDDING_PROVIDER=hash` 使用确定性演示向量；可切换为本地 BGE-M3 或 OpenAI 兼容 Embeddings API。Reranker 支持 none、启发式、LLM 和本地 BGE。Dense 检索使用 pgvector 余弦距离，Schema 由 Alembic 管理。
 
 ## 核心页面
 
@@ -326,6 +326,12 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 - [ ] M4：CI、E2E、监控与发布
 
 `PROJECT_PLAN.md` 保留为项目设计方案；实际执行顺序、验收标准和当前状态以开发路线图为准。
+
+## 演示与发布
+
+- 3 分钟演示脚本：[docs/demo-script.md](docs/demo-script.md)
+- v0.2.0 发布说明：[docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)
+- CI 覆盖后端、前端、PostgreSQL 契约和 5 条 Playwright 用户路径
 
 ## License
 

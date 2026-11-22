@@ -82,3 +82,51 @@ answer API. Citation identifiers are validated before `done`; unknown IDs are re
 M2 has a valid zero-fallback local BGE run on the frozen 38-case test split. M3 now records actual
 stream usage, appends a generation stage to Trace, applies grounding guards and stops the producer
 when the SSE consumer disconnects. The next boundary is reproducible delivery and CI automation.
+
+
+## Runtime Diagram
+
+```mermaid
+flowchart LR
+    UI[React Workbench] --> API[FastAPI]
+    API --> PG[(PostgreSQL + pgvector)]
+    API --> Redis[(Redis)]
+    Redis --> Worker[Celery Worker]
+    Beat[Celery Beat] --> Redis
+    Worker --> PG
+    API --> LLM[LLM / Reranker Providers]
+    Worker --> Embed[Embedding Provider]
+```
+
+## Data Model
+
+```mermaid
+erDiagram
+    DOCUMENTS ||--o{ CHUNKS : owns
+    DOCUMENTS ||--o{ INDEXING_TASKS : queues
+    CHUNKS ||--|| CHUNK_EMBEDDINGS : embeds
+    DOCUMENTS ||--o{ TRACES : traces
+    EVALUATION_RUNS }o--|| DOCUMENTS : evaluates
+```
+
+## Retrieval and Grounding Flow
+
+```mermaid
+flowchart LR
+    Q[Query] --> D[Dense / pgvector]
+    Q --> B[BM25]
+    D --> RRF[RRF Fusion]
+    B --> RRF
+    RRF --> R[Reranker]
+    R --> CTX[Numbered Context Pack]
+    CTX --> GEN[Streaming LLM]
+    GEN --> V[Citation Validation]
+    V --> ANS[Answer + Grounding Status]
+    V --> TRACE[Generation Trace]
+```
+
+## Delivery Automation
+
+GitHub Actions runs four gates: backend checks, frontend checks, PostgreSQL contract tests and
+Playwright E2E. The E2E compose override uses a deterministic mock LLM so CI does not depend on
+external model quota.
