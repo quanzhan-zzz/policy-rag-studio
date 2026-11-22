@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 
-from app.dependencies import get_store
+from app.dependencies import get_store, get_task_publisher
 from app.schemas import (
     AnswerRequest,
     AnswerResponse,
@@ -12,21 +12,40 @@ from app.schemas import (
     ChunkUpdate,
     DocumentSummary,
     EvaluationSummary,
+    IndexTask,
+    IndexTaskStatus,
     OverviewResponse,
     RetrievalRequest,
     RetrievalResponse,
     TraceRecord,
+    UploadDocumentResponse,
 )
 from app.services.answer import answer_query
 from app.services.embedding import get_embedding_provider
 from app.services.evaluation import evaluate_store
 from app.services.llm import LLMProviderError, get_llm_provider
-from app.services.parsing import UnsupportedDocumentError
+from app.services.parsing import UnsupportedDocumentError, validate_document_type
 from app.services.retrieval import prepare_dense_scores, run_retrieval
+from app.services.task_publisher import TaskPublisher
 from app.store import Store
 
 router = APIRouter(prefix="/api/v1")
 StoreDep = Annotated[Store, Depends(get_store)]
+PublisherDep = Annotated[TaskPublisher, Depends(get_task_publisher)]
+
+
+async def _publish_or_fail(store: Store, publisher: TaskPublisher, task_id: str) -> None:
+    try:
+        await asyncio.to_thread(publisher.enqueue_index, task_id)
+    except Exception as error:
+        await store.transition_index_task(
+            task_id,
+            IndexTaskStatus.FAILED,
+            0,
+            error_code="queue_unavailable",
+            error_message="索引队列暂时不可用",
+        )
+        raise HTTPException(status_code=503, detail="索引队列暂时不可用") from error
 
 
 @router.get("/health")
@@ -70,29 +89,68 @@ async def get_document(document_id: str, store: StoreDep) -> DocumentSummary:
     return document
 
 
-@router.post("/documents", response_model=DocumentSummary, status_code=201)
+@router.post("/documents", response_model=UploadDocumentResponse, status_code=202)
 async def upload_document(
     file: Annotated[UploadFile, File()],
     store: StoreDep,
+    publisher: PublisherDep,
     title: Annotated[str | None, Query()] = None,
-) -> DocumentSummary:
+) -> UploadDocumentResponse:
+    file_name = file.filename or "upload.txt"
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="上传文件为空")
     try:
-        return await store.add_upload(file.filename or "upload.txt", content, title=title)
+        validate_document_type(file_name)
+        document, task = await store.create_upload_task(file_name, content, title=title)
     except UnsupportedDocumentError as error:
         raise HTTPException(status_code=415, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    await _publish_or_fail(store, publisher, task.id)
+    return UploadDocumentResponse(document=document, task=task)
 
 
-@router.post("/documents/{document_id}/reindex", response_model=DocumentSummary)
-async def reindex_document(document_id: str, store: StoreDep) -> DocumentSummary:
-    document = await store.reindex_document(document_id)
-    if document is None:
+@router.post("/documents/{document_id}/reindex", response_model=IndexTask)
+async def reindex_document(
+    document_id: str,
+    store: StoreDep,
+    publisher: PublisherDep,
+) -> IndexTask:
+    task = await store.create_reindex_task(document_id)
+    if task is None:
         raise HTTPException(status_code=404, detail="文档不存在")
-    return document
+    await _publish_or_fail(store, publisher, task.id)
+    return task
+
+
+@router.get("/indexing/tasks/{task_id}", response_model=IndexTask)
+async def get_index_task(task_id: str, store: StoreDep) -> IndexTask:
+    task = await store.get_index_task(task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="索引任务不存在")
+    return task
+
+
+@router.post("/indexing/tasks/{task_id}/cancel", response_model=IndexTask)
+async def cancel_index_task(task_id: str, store: StoreDep) -> IndexTask:
+    task = await store.request_cancel_index_task(task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="索引任务不存在")
+    return task
+
+
+@router.post("/indexing/tasks/{task_id}/retry", response_model=IndexTask)
+async def retry_index_task(
+    task_id: str,
+    store: StoreDep,
+    publisher: PublisherDep,
+) -> IndexTask:
+    task = await store.retry_index_task(task_id)
+    if task is None:
+        raise HTTPException(status_code=409, detail="只有失败或已取消的任务可以重试")
+    await _publish_or_fail(store, publisher, task.id)
+    return task
 
 
 @router.get("/documents/{document_id}/chunks", response_model=list[ChunkRecord])

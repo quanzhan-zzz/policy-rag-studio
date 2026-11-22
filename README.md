@@ -34,7 +34,8 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - 检索工作台可生成带编号引用的回答，并可直接查看对应 Trace
 - 评测指标由后端在固定演示集上实时计算
 - PostgreSQL 持久化文档、Chunk、Trace 和 Chunk 向量；内存适配器用于测试与离线演示
-- Docker Compose 已配置 PostgreSQL/pgvector、Redis、API 和 Web
+- Redis + Celery Worker 异步执行解析、切片、Embedding 与索引，支持进度、失败重试、取消和 stale-task 恢复
+- Docker Compose 已配置 PostgreSQL/pgvector、Redis、API、Worker、Beat 和 Web
 
 > 注意：默认 `EMBEDDING_PROVIDER=hash` 使用确定性演示向量；可切换为本地 BGE-M3 或 OpenAI 兼容 Embeddings API。Reranker 目前仍是启发式实现。Dense 检索使用 pgvector 余弦距离，Schema 由 Alembic 管理。
 
@@ -79,7 +80,10 @@ flowchart LR
     API --> REPO[Repository Interface]
     REPO --> PG[(PostgreSQL + pgvector)]
     REPO --> MEM[In-memory Adapter]
-    API --> R[(Redis)]
+    API --> R[(Redis Queue)]
+    R --> WORKER[Celery Worker]
+    BEAT[Celery Beat] --> R
+    WORKER --> REPO
     API --> TRACE[Trace & Evaluation]
     REPO --> CHUNK[Chunking Service]
     REPO --> DENSE[Embedding Provider]
@@ -89,7 +93,7 @@ flowchart LR
     RRF --> RERANK[Heuristic Reranker]
 ```
 
-默认 `STORE_BACKEND=postgres`。同一套 Repository 契约测试同时覆盖 PostgreSQL 和内存适配器；Dense 查询从 `chunk_embeddings` 读取 pgvector 向量并按余弦距离排序。Embedding 不可用时回退到运行时计算。
+默认 `STORE_BACKEND=postgres`。上传接口只创建文档和 `queued` 任务，Worker 按 `parsing → chunking → embedding → ready` 推进。Beat 每 15 秒扫描 stale processing 任务并重新投递；失败任务带错误码和错误信息，可取消或重试。Dense 查询从 `chunk_embeddings` 读取 pgvector 向量并按余弦距离排序。
 
 ## Embedding Provider 配置
 
@@ -164,7 +168,14 @@ uv run uvicorn app.main:app --reload --port 8000
 
 `EMBEDDING_DIMENSIONS` 必须与当前 Provider 的输出维度一致。初始迁移使用 `vector(1024)`；切换维度时需要新增迁移并重建向量。
 
-另开一个终端：
+另开 Worker 与 Beat 终端：
+
+```bash
+uv run celery -A app.workers.celery_app:celery_app worker --loglevel=INFO --concurrency=1
+uv run celery -A app.workers.celery_app:celery_app beat --loglevel=INFO
+```
+
+前端开发另开一个终端：
 
 ```bash
 cd web
@@ -225,7 +236,7 @@ pnpm test:e2e
 | GET | `/api/v1/health` | 服务状态 |
 | GET | `/api/v1/overview` | 总览和最新评测 |
 | GET | `/api/v1/documents` | 文档列表 |
-| POST | `/api/v1/documents` | 上传文档 |
+| POST | `/api/v1/documents` | 上传文档并创建异步索引任务 |
 | GET | `/api/v1/documents/{id}/chunks` | 查看指定策略的 Chunk |
 | PATCH | `/api/v1/chunks/{id}` | 修改 Chunk |
 | POST | `/api/v1/retrieval/compare` | 并行比较检索策略 |
@@ -263,7 +274,7 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 当前开发按 [Development Roadmap](docs/development-roadmap.md) 推进：
 
 - [x] M0：PostgreSQL + pgvector 持久化
-- [ ] M1：Redis + Celery 异步索引
+- [x] M1：Redis + Celery 异步索引
 - [ ] M2：真实 Reranker 与可信评测
 - [ ] M3：流式回答与引用校验
 - [ ] M4：CI、E2E、监控与发布

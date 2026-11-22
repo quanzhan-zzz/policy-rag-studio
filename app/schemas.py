@@ -4,6 +4,21 @@ from enum import StrEnum
 from pydantic import BaseModel, Field
 
 
+class IndexTaskStatus(StrEnum):
+    QUEUED = "queued"
+    PARSING = "parsing"
+    CHUNKING = "chunking"
+    EMBEDDING = "embedding"
+    READY = "ready"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class IndexTaskKind(StrEnum):
+    INGEST = "ingest"
+    REINDEX = "reindex"
+
+
 class ChunkStrategy(StrEnum):
     FIXED = "fixed"
     HEADING = "heading"
@@ -27,6 +42,30 @@ class DocumentSummary(BaseModel):
     chunk_count: int
     updated_at: datetime
     tags: list[str] = Field(default_factory=list)
+    index_task_id: str | None = None
+    index_progress: int = Field(default=0, ge=0, le=100)
+    index_error: str | None = None
+
+
+class IndexTask(BaseModel):
+    id: str
+    document_id: str
+    kind: IndexTaskKind
+    status: IndexTaskStatus
+    progress: int = Field(ge=0, le=100)
+    attempts: int = Field(ge=0)
+    error_code: str | None = None
+    error_message: str | None = None
+    cancel_requested: bool = False
+    created_at: datetime
+    updated_at: datetime
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+
+
+class UploadDocumentResponse(BaseModel):
+    document: DocumentSummary
+    task: IndexTask
 
 
 class ChunkRecord(BaseModel):

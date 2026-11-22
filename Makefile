@@ -1,10 +1,16 @@
-.PHONY: dev-api dev-web migrate test test-postgres lint build up down
+.PHONY: dev-api dev-web dev-worker dev-beat migrate test test-postgres lint build up down
 
 dev-api:
 	uv run uvicorn app.main:app --reload --port 8000
 
 dev-web:
 	cd web && pnpm dev
+
+dev-worker:
+	uv run celery -A app.workers.celery_app:celery_app worker --loglevel=INFO --concurrency=1
+
+dev-beat:
+	uv run celery -A app.workers.celery_app:celery_app beat --loglevel=INFO
 
 migrate:
 	uv run alembic upgrade head

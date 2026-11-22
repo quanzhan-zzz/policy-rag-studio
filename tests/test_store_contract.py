@@ -11,11 +11,13 @@ from app.schemas import (
     ChunkStrategy,
     EvaluationSummary,
     FailureBucket,
+    IndexTaskStatus,
     MetricRow,
     RetrievalStrategy,
     TraceRecord,
     TraceStage,
 )
+from app.services.chunking import chunk_document
 from app.services.embedding import HashEmbeddingProvider
 from app.store import InMemoryStore, Store
 
@@ -50,7 +52,7 @@ async def _assert_document_lifecycle(store: Store) -> None:
         title=f"仓储契约测试 {suffix}",
     )
 
-    assert document.status == "indexed"
+    assert document.status == "ready"
     assert document.chunk_count > 0
     assert await store.get_document(document.id) == document
 
@@ -142,3 +144,94 @@ async def test_store_evaluation_contract(store: Store) -> None:
     assert latest is not None
     assert latest.id == stored.id
     assert latest.rows[0].strategy is RetrievalStrategy.HYBRID
+
+
+@pytest.mark.asyncio
+async def test_store_index_task_contract(store: Store) -> None:
+    content = (
+        "# 异步索引契约\n\n"
+        "一、适用范围\n用于验证任务状态转换。\n\n"
+        "二、办理流程\n提交材料后等待审核。"
+    ).encode()
+    document, task = await store.create_upload_task(
+        f"async-{uuid4().hex[:8]}.md",
+        content,
+        title="异步索引契约测试",
+    )
+    assert document.status == IndexTaskStatus.QUEUED.value
+    assert document.index_task_id == task.id
+    assert not await store.list_chunks(document.id, ChunkStrategy.HEADING)
+
+    claimed = await store.claim_index_task(task.id)
+    assert claimed is not None
+    assert claimed.status is IndexTaskStatus.PARSING
+    assert claimed.attempts == 1
+    assert await store.claim_index_task(task.id) is None
+
+    transitioned = await store.transition_index_task(
+        task.id,
+        IndexTaskStatus.CHUNKING,
+        35,
+    )
+    assert transitioned is not None
+    assert transitioned.progress == 35
+
+    source = await store.get_document_source(document.id)
+    assert source is not None
+    assert source.source_content == content
+
+    chunks = chunk_document(
+        content.decode(),
+        document.id,
+        document.title,
+        ChunkStrategy.HEADING,
+    )
+    provider = HashEmbeddingProvider(dimensions=get_settings().hash_embedding_dimensions)
+    vectors = provider.embed_documents([chunk.text for chunk in chunks])
+    await store.transition_index_task(task.id, IndexTaskStatus.EMBEDDING, 65)
+    await store.apply_document_index(
+        document.id,
+        content.decode(),
+        chunks,
+        {chunk.id: vector for chunk, vector in zip(chunks, vectors, strict=True)},
+    )
+    ready = await store.transition_index_task(task.id, IndexTaskStatus.READY, 100)
+    assert ready is not None
+    assert ready.status is IndexTaskStatus.READY
+    final_document = await store.get_document(document.id)
+    assert final_document is not None
+    assert final_document.status == IndexTaskStatus.READY.value
+
+    first_reindex = await store.create_reindex_task(document.id)
+    second_reindex = await store.create_reindex_task(document.id)
+    assert first_reindex is not None
+    assert second_reindex is not None
+    assert first_reindex.id == second_reindex.id
+
+    cancelled = await store.request_cancel_index_task(first_reindex.id)
+    assert cancelled is not None
+    assert cancelled.status is IndexTaskStatus.CANCELLED
+    retried = await store.retry_index_task(first_reindex.id)
+    assert retried is not None
+    assert retried.status is IndexTaskStatus.QUEUED
+
+
+@pytest.mark.asyncio
+async def test_stale_processing_task_can_be_reclaimed(store: Store) -> None:
+    document, task = await store.create_upload_task(
+        f"stale-{uuid4().hex[:8]}.md",
+        b"# stale task\n\nfailed worker recovery",
+        title="Stale task",
+    )
+    first = await store.claim_index_task(task.id)
+    second = await store.claim_index_task(task.id)
+    stale = await store.list_stale_index_tasks(stale_after_seconds=0)
+    assert any(item.id == task.id for item in stale)
+    reclaimed = await store.claim_index_task(task.id, stale_after_seconds=0)
+    assert first is not None
+    assert second is None
+    assert reclaimed is not None
+    assert reclaimed.attempts == 2
+    current = await store.get_document(document.id)
+    assert current is not None
+    assert current.index_task_id == task.id

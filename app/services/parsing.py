@@ -9,6 +9,14 @@ class UnsupportedDocumentError(ValueError):
     pass
 
 
+SUPPORTED_SUFFIXES = {".txt", ".md", ".markdown", ".pdf", ".docx"}
+
+
+def validate_document_type(file_name: str) -> None:
+    if Path(file_name).suffix.lower() not in SUPPORTED_SUFFIXES:
+        raise UnsupportedDocumentError("仅支持 PDF、DOCX、TXT 和 Markdown 文件")
+
+
 def parse_document(file_name: str, content: bytes) -> str:
     suffix = Path(file_name).suffix.lower()
     if suffix in {".txt", ".md", ".markdown"}:

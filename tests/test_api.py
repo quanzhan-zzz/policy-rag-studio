@@ -35,6 +35,35 @@ def test_compare_api(client: TestClient) -> None:
     assert payload["runs"][-1]["results"]
 
 
+def test_upload_api_queues_without_inline_indexing(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/documents",
+        files={"file": ("queued-policy.md", b"# queued\n\ncontent", "text/markdown")},
+    )
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["document"]["status"] == "queued"
+    assert payload["document"]["index_task_id"] == payload["task"]["id"]
+    assert payload["task"]["status"] == "queued"
+    assert payload["document"]["chunk_count"] == 0
+
+    task = client.get(f"/api/v1/indexing/tasks/{payload['task']['id']}")
+    assert task.status_code == 200
+    assert task.json()["status"] == "queued"
+
+    cancelled = client.post(f"/api/v1/indexing/tasks/{payload['task']['id']}/cancel")
+    assert cancelled.status_code == 200
+    assert cancelled.json()["status"] == "cancelled"
+
+
+def test_reindex_api_is_idempotent(client: TestClient) -> None:
+    first = client.post("/api/v1/documents/individual-registration/reindex")
+    second = client.post("/api/v1/documents/individual-registration/reindex")
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["id"] == second.json()["id"]
+
+
 def test_document_detail_api(client: TestClient) -> None:
     documents = client.get("/api/v1/documents").json()
     document = documents[0]

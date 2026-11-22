@@ -1,4 +1,12 @@
 export type ChunkStrategy = 'fixed' | 'heading' | 'recursive'
+export type IndexTaskStatus =
+  | 'queued'
+  | 'parsing'
+  | 'chunking'
+  | 'embedding'
+  | 'ready'
+  | 'failed'
+  | 'cancelled'
 export type RetrievalStrategy = 'dense' | 'bm25' | 'hybrid' | 'hybrid_rerank'
 
 export type DocumentSummary = {
@@ -11,6 +19,30 @@ export type DocumentSummary = {
   chunk_count: number
   updated_at: string
   tags: string[]
+  index_task_id: string | null
+  index_progress: number
+  index_error: string | null
+}
+
+export type IndexTask = {
+  id: string
+  document_id: string
+  kind: 'ingest' | 'reindex'
+  status: IndexTaskStatus
+  progress: number
+  attempts: number
+  error_code: string | null
+  error_message: string | null
+  cancel_requested: boolean
+  created_at: string
+  updated_at: string
+  started_at: string | null
+  finished_at: string | null
+}
+
+export type UploadDocumentResponse = {
+  document: DocumentSummary
+  task: IndexTask
 }
 
 export type ChunkRecord = {

@@ -11,6 +11,7 @@
 - `app/services/chunking.py`: fixed, heading and recursive chunkers
 - `app/services/retrieval.py`: dense demo, BM25, RRF and heuristic reranking
 - `app/services/evaluation.py`: Recall@5, MRR, nDCG@5 and P95 calculation
+- `app/workers`: Celery worker and periodic stale-task recovery
 - `web/src/pages`: six-page React workbench
 - `web/src/lib/api.ts`: typed API boundary
 
@@ -50,7 +51,14 @@ Alembic owns the production schema. `PostgresStore` does not create tables at ap
 the Docker entrypoint runs `alembic upgrade head` before Uvicorn. Repository contract tests use a
 dedicated database created by `make test-postgres`.
 
+## Async Indexing Boundary
+
+The HTTP request creates a durable `queued` task and publishes only its ID. The Celery worker owns
+the state machine and re-reads the document bytes from PostgreSQL. Celery Beat scans stale processing
+tasks and republishes them. Task transitions, cancellation and retries are stored in
+`indexing_tasks`; document status is a projection updated in the same database transaction.
+
 ## Next Adapter Boundary
 
-M1 keeps the Store seam intact and adds an indexing-task seam around parsing, chunking and
-embedding. The HTTP request creates a durable task; a Celery worker owns its state transitions.
+M2 introduces a `RerankerProvider` behind the retrieval seam while preserving the current `none`
+fallback and API response contract.

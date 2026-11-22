@@ -5,10 +5,12 @@ import type {
   DocumentSummary,
   EvaluationSummary,
   Health,
+  IndexTask,
   Overview,
   RetrievalResponse,
   RetrievalStrategy,
   TraceRecord,
+  UploadDocumentResponse,
 } from '../types'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
@@ -53,10 +55,15 @@ export const api = {
   uploadDocument: (file: File) => {
     const body = new FormData()
     body.append('file', file)
-    return request<DocumentSummary>('/documents', { method: 'POST', body })
+    return request<UploadDocumentResponse>('/documents', { method: 'POST', body })
   },
   reindexDocument: (documentId: string) =>
-    request<DocumentSummary>(`/documents/${documentId}/reindex`, { method: 'POST' }),
+    request<IndexTask>(`/documents/${documentId}/reindex`, { method: 'POST' }),
+  indexTask: (taskId: string) => request<IndexTask>(`/indexing/tasks/${taskId}`),
+  retryIndexTask: (taskId: string) =>
+    request<IndexTask>(`/indexing/tasks/${taskId}/retry`, { method: 'POST' }),
+  cancelIndexTask: (taskId: string) =>
+    request<IndexTask>(`/indexing/tasks/${taskId}/cancel`, { method: 'POST' }),
   updateChunk: (chunkId: string, text: string) =>
     request<ChunkRecord>(`/chunks/${chunkId}`, {
       method: 'PATCH',

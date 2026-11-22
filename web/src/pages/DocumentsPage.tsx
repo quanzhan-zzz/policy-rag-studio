@@ -1,18 +1,35 @@
-import { FileUp, RefreshCw, ShieldCheck } from 'lucide-react'
+import { FileUp, RefreshCw, RotateCcw, ShieldCheck, X } from 'lucide-react'
 import { useRef } from 'react'
 
 import { PageHeader } from '../components/PageHeader'
 import { ErrorState, LoadingState } from '../components/StateBlock'
 import {
+  useCancelIndexTask,
   useDocuments,
   useReindexDocument,
+  useRetryIndexTask,
   useUploadDocument,
 } from '../lib/queries'
+import type { IndexTaskStatus } from '../types'
+
+const statusLabels: Record<IndexTaskStatus, string> = {
+  queued: '等待索引',
+  parsing: '解析文档',
+  chunking: '生成切片',
+  embedding: '写入向量',
+  ready: '索引完成',
+  failed: '索引失败',
+  cancelled: '已取消',
+}
+
+const activeStatuses = new Set(['queued', 'parsing', 'chunking', 'embedding'])
 
 export function DocumentsPage() {
   const documents = useDocuments()
   const upload = useUploadDocument()
   const reindex = useReindexDocument()
+  const retry = useRetryIndexTask()
+  const cancel = useCancelIndexTask()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleUpload = (file: File | undefined) => {
@@ -27,7 +44,7 @@ export function DocumentsPage() {
       <PageHeader
         marker="FIELD NOTE / 02"
         title="文档目录与索引状态"
-        description="管理公开政策文件、解析状态和三种切片策略。MVP 使用本地内存与演示数据，接口结构按持久化存储设计。"
+        description="上传任务先进入队列，再由 Celery Worker 完成解析、切片、Embedding 和入库。列表会自动轮询真实进度。"
         aside={
           <button
             className="button button-primary"
@@ -36,7 +53,7 @@ export function DocumentsPage() {
             type="button"
           >
             <FileUp size={16} />
-            {upload.isPending ? '上传解析中' : '上传政策文件'}
+            {upload.isPending ? '正在入队' : '上传政策文件'}
           </button>
         }
       />
@@ -50,6 +67,8 @@ export function DocumentsPage() {
 
       {upload.isError ? <ErrorState message={upload.error.message} /> : null}
       {reindex.isError ? <ErrorState message={reindex.error.message} /> : null}
+      {retry.isError ? <ErrorState message={retry.error.message} /> : null}
+      {cancel.isError ? <ErrorState message={cancel.error.message} /> : null}
 
       <section className="registry-grid">
         <article className="panel registry-panel">
@@ -91,25 +110,70 @@ export function DocumentsPage() {
                     <td className="mono-cell">{document.effective_date}</td>
                     <td className="mono-cell">{document.chunk_count}</td>
                     <td>
-                      <span className="status-pill is-indexed">
-                        <span />
-                        {document.status}
-                      </span>
+                      <div className="document-status-cell">
+                        <span className={`status-pill is-${document.status}`}>
+                          <span />
+                          {statusLabels[document.status as IndexTaskStatus] ?? document.status}
+                        </span>
+                        {activeStatuses.has(document.status) ? (
+                          <div className="document-progress">
+                            <span style={{ width: `${document.index_progress}%` }} />
+                          </div>
+                        ) : null}
+                        {document.index_error ? (
+                          <p className="document-index-error">{document.index_error}</p>
+                        ) : null}
+                      </div>
                     </td>
                     <td>
-                      <button
-                        aria-label={`重建 ${document.title} 索引`}
-                        className="icon-button"
-                        disabled={reindex.isPending}
-                        onClick={() => reindex.mutate(document.id)}
-                        title="重建索引"
-                        type="button"
-                      >
-                        <RefreshCw
-                          className={reindex.isPending ? 'spin' : ''}
-                          size={15}
-                        />
-                      </button>
+                      {activeStatuses.has(document.status) && document.index_task_id ? (
+                        <button
+                          aria-label={`取消 ${document.title} 索引`}
+                          className="icon-button"
+                          disabled={cancel.isPending}
+                          onClick={() => cancel.mutate(document.index_task_id!)}
+                          title="取消索引"
+                          type="button"
+                        >
+                          <X size={15} />
+                        </button>
+                      ) : document.status === 'failed' && document.index_task_id ? (
+                        <button
+                          aria-label={`重试 ${document.title} 索引`}
+                          className="icon-button"
+                          disabled={retry.isPending}
+                          onClick={() => retry.mutate(document.index_task_id!)}
+                          title="重试索引"
+                          type="button"
+                        >
+                          <RotateCcw
+                            className={
+                              retry.isPending && retry.variables === document.index_task_id
+                                ? 'spin'
+                                : ''
+                            }
+                            size={15}
+                          />
+                        </button>
+                      ) : (
+                        <button
+                          aria-label={`重建 ${document.title} 索引`}
+                          className="icon-button"
+                          disabled={reindex.isPending || activeStatuses.has(document.status)}
+                          onClick={() => reindex.mutate(document.id)}
+                          title="重建索引"
+                          type="button"
+                        >
+                          <RefreshCw
+                            className={
+                              reindex.isPending && reindex.variables === document.id
+                                ? 'spin'
+                                : ''
+                            }
+                            size={15}
+                          />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

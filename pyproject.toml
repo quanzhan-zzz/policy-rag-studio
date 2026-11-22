@@ -5,7 +5,7 @@ description = "A reproducible policy retrieval workbench for chunking, hybrid se
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-  "celery>=5.4.0",
+  "celery[redis]>=5.4.0",
   "fastapi>=0.115.0",
   "httpx>=0.28.1",
   "pydantic-settings>=2.7.0",

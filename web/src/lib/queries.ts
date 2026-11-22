@@ -16,7 +16,31 @@ export function useOverview() {
 }
 
 export function useDocuments() {
-  return useQuery({ queryKey: ['documents'], queryFn: api.documents })
+  return useQuery({
+    queryKey: ['documents'],
+    queryFn: api.documents,
+    refetchInterval: (query) => {
+      const documents = query.state.data
+      const active = documents?.some((document) =>
+        ['queued', 'parsing', 'chunking', 'embedding'].includes(document.status),
+      )
+      return active ? 1_500 : false
+    },
+  })
+}
+
+export function useIndexTask(taskId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['index-task', taskId],
+    queryFn: () => api.indexTask(taskId!),
+    enabled: Boolean(taskId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status
+      return status && ['queued', 'parsing', 'chunking', 'embedding'].includes(status)
+        ? 1_500
+        : false
+    },
+  })
 }
 
 export function useChunks(documentId: string | undefined, strategy: ChunkStrategy) {
@@ -54,9 +78,31 @@ export function useReindexDocument() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: api.reindexDocument,
-    onSuccess: (document) => {
+    onSuccess: (task) => {
       void queryClient.invalidateQueries({ queryKey: ['documents'] })
-      void queryClient.invalidateQueries({ queryKey: ['chunks', document.id] })
+      void queryClient.invalidateQueries({ queryKey: ['index-task', task.id] })
+    },
+  })
+}
+
+export function useRetryIndexTask() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: api.retryIndexTask,
+    onSuccess: (task) => {
+      void queryClient.invalidateQueries({ queryKey: ['documents'] })
+      void queryClient.invalidateQueries({ queryKey: ['index-task', task.id] })
+    },
+  })
+}
+
+export function useCancelIndexTask() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: api.cancelIndexTask,
+    onSuccess: (task) => {
+      void queryClient.invalidateQueries({ queryKey: ['documents'] })
+      void queryClient.invalidateQueries({ queryKey: ['index-task', task.id] })
     },
   })
 }

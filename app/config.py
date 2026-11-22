@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     store_backend: Literal["memory", "postgres"] = "postgres"
     seed_demo_data: bool = True
     redis_url: str = "redis://localhost:6379/0"
+    index_task_stale_seconds: int = 300
     embedding_provider: Literal["hash", "openai", "bge"] = "hash"
     hash_embedding_dimensions: int = 1024
     embedding_dimensions: int = 1024

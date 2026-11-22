@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.config import get_settings
 from app.db.postgres import PostgresStore
+from app.services.task_publisher import CeleryTaskPublisher, NoopTaskPublisher
 from app.store import InMemoryStore
 
 settings = get_settings()
@@ -16,12 +17,15 @@ settings = get_settings()
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if settings.store_backend == "memory":
         repo = InMemoryStore()
+        publisher = NoopTaskPublisher()
     else:
         repo = await PostgresStore.create(
             settings.database_url,
             seed_demo_data=settings.seed_demo_data,
         )
+        publisher = CeleryTaskPublisher()
     app.state.store = repo
+    app.state.task_publisher = publisher
     try:
         yield
     finally:

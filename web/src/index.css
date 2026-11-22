@@ -454,3 +454,11 @@ p, h1, h2, h3, h4 { margin: 0; }
   .button-answer { width: 100%; }
   .answer-meta .text-link { margin-left: 0; }
 }
+.document-status-cell { display: flex; min-width: 130px; flex-direction: column; gap: 6px; }
+.status-pill.is-queued, .status-pill.is-parsing, .status-pill.is-chunking, .status-pill.is-embedding { color: var(--signal); border-color: rgba(22,72,255,0.24); background: var(--signal-soft); }
+.status-pill.is-ready { color: var(--teal); border-color: rgba(18,107,94,0.24); background: var(--teal-soft); }
+.status-pill.is-failed { color: var(--danger); border-color: rgba(178,56,47,0.24); background: rgba(178,56,47,0.06); }
+.status-pill.is-cancelled { color: var(--amber); border-color: rgba(185,112,24,0.24); background: var(--amber-soft); }
+.document-progress { height: 3px; overflow: hidden; background: var(--paper-deep); }
+.document-progress span { display: block; height: 100%; background: var(--signal); transition: width 240ms ease; }
+.document-index-error { max-width: 180px; color: var(--danger); font-size: 8px; line-height: 1.45; }
