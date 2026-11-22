@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom'
 import { AnswerPanel } from '../components/AnswerPanel'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorState } from '../components/StateBlock'
-import { useAnswer, useCompareRetrieval } from '../lib/queries'
+import { useCompareRetrieval } from '../lib/queries'
+import { useAnswerStream } from '../lib/useAnswerStream'
 import type { ChunkStrategy, RetrievalStrategy } from '../types'
 
 const allStrategies: { value: RetrievalStrategy; label: string; note: string }[] = [
@@ -31,7 +32,7 @@ export function RetrievalPage() {
     allStrategies.map((item) => item.value),
   )
   const comparison = useCompareRetrieval()
-  const answer = useAnswer()
+  const answer = useAnswerStream()
   const booted = useRef(false)
 
   const execute = () => {
@@ -60,7 +61,7 @@ export function RetrievalPage() {
 
   const generateAnswer = () => {
     if (!query.trim()) return
-    answer.mutate({
+    void answer.start({
       query: query.trim(),
       chunk_strategy: chunkStrategy,
       top_k: topK,

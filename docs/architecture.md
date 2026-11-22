@@ -71,9 +71,13 @@ deterministic heuristic and are marked in the Trace.
 development-test split. Test cases are not used for parameter tuning. The benchmark runner records
 the dataset, split, provider and fallback count in every report.
 
+## Streaming Boundary
+
+`stream_answer_query` owns the SSE event sequence: `meta → delta* → done | error`. It reuses
+`prepare_answer`, so retrieval, Context Pack construction and reranking are identical to the normal
+answer API. Citation identifiers are validated before `done`; unknown IDs are returned separately.
+
 ## Next Adapter Boundary
 
-M2 now has a valid zero-fallback local BGE run on the frozen 38-case test split. BGE improved MRR
-from 0.6412 to 0.7833 at 109.3 ms rerank P95. API monetary cost is zero; CPU/electricity cost is not
-monetized. LLM reranking remains available but its rate-limited evaluation is retained only as an
-invalid failure record.
+M2 now has a valid zero-fallback local BGE run on the frozen 38-case test split. M3 still needs token
+usage, generation Trace spans and cancellation propagation when the client disconnects.

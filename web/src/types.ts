@@ -105,6 +105,9 @@ export type AnswerResponse = {
   model: string
   retrieval: RetrievalRun
   citations: AnswerCitation[]
+  first_token_ms?: number | null
+  total_ms?: number | null
+  invalid_citation_ids?: number[]
 }
 
 export type TraceStage = {

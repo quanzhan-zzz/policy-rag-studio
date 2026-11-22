@@ -1,4 +1,5 @@
-from collections.abc import Sequence
+import json
+from collections.abc import Iterable, Iterator, Sequence
 from functools import lru_cache
 from typing import Protocol
 
@@ -27,6 +28,30 @@ class LLMProvider(Protocol):
         temperature: float = 0.1,
         max_tokens: int = 800,
     ) -> str: ...
+
+    def stream_chat(
+        self,
+        messages: Sequence[dict[str, str]],
+        *,
+        temperature: float = 0.1,
+        max_tokens: int = 800,
+    ) -> Iterator[str]: ...
+
+
+def iter_sse_content(lines: Iterable[str]) -> Iterator[str]:
+    for line in lines:
+        if not line.startswith("data:"):
+            continue
+        data = line.removeprefix("data:").strip()
+        if not data or data == "[DONE]":
+            continue
+        try:
+            payload = json.loads(data)
+            content = payload["choices"][0]["delta"].get("content", "")
+        except (json.JSONDecodeError, KeyError, IndexError, TypeError):
+            continue
+        if isinstance(content, str) and content:
+            yield content
 
 
 class OpenAICompatibleChatProvider:
@@ -99,6 +124,42 @@ class OpenAICompatibleChatProvider:
             if content:
                 return content
         raise LLMProviderError("文本模型返回了空回答")
+
+    def stream_chat(
+        self,
+        messages: Sequence[dict[str, str]],
+        *,
+        temperature: float = 0.1,
+        max_tokens: int = 800,
+    ) -> Iterator[str]:
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+        try:
+            with httpx.Client(timeout=self.timeout_seconds) as client:
+                with client.stream(
+                    "POST",
+                    f"{self.api_base}/chat/completions",
+                    headers=headers,
+                    json={
+                        "model": self.model,
+                        "messages": list(messages),
+                        "temperature": temperature,
+                        "max_tokens": max_tokens,
+                        "stream": True,
+                    },
+                ) as response:
+                    if response.is_error:
+                        raise LLMProviderError(
+                            f"文本模型服务返回 HTTP {response.status_code}"
+                        )
+                    yield from iter_sse_content(response.iter_lines())
+        except LLMProviderError:
+            raise
+        except httpx.TimeoutException as error:
+            raise LLMProviderError("文本模型流式请求超时") from error
+        except httpx.RequestError as error:
+            raise LLMProviderError("无法连接文本模型流式服务") from error
 
 
 @lru_cache

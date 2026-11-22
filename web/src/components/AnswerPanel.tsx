@@ -60,7 +60,7 @@ export function AnswerPanel({
         </div>
       ) : null}
 
-      {isPending ? (
+      {isPending && !data ? (
         <div className="answer-state">
           <span className="scan-line" />
           <LoaderCircle className="spin" size={18} />
@@ -81,16 +81,23 @@ export function AnswerPanel({
         </div>
       ) : null}
 
-      {data && !isPending ? (
+      {data ? (
         <>
           <div className="answer-meta">
             <span><strong>{data.model}</strong></span>
             <span>检索 {data.retrieval.latency_ms.toFixed(1)} ms</span>
             <span>{data.citations.length} 条引用</span>
+            {data.first_token_ms ? <span>首字 {data.first_token_ms.toFixed(1)} ms</span> : null}
+            {data.total_ms ? <span>总计 {data.total_ms.toFixed(1)} ms</span> : null}
             <Link className="text-link" to={`/traces/${data.retrieval.trace_id}`}>
               查看这次回答的 Trace
             </Link>
           </div>
+          {data.invalid_citation_ids?.length ? (
+            <div className="answer-citation-warning">
+              检测到无效引用：{data.invalid_citation_ids.map((id) => `[${id}]`).join('、')}
+            </div>
+          ) : null}
           <div className="answer-body">
             <section className="answer-copy">
               <span className="answer-kicker">QUESTION</span>

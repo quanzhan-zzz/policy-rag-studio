@@ -153,6 +153,9 @@ class AnswerResponse(BaseModel):
     model: str
     retrieval: RetrievalRun
     citations: list[AnswerCitation]
+    first_token_ms: float | None = None
+    total_ms: float | None = None
+    invalid_citation_ids: list[int] = Field(default_factory=list)
 
 
 class TraceStage(BaseModel):

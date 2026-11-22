@@ -1,7 +1,10 @@
 import asyncio
+import json
+from collections.abc import AsyncIterator
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
 
 from app.dependencies import get_store, get_task_publisher
 from app.schemas import (
@@ -20,7 +23,7 @@ from app.schemas import (
     TraceRecord,
     UploadDocumentResponse,
 )
-from app.services.answer import answer_query
+from app.services.answer import answer_query, stream_answer_query
 from app.services.embedding import get_embedding_provider
 from app.services.evaluation import evaluate_store
 from app.services.evaluation_dataset import get_evaluation_dataset
@@ -204,6 +207,30 @@ async def compare_retrieval(payload: RetrievalRequest, store: StoreDep) -> Retri
         chunk_strategy=payload.chunk_strategy,
         top_k=payload.top_k,
         runs=runs,
+    )
+
+
+@router.post("/answer/stream")
+async def answer_stream(payload: AnswerRequest, store: StoreDep) -> StreamingResponse:
+    async def events() -> AsyncIterator[str]:
+        try:
+            async for event in stream_answer_query(store, payload):
+                payload_text = json.dumps(event.data, ensure_ascii=False)
+                yield f"event: {event.event}\ndata: {payload_text}\n\n"
+        except Exception as error:
+            data = {
+                "message": str(error),
+                "error_type": type(error).__name__,
+            }
+            yield f"event: error\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
     )
 
 

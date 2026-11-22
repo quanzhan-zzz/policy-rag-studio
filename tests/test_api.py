@@ -88,3 +88,34 @@ def test_overview_api(client: TestClient) -> None:
     payload = response.json()
     assert payload["document_count"] >= 3
     assert len(payload["last_evaluation"]["rows"]) == 4
+
+
+def test_answer_stream_api(client: TestClient, monkeypatch) -> None:
+    class FakeStreamingLLM:
+        name = "fake-stream"
+
+        def chat(self, messages, *, temperature=0.1, max_tokens=800):
+            return "回答[1]"
+
+        def stream_chat(self, messages, *, temperature=0.1, max_tokens=800):
+            yield "回答"
+            yield "[1]"
+
+    monkeypatch.setattr("app.services.answer.get_llm_provider", lambda: FakeStreamingLLM())
+    with client.stream(
+        "POST",
+        "/api/v1/answer/stream",
+        json={
+            "query": "青年人才租房补贴在哪里办理",
+            "chunk_strategy": "heading",
+            "top_k": 2,
+        },
+    ) as response:
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("text/event-stream")
+        body = "".join(response.iter_text())
+
+    assert "event: meta" in body
+    assert "event: delta" in body
+    assert "event: done" in body
+    assert "\"invalid_citation_ids\": []" in body

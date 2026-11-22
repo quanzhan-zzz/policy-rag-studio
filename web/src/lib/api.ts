@@ -94,3 +94,53 @@ export const api = {
 }
 
 export { ApiError }
+
+export type AnswerStreamHandlers = {
+  onMeta: (data: AnswerResponse) => void
+  onDelta: (content: string) => void
+  onDone: (data: AnswerResponse) => void
+}
+
+export async function streamAnswer(
+  payload: {
+    query: string
+    chunk_strategy: ChunkStrategy
+    top_k: number
+    temperature?: number
+  },
+  handlers: AnswerStreamHandlers,
+): Promise<void> {
+  const response = await fetch(`${API_BASE}/answer/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) {
+    throw new ApiError(`请求失败 (${response.status})`, response.status)
+  }
+  if (!response.body) {
+    throw new ApiError('浏览器不支持流式响应', 0)
+  }
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const blocks = buffer.split('\n\n')
+    buffer = blocks.pop() ?? ''
+    for (const block of blocks) {
+      const eventLine = block.split('\n').find((line) => line.startsWith('event:'))
+      const dataLine = block.split('\n').find((line) => line.startsWith('data:'))
+      if (!eventLine || !dataLine) continue
+      const event = eventLine.slice('event:'.length).trim()
+      const data = JSON.parse(dataLine.slice('data:'.length).trim())
+      if (event === 'meta') handlers.onMeta(data as AnswerResponse)
+      if (event === 'delta') handlers.onDelta(String(data.content ?? ''))
+      if (event === 'done') handlers.onDone(data as AnswerResponse)
+      if (event === 'error') throw new ApiError(String(data.message ?? '流式回答失败'), 502)
+    }
+  }
+}
