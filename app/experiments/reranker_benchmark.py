@@ -13,6 +13,7 @@ from app.services.embedding import EmbeddingProvider
 from app.services.evaluation_dataset import get_evaluation_dataset
 from app.services.llm import get_llm_provider
 from app.services.reranker import (
+    BGEReranker,
     HeuristicReranker,
     LLMReranker,
     NoneReranker,
@@ -38,6 +39,7 @@ class ProviderMetrics:
     mrr: float
     ndcg_at_5: float
     p95_ms: float
+    rerank_p95_ms: float
     failures: list[str]
     ranks: dict[str, int | None]
     fallback_count: int
@@ -57,6 +59,9 @@ def _provider(name: str) -> RerankerProvider:
         return NoneReranker()
     if name == "llm":
         return LLMReranker(get_llm_provider())
+    if name == "bge":
+        settings = get_settings()
+        return BGEReranker(settings.reranker_model or settings.bge_reranker_model)
     raise ValueError(f"未知 Reranker Provider：{name}")
 
 
@@ -91,6 +96,7 @@ async def evaluate_provider(
 ) -> ProviderMetrics:
     chunks = await store.all_chunks(ChunkStrategy.HEADING)
     latencies: list[float] = []
+    rerank_latencies: list[float] = []
     failures: list[str] = []
     recall = 0.0
     mrr = 0.0
@@ -116,6 +122,7 @@ async def evaluate_provider(
         if provider.name.startswith("llm ·"):
             await asyncio.sleep(10.0)
         rerank_stage = next(stage for stage in trace.stages if stage.key == "rerank")
+        rerank_latencies.append(rerank_stage.duration_ms)
         if "降级" in rerank_stage.detail:
             fallback_count += 1
 
@@ -143,6 +150,7 @@ async def evaluate_provider(
         mrr=mrr / count,
         ndcg_at_5=ndcg / count,
         p95_ms=_p95(latencies),
+        rerank_p95_ms=_p95(rerank_latencies),
         failures=failures,
         ranks=ranks,
         fallback_count=fallback_count,
@@ -170,13 +178,15 @@ def render_report(
         "",
         "## Results",
         "",
-        "| Provider | Recall@5 | MRR | nDCG@5 | P95 | ΔMRR vs baseline | Fallbacks |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Provider | Recall@5 | MRR | nDCG@5 | P95 | Rerank P95 | "
+        "ΔMRR vs baseline | Fallbacks |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for item in metrics:
         lines.append(
             f"| {item.name} | {item.recall_at_5:.4f} | {item.mrr:.4f} | "
             f"{item.ndcg_at_5:.4f} | {item.p95_ms:.1f} ms | "
+            f"{item.rerank_p95_ms:.1f} ms | "
             f"{item.mrr - baseline.mrr:+.4f} | {item.fallback_count} |"
         )
     fallback_total = sum(item.fallback_count for item in metrics)
@@ -220,6 +230,8 @@ def render_report(
             "- This is a synthetic policy retrieval set, not observed production traffic.",
             "- Token usage and monetary cost are not yet recorded by the shared LLM provider.",
             "- A non-zero fallback count means reranker errors affected the measured result.",
+            "- Local BGE model loading is excluded by a warmup call; API monetary cost is zero, "
+            "but CPU compute and electricity are not monetized.",
             "",
         ]
     )
@@ -240,6 +252,10 @@ async def run_benchmark(
     store = await PostgresStore.create(settings.database_url, seed_demo_data=False)
     try:
         provider_list = [_provider(name) for name in provider_names]
+        for provider in provider_list:
+            warmup = getattr(provider, "warmup", None)
+            if callable(warmup):
+                await asyncio.to_thread(warmup)
         prepared_cases = await prepare_cases(store, evaluation_set.cases)
         metrics = [
             await evaluate_provider(store, provider, prepared_cases)

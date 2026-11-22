@@ -152,7 +152,7 @@ RERANKER_TIMEOUT_SECONDS=30
 
 # 本地 CrossEncoder；需要 uv sync --extra local
 RERANKER_PROVIDER=bge
-RERANKER_MODEL=BAAI/bge-reranker-v2-m3
+BGE_RERANKER_MODEL=BAAI/bge-reranker-base
 ```
 
 评测集包含 152 条合成政策问题，其中开发集 114 条、测试集 38 条。标签固定到真实 Chunk 标题，生成规则见 `data/eval/README.md`。
@@ -169,9 +169,13 @@ uv run python -m app.experiments.reranker_benchmark \
 
 当前 38 条测试集上：
 
-- 启发式 Reranker：Recall@5 `0.9474`，MRR `0.6447`
-- 纯 RRF：Recall@5 `0.9474`，MRR `0.6390`
-- 启发式 Reranker 的 MRR 仅提升 `0.0057`，不足以单独证明重排价值
+| Provider | Recall@5 | MRR | nDCG@5 | Rerank P95 | Fallbacks |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Heuristic | 0.9474 | 0.6447 | 0.7203 | 0.6 ms | 0 |
+| Pure RRF | 0.9474 | 0.6412 | 0.7189 | 0.0 ms | 0 |
+| BGE Base | **1.0000** | **0.7833** | **0.8372** | 109.3 ms | 0 |
+
+BGE Reranker 将 MRR 从纯 RRF 的 `0.6412` 提升到 `0.7833`，并消除两个 Top-5 漏召回；代价是 Rerank P95 增加约 `109 ms`。本地模型的 API 费用为 0，CPU 计算和电力成本尚未货币化。
 
 LLM Reranker 的实测仍受到上游 `429` 限流，报告已标记为无效，不作为效果结论。
 
@@ -316,7 +320,7 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 
 - [x] M0：PostgreSQL + pgvector 持久化
 - [x] M1：Redis + Celery 异步索引
-- [ ] M2：真实 Reranker 与可信评测
+- [x] M2：真实 Reranker 与可信评测
 - [ ] M3：流式回答与引用校验
 - [ ] M4：CI、E2E、监控与发布
 

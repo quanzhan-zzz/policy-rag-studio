@@ -7,7 +7,7 @@ from functools import lru_cache
 from typing import Protocol
 
 from app.config import get_settings
-from app.services.llm import LLMProvider, LLMRateLimitError, get_llm_provider
+from app.services.llm import LLMProvider, LLMRateLimitError
 from app.services.text import tokenize
 
 
@@ -205,6 +205,9 @@ class BGEReranker:
         self.name = f"BGE reranker · {model_name}"
         self._model = None
 
+    def warmup(self) -> None:
+        self._load_model()
+
     def _load_model(self):
         if self._model is None:
             try:
@@ -241,18 +244,15 @@ def get_reranker_provider() -> RerankerProvider:
     if settings.reranker_provider == "none":
         return NoneReranker()
     if settings.reranker_provider == "llm":
-        if settings.reranker_model and settings.reranker_model != settings.llm_model:
-            from app.services.llm import OpenAICompatibleChatProvider
+        from app.services.llm import OpenAICompatibleChatProvider
 
-            llm = OpenAICompatibleChatProvider(
-                api_base=settings.reranker_api_base or settings.llm_api_base,
-                api_key=settings.reranker_api_key or settings.llm_api_key or "",
-                model=settings.reranker_model,
-                timeout_seconds=settings.reranker_timeout_seconds,
-            )
-        else:
-            llm = get_llm_provider()
+        llm = OpenAICompatibleChatProvider(
+            api_base=settings.reranker_api_base or settings.llm_api_base,
+            api_key=settings.reranker_api_key or settings.llm_api_key or "",
+            model=settings.reranker_model or settings.llm_model,
+            timeout_seconds=settings.reranker_timeout_seconds,
+        )
         return LLMReranker(llm)
     if settings.reranker_provider == "bge":
-        return BGEReranker(settings.reranker_model)
+        return BGEReranker(settings.reranker_model or settings.bge_reranker_model)
     return HeuristicReranker()

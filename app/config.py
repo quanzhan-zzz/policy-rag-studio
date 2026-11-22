@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     llm_api_key: str | None = None
     llm_model: str = "glm-5.3-flash"
     reranker_provider: Literal["none", "heuristic", "llm", "bge"] = "heuristic"
-    reranker_model: str = "glm-5.3-flash"
+    reranker_model: str | None = None
+    bge_reranker_model: str = "BAAI/bge-reranker-base"
     reranker_api_base: str | None = None
     reranker_api_key: str | None = None
     reranker_timeout_seconds: float = 30.0

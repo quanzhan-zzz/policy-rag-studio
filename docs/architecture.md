@@ -73,5 +73,7 @@ the dataset, split, provider and fallback count in every report.
 
 ## Next Adapter Boundary
 
-M2 still needs a valid zero-fallback model reranker run with token and cost accounting. The current
-valid test-set comparison only establishes a small heuristic-reranker MRR gain.
+M2 now has a valid zero-fallback local BGE run on the frozen 38-case test split. BGE improved MRR
+from 0.6412 to 0.7833 at 109.3 ms rerank P95. API monetary cost is zero; CPU/electricity cost is not
+monetized. LLM reranking remains available but its rate-limited evaluation is retained only as an
+invalid failure record.
