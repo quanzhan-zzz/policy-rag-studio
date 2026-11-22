@@ -52,7 +52,7 @@ async def overview(store: StoreDep) -> OverviewResponse:
         retrieval_runs=await store.count_retrieval_runs(),
         model_provider=get_embedding_provider().name,
         llm_provider=get_llm_provider().name,
-        vector_backend="PostgreSQL · documents persisted / pgvector pending",
+        vector_backend="PostgreSQL + pgvector · HNSW cosine index",
         last_evaluation=evaluation,
     )
 
