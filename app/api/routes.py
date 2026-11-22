@@ -3,6 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 
 from app.schemas import (
+    AnswerRequest,
+    AnswerResponse,
     ChunkRecord,
     ChunkStrategy,
     ChunkUpdate,
@@ -13,8 +15,10 @@ from app.schemas import (
     RetrievalResponse,
     TraceRecord,
 )
+from app.services.answer import answer_query
 from app.services.embedding import get_embedding_provider
 from app.services.evaluation import evaluate_store
+from app.services.llm import LLMProviderError, get_llm_provider
 from app.services.parsing import UnsupportedDocumentError
 from app.services.retrieval import run_retrieval
 from app.store import store
@@ -37,6 +41,7 @@ def overview() -> OverviewResponse:
         evaluation_case_count=evaluation.case_count,
         retrieval_runs=store.retrieval_runs,
         model_provider=get_embedding_provider().name,
+        llm_provider=get_llm_provider().name,
         vector_backend="PostgreSQL + pgvector · interface ready",
         last_evaluation=evaluation,
     )
@@ -111,6 +116,16 @@ def compare_retrieval(payload: RetrievalRequest) -> RetrievalResponse:
         top_k=payload.top_k,
         runs=runs,
     )
+
+
+@router.post("/answer", response_model=AnswerResponse)
+def answer(payload: AnswerRequest) -> AnswerResponse:
+    try:
+        return answer_query(store, payload)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except LLMProviderError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
 
 
 @router.get("/traces/{trace_id}", response_model=TraceRecord)

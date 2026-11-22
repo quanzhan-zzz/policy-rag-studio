@@ -2,9 +2,10 @@ import { ArrowRight, CornerDownRight, Play, SlidersHorizontal, Waypoints } from 
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { AnswerPanel } from '../components/AnswerPanel'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorState } from '../components/StateBlock'
-import { useCompareRetrieval } from '../lib/queries'
+import { useAnswer, useCompareRetrieval } from '../lib/queries'
 import type { ChunkStrategy, RetrievalStrategy } from '../types'
 
 const allStrategies: { value: RetrievalStrategy; label: string; note: string }[] = [
@@ -30,6 +31,7 @@ export function RetrievalPage() {
     allStrategies.map((item) => item.value),
   )
   const comparison = useCompareRetrieval()
+  const answer = useAnswer()
   const booted = useRef(false)
 
   const execute = () => {
@@ -55,6 +57,16 @@ export function RetrievalPage() {
     // The initial comparison is intentionally run once when the workbench opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const generateAnswer = () => {
+    if (!query.trim()) return
+    answer.mutate({
+      query: query.trim(),
+      chunk_strategy: chunkStrategy,
+      top_k: topK,
+      temperature: 0.1,
+    })
+  }
 
   const toggleStrategy = (strategy: RetrievalStrategy) => {
     setStrategies((current) =>
@@ -276,6 +288,14 @@ export function RetrievalPage() {
               <p>正在并行执行召回、融合与重排…</p>
             </div>
           ) : null}
+
+          <AnswerPanel
+            data={answer.data ?? null}
+            disabled={!query.trim()}
+            error={answer.error?.message ?? null}
+            isPending={answer.isPending}
+            onGenerate={generateAnswer}
+          />
         </section>
       </section>
     </div>

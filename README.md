@@ -31,6 +31,7 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - React + TypeScript 研究工作台包含 6 个核心页面
 - 内置 3 份演示政策，支持固定长度、标题层级、递归三种切片
 - 实现 BM25、可配置 Embedding Provider、RRF 融合和启发式重排
+- 检索工作台可生成带编号引用的回答，并可直接查看对应 Trace
 - 评测指标由后端在固定演示集上实时计算
 - Docker Compose 已配置 PostgreSQL/pgvector、Redis、API 和 Web
 
@@ -59,6 +60,7 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - Dense / BM25 排名
 - Rerank 排名变化
 - 引用来源和执行耗时
+- 基于 Rerank Top-K 生成带编号引用的回答，并可回看原文
 
 ### 评测看板
 
@@ -107,10 +109,20 @@ OpenAI 兼容 Embeddings API：
 
 ```bash
 EMBEDDING_PROVIDER=openai
-EMBEDDING_API_BASE=https://api.openai.com/v1
+EMBEDDING_API_BASE=https://your-endpoint/v1
 EMBEDDING_API_KEY=your-key
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_EMBEDDING_MODEL=qwen3.7-text-embedding-flash
 ```
+
+文本模型使用同一个 OpenAI 兼容协议；本地无需鉴权的服务可以不填 `LLM_API_KEY`：
+
+```bash
+LLM_API_BASE=https://your-endpoint/v1
+LLM_API_KEY=your-key
+LLM_MODEL=glm-5.3-flash
+```
+
+`POST /api/v1/answer` 会把 Hybrid + Rerank 检索结果组装成带编号引用的上下文，再调用文本模型生成回答。
 
 Provider 会对相同文本做进程内缓存；批量文档向量化会尽量合并为一次批处理请求。
 
@@ -204,6 +216,7 @@ pnpm test:e2e
 | PATCH | `/api/v1/chunks/{id}` | 修改 Chunk |
 | POST | `/api/v1/retrieval/compare` | 并行比较检索策略 |
 | GET | `/api/v1/traces/{id}` | 查看执行 Trace |
+| POST | `/api/v1/answer` | 基于检索结果生成带引用回答 |
 | GET | `/api/v1/evaluations/summary` | 计算评测指标 |
 
 ## 设计决策

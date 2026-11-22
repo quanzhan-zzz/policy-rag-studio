@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
     embedding_api_base: str = "https://api.openai.com/v1"
     embedding_api_key: str | None = None
+    llm_api_base: str = "http://127.0.0.1:11434/v1"
+    llm_api_key: str | None = None
+    llm_model: str = "glm-5.3-flash"
 
     @property
     def cors_origins(self) -> list[str]:

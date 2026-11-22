@@ -58,6 +58,23 @@ export type RetrievalResponse = {
   runs: RetrievalRun[]
 }
 
+export type AnswerCitation = {
+  source_id: number
+  chunk_id: string
+  document_title: string
+  heading_path: string
+  page: number
+  text: string
+}
+
+export type AnswerResponse = {
+  query: string
+  answer: string
+  model: string
+  retrieval: RetrievalRun
+  citations: AnswerCitation[]
+}
+
 export type TraceStage = {
   key: string
   label: string
@@ -106,6 +123,7 @@ export type Overview = {
   evaluation_case_count: number
   retrieval_runs: number
   model_provider: string
+  llm_provider: string
   vector_backend: string
   last_evaluation: EvaluationSummary | null
 }

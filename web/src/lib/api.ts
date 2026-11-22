@@ -1,4 +1,5 @@
 import type {
+  AnswerResponse,
   ChunkRecord,
   ChunkStrategy,
   DocumentSummary,
@@ -68,6 +69,16 @@ export const api = {
     top_k: number
   }) =>
     request<RetrievalResponse>('/retrieval/compare', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  answer: (payload: {
+    query: string
+    chunk_strategy: ChunkStrategy
+    top_k: number
+    temperature?: number
+  }) =>
+    request<AnswerResponse>('/answer', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),

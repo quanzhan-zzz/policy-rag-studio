@@ -92,6 +92,30 @@ class RetrievalResponse(BaseModel):
     runs: list[RetrievalRun]
 
 
+class AnswerRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=2_000)
+    chunk_strategy: ChunkStrategy = ChunkStrategy.HEADING
+    top_k: int = Field(default=5, ge=1, le=10)
+    temperature: float = Field(default=0.1, ge=0.0, le=1.0)
+
+
+class AnswerCitation(BaseModel):
+    source_id: int
+    chunk_id: str
+    document_title: str
+    heading_path: str
+    page: int
+    text: str
+
+
+class AnswerResponse(BaseModel):
+    query: str
+    answer: str
+    model: str
+    retrieval: RetrievalRun
+    citations: list[AnswerCitation]
+
+
 class TraceStage(BaseModel):
     key: str
     label: str
@@ -140,5 +164,6 @@ class OverviewResponse(BaseModel):
     evaluation_case_count: int
     retrieval_runs: int
     model_provider: str
+    llm_provider: str
     vector_backend: str
     last_evaluation: EvaluationSummary | None = None

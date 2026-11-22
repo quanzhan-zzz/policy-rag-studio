@@ -74,6 +74,17 @@ export function useUpdateChunk() {
   })
 }
 
+export function useAnswer() {
+  return useMutation({
+    mutationFn: (payload: {
+      query: string
+      chunk_strategy: ChunkStrategy
+      top_k: number
+      temperature?: number
+    }) => api.answer(payload),
+  })
+}
+
 export function useCompareRetrieval() {
   return useMutation({
     mutationFn: (payload: {

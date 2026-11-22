@@ -127,7 +127,11 @@ export function OverviewPage() {
             </div>
             <div>
               <span>Embedding</span>
-              <strong>HASH / DEMO</strong>
+              <strong>{data.model_provider.toLowerCase().includes('hash') ? 'HASH / DEMO' : 'QWEN / API'}</strong>
+            </div>
+            <div>
+              <span>LLM</span>
+              <strong>{data.llm_provider.toLowerCase().includes('glm') ? 'GLM / API' : 'API / READY'}</strong>
             </div>
             <div>
               <span>Chunk profiles</span>
@@ -135,6 +139,7 @@ export function OverviewPage() {
             </div>
           </div>
           <p className="panel-footnote">{data.model_provider}</p>
+          <p className="panel-footnote">{data.llm_provider}</p>
         </article>
       </section>
 

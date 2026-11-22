@@ -29,6 +29,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     environment:
       APP_ENV: development
       API_CORS_ORIGINS: http://localhost:5173,http://localhost:8080
