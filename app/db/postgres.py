@@ -644,6 +644,7 @@ class PostgresStore:
         row = EvaluationRunRow(
             id=stored.id or "",
             dataset_name=stored.dataset_name,
+            reranker_provider=stored.reranker_provider,
             case_count=stored.case_count,
             rows=[metric.model_dump(mode="json") for metric in stored.rows],
             failures=[failure.model_dump(mode="json") for failure in stored.failures],
@@ -664,6 +665,7 @@ class PostgresStore:
         return EvaluationSummary(
             id=row.id,
             dataset_name=row.dataset_name,
+            reranker_provider=row.reranker_provider,
             case_count=row.case_count,
             rows=[MetricRow.model_validate(item) for item in row.rows],
             failures=[FailureBucket.model_validate(item) for item in row.failures],

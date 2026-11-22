@@ -23,3 +23,10 @@ test('upload is queued and reaches the ready state', async ({ page }) => {
   await expect(row.getByText('索引完成')).toBeVisible({ timeout: 20_000 })
   await expect(row.getByText('3')).toBeVisible()
 })
+
+
+test('evaluation page records the active reranker', async ({ page }) => {
+  await page.goto('/evaluation')
+  await expect(page.getByText(/reranker: heuristic/i)).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByText('完整指标账本')).toBeVisible()
+})

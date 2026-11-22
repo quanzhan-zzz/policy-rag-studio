@@ -17,6 +17,12 @@ from app.schemas import (
     TraceStage,
 )
 from app.services.embedding import EmbeddingProvider, get_embedding_provider
+from app.services.reranker import (
+    HeuristicReranker,
+    RerankCandidate,
+    RerankerProvider,
+    get_reranker_provider,
+)
 from app.services.text import tokenize
 from app.store import Store
 
@@ -129,6 +135,7 @@ def run_retrieval(
     embedding_provider: EmbeddingProvider | None = None,
     dense_scores_by_chunk: Mapping[str, float] | None = None,
     precomputed_latency_ms: float = 0.0,
+    reranker_provider: RerankerProvider | None = None,
 ) -> tuple[RetrievalRun, TraceRecord]:
     started = time.perf_counter() - precomputed_latency_ms / 1000
     trace_id = f"tr_{uuid4().hex[:10]}"
@@ -236,40 +243,55 @@ def run_retrieval(
                 )
         else:
             rerank_started = time.perf_counter()
-            candidates = fused_ranked[:30]
-            max_bm25 = max(bm25_scores) if bm25_scores else 1.0
-            max_dense = max(dense_scores) if dense_scores else 1.0
-            reranked: list[tuple[int, float]] = []
-            query_lower = query.lower()
-            for index in candidates:
-                chunk = chunks[index]
-                coverage = (
-                    sum(1 for token in set(query_tokens) if token in chunk.text.lower())
-                    / max(1, len(set(query_tokens)))
+            candidate_indices = fused_ranked[:30]
+            candidates = [
+                RerankCandidate(
+                    index=index,
+                    text=chunks[index].text,
+                    heading_path=chunks[index].heading_path,
+                    retrieval_score=fused_scores[index],
+                    dense_score=dense_scores[index],
+                    bm25_score=bm25_scores[index],
                 )
-                phrase_bonus = 0.25 if query_lower in chunk.text.lower() else 0.0
-                heading_match = any(token in chunk.heading_path.lower() for token in query_tokens)
-                heading_bonus = 0.12 if heading_match else 0.0
-                score = (
-                    0.45 * (bm25_scores[index] / max_bm25)
-                    + 0.25 * (dense_scores[index] / max_dense)
-                    + 0.18 * coverage
-                    + phrase_bonus
-                    + heading_bonus
+                for index in candidate_indices
+            ]
+            provider_reranker = reranker_provider or get_reranker_provider()
+            rerank_detail = provider_reranker.name
+            try:
+                reranked = provider_reranker.rerank(query, candidates, top_k=top_k)
+                if not reranked:
+                    raise ValueError("Reranker 返回空结果")
+            except Exception as error:
+                fallback = HeuristicReranker()
+                reranked = fallback.rerank(query, candidates, top_k=top_k)
+                rerank_detail = (
+                    f"{provider_reranker.name} 降级到 {fallback.name}；"
+                    f"原因：{type(error).__name__}"
                 )
-                reranked.append((index, score))
-            reranked.sort(key=lambda item: item[1], reverse=True)
+            valid_indices = {candidate.index for candidate in candidates}
+            seen_indices: set[int] = set()
+            ordered: list[tuple[int, float]] = []
+            for result in reranked:
+                if result.index not in valid_indices or result.index in seen_indices:
+                    continue
+                seen_indices.add(result.index)
+                ordered.append((result.index, result.score))
+            if not ordered:
+                ordered = [
+                    (candidate.index, candidate.retrieval_score)
+                    for candidate in candidates[:top_k]
+                ]
             stages.append(
                 TraceStage(
                     key="rerank",
-                    label="启发式重排",
+                    label="候选重排",
                     duration_ms=(time.perf_counter() - rerank_started) * 1000,
                     input_count=len(candidates),
-                    output_count=min(top_k, len(reranked)),
-                    detail="演示重排器；生产环境替换为 BGE Reranker Provider",
+                    output_count=len(ordered),
+                    detail=rerank_detail,
                 )
             )
-            for rank, (index, score) in enumerate(reranked[:top_k], start=1):
+            for rank, (index, score) in enumerate(ordered[:top_k], start=1):
                 previous_rank = fused_rank_map.get(index, rank)
                 selected.append(
                     _to_result(

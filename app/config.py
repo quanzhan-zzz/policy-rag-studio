@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     llm_api_base: str = "http://127.0.0.1:11434/v1"
     llm_api_key: str | None = None
     llm_model: str = "glm-5.3-flash"
+    reranker_provider: Literal["none", "heuristic", "llm", "bge"] = "heuristic"
+    reranker_model: str = "glm-5.3-flash"
+    reranker_api_base: str | None = None
+    reranker_api_key: str | None = None
+    reranker_timeout_seconds: float = 30.0
 
     @property
     def cors_origins(self) -> list[str]:

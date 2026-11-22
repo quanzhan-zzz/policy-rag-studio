@@ -58,7 +58,14 @@ the state machine and re-reads the document bytes from PostgreSQL. Celery Beat s
 tasks and republishes them. Task transitions, cancellation and retries are stored in
 `indexing_tasks`; document status is a projection updated in the same database transaction.
 
+## Reranker Boundary
+
+`app/services/reranker.py` defines a small `rerank(query, candidates, top_k)` interface. Adapters
+include `none`, heuristic, OpenAI-compatible LLM listwise reranking and local BGE CrossEncoder.
+Retrieval records provider name, rank deltas and latency. Provider failures degrade to the
+deterministic heuristic and are marked in the Trace.
+
 ## Next Adapter Boundary
 
-M2 introduces a `RerankerProvider` behind the retrieval seam while preserving the current `none`
-fallback and API response contract.
+M2 still needs a larger frozen evaluation set and a valid zero-fallback model reranker run. Only
+then should the experiment result be promoted to README or resume metrics.

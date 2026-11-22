@@ -10,6 +10,7 @@ from app.schemas import (
     MetricRow,
     RetrievalStrategy,
 )
+from app.services.reranker import RerankerProvider, get_reranker_provider
 from app.services.retrieval import STRATEGY_LABELS, prepare_dense_scores, run_retrieval
 from app.services.seed import EVALUATION_CASES
 from app.store import Store
@@ -23,7 +24,12 @@ def _p95(values: list[float]) -> float:
     return round(ordered[index], 3)
 
 
-async def evaluate_store(store: Store) -> EvaluationSummary:
+async def evaluate_store(
+    store: Store,
+    *,
+    reranker_provider: RerankerProvider | None = None,
+) -> EvaluationSummary:
+    active_reranker = reranker_provider or get_reranker_provider()
     strategies = [
         RetrievalStrategy.DENSE,
         RetrievalStrategy.BM25,
@@ -60,6 +66,7 @@ async def evaluate_store(store: Store) -> EvaluationSummary:
                 embedding_provider=embedding_provider,
                 dense_scores_by_chunk=dense_scores,
                 precomputed_latency_ms=dense_latency_ms,
+                reranker_provider=active_reranker,
             )
             strategy_latencies[strategy].append(run.latency_ms)
             rank: int | None = None
@@ -104,6 +111,7 @@ async def evaluate_store(store: Store) -> EvaluationSummary:
     return EvaluationSummary(
         id=f"eval_{uuid4().hex[:12]}",
         dataset_name="政策检索演示评测集",
+        reranker_provider=active_reranker.name,
         case_count=len(EVALUATION_CASES),
         rows=rows,
         failures=failures,

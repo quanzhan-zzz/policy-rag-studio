@@ -191,6 +191,7 @@ class FailureBucket(BaseModel):
 class EvaluationSummary(BaseModel):
     id: str | None = None
     dataset_name: str
+    reranker_provider: str | None = None
     case_count: int
     rows: list[MetricRow]
     failures: list[FailureBucket]

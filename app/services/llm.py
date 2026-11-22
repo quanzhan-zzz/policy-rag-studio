@@ -11,6 +11,12 @@ class LLMProviderError(RuntimeError):
     """Raised when the configured text model cannot produce a response."""
 
 
+class LLMRateLimitError(LLMProviderError):
+    def __init__(self, message: str, retry_after_seconds: float = 2.0) -> None:
+        super().__init__(message)
+        self.retry_after_seconds = retry_after_seconds
+
+
 class LLMProvider(Protocol):
     name: str
 
@@ -66,6 +72,16 @@ class OpenAICompatibleChatProvider:
         except httpx.TimeoutException as error:
             raise LLMProviderError("文本模型请求超时，请稍后重试") from error
         except httpx.HTTPStatusError as error:
+            if error.response.status_code == 429:
+                retry_after = error.response.headers.get("retry-after", "2")
+                try:
+                    retry_after_seconds = float(retry_after)
+                except ValueError:
+                    retry_after_seconds = 2.0
+                raise LLMRateLimitError(
+                    "文本模型服务触发限流",
+                    retry_after_seconds=retry_after_seconds,
+                ) from error
             raise LLMProviderError(
                 f"文本模型服务返回 HTTP {error.response.status_code}"
             ) from error

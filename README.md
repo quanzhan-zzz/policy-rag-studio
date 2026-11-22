@@ -134,6 +134,37 @@ LLM_MODEL=glm-5.3-flash
 
 Provider 会对相同文本做进程内缓存；批量文档向量化会尽量合并为一次批处理请求。
 
+## Reranker 配置与实验
+
+默认使用可复现的启发式 Reranker：
+
+```bash
+RERANKER_PROVIDER=heuristic
+```
+
+可选真实 Reranker：
+
+```bash
+# OpenAI 兼容 Chat 接口作为 listwise reranker
+RERANKER_PROVIDER=llm
+RERANKER_MODEL=glm-5.3-flash
+RERANKER_TIMEOUT_SECONDS=30
+
+# 本地 CrossEncoder；需要 uv sync --extra local
+RERANKER_PROVIDER=bge
+RERANKER_MODEL=BAAI/bge-reranker-v2-m3
+```
+
+统一重排实验命令：
+
+```bash
+uv run python -m app.experiments.reranker_benchmark \
+  --providers heuristic,none \
+  --output docs/experiments/20261122-reranker-smoke.md
+```
+
+当前 10 条内部样本上，启发式 Reranker 的 MRR 为 `0.7033`，低于纯 RRF 的 `0.7117`，说明重排并非天然带来收益。LLM Reranker 的实测受到上游 `429` 限流，报告已标记为无效，不作为效果结论。
+
 ## 技术栈
 
 **后端**
