@@ -19,6 +19,7 @@ from app.schemas import (
 )
 from app.services.chunking import chunk_document
 from app.services.embedding import HashEmbeddingProvider
+from app.services.seed import load_official_documents
 from app.store import InMemoryStore, Store
 
 
@@ -33,6 +34,7 @@ async def store(request: pytest.FixtureRequest):
     postgres_store = await PostgresStore.create(
         database_url,
         seed_demo_data=False,
+        seed_official_data=False,
         initialize_schema=True,
     )
     try:
@@ -89,6 +91,38 @@ async def _assert_document_lifecycle(store: Store) -> None:
 @pytest.mark.asyncio
 async def test_store_document_and_chunk_contract(store: Store) -> None:
     await _assert_document_lifecycle(store)
+
+
+@pytest.mark.asyncio
+async def test_official_seed_contract() -> None:
+    stores: list[Store] = [
+        InMemoryStore(seed_demo_data=False, seed_official_data=True)
+    ]
+    database_url = os.getenv("TEST_DATABASE_URL")
+    if database_url:
+        stores.append(
+            await PostgresStore.create(
+                database_url,
+                seed_demo_data=False,
+                seed_official_data=True,
+                initialize_schema=True,
+            )
+        )
+    expected = load_official_documents()
+    try:
+        for store in stores:
+            for seed in expected:
+                document = await store.get_document(seed.id)
+                assert document is not None
+                assert document.source_name == seed.source_name
+                assert document.source_url == seed.source_url
+                assert document.source_retrieved_at == seed.source_retrieved_at
+                assert document.source_sha256 == seed.source_sha256
+                for strategy in ChunkStrategy:
+                    assert await store.list_chunks(seed.id, strategy)
+    finally:
+        for store in stores:
+            await store.close()
 
 
 @pytest.mark.asyncio

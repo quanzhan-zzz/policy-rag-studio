@@ -251,7 +251,11 @@ async def run_benchmark(
     evaluation_set = get_evaluation_dataset(dataset_name, split)
     if settings.store_backend != "postgres":
         raise SystemExit("Reranker benchmark requires STORE_BACKEND=postgres")
-    store = await PostgresStore.create(settings.database_url, seed_demo_data=False)
+    store = await PostgresStore.create(
+        settings.database_url,
+        seed_demo_data=False,
+        seed_official_data=False,
+    )
     try:
         provider_list = [_provider(name) for name in provider_names]
         for provider in provider_list:

@@ -17,12 +17,16 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if settings.store_backend == "memory":
-        repo = InMemoryStore()
+        repo = InMemoryStore(
+            seed_demo_data=settings.seed_demo_data,
+            seed_official_data=settings.seed_official_data,
+        )
         publisher = NoopTaskPublisher()
     else:
         repo = await PostgresStore.create(
             settings.database_url,
             seed_demo_data=settings.seed_demo_data,
+            seed_official_data=settings.seed_official_data,
         )
         publisher = CeleryTaskPublisher()
     app.state.store = repo

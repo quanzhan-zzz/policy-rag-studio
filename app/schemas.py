@@ -45,6 +45,10 @@ class DocumentSummary(BaseModel):
     index_task_id: str | None = None
     index_progress: int = Field(default=0, ge=0, le=100)
     index_error: str | None = None
+    source_name: str | None = None
+    source_url: str | None = None
+    source_retrieved_at: datetime | None = None
+    source_sha256: str | None = None
 
 
 class IndexTask(BaseModel):

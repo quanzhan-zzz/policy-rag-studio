@@ -1,4 +1,12 @@
+import hashlib
+import json
 from dataclasses import dataclass
+from datetime import datetime
+from functools import lru_cache
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+OFFICIAL_GUIDES_PATH = ROOT / "data" / "official" / "jszwfw-guides.v1.jsonl"
 
 
 @dataclass(frozen=True, slots=True)
@@ -9,6 +17,10 @@ class SeedDocument:
     effective_date: str
     tags: tuple[str, ...]
     text: str
+    source_name: str | None = None
+    source_url: str | None = None
+    source_retrieved_at: datetime | None = None
+    source_sha256: str | None = None
 
 
 SEED_DOCUMENTS: tuple[SeedDocument, ...] = (
@@ -193,3 +205,60 @@ EVALUATION_CASES: tuple[EvaluationCase, ...] = (
         "条件跳转召回失败",
     ),
 )
+
+
+@lru_cache
+def load_official_documents() -> tuple[SeedDocument, ...]:
+    if not OFFICIAL_GUIDES_PATH.exists():
+        raise FileNotFoundError(f"官方指南语料不存在：{OFFICIAL_GUIDES_PATH}")
+    documents: list[SeedDocument] = []
+    for line in OFFICIAL_GUIDES_PATH.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        text = str(row["text"])
+        expected_text_hash = str(row["text_sha256"])
+        actual_text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        if actual_text_hash != expected_text_hash:
+            raise ValueError(f"官方指南正文哈希不匹配：{row['id']}")
+        source_url = str(row["source_url"])
+        if not source_url.startswith("https://"):
+            raise ValueError(f"官方指南来源必须使用 HTTPS：{row['id']}")
+        retrieved_at = datetime.fromisoformat(
+            str(row["source_retrieved_at"]).replace("Z", "+00:00")
+        )
+        tags = tuple(dict.fromkeys(str(tag) for tag in row.get("tags", [])))
+        documents.append(
+            SeedDocument(
+                id=str(row["id"]),
+                title=str(row["title"]),
+                department=str(row["department"]),
+                effective_date="未提供",
+                tags=tags,
+                text=text,
+                source_name=str(row["source_name"]),
+                source_url=source_url,
+                source_retrieved_at=retrieved_at,
+                source_sha256=str(row["source_pdf_sha256"]),
+            )
+        )
+    identifiers = [document.id for document in documents]
+    if len(identifiers) != len(set(identifiers)):
+        raise ValueError("官方指南语料包含重复 ID")
+    return tuple(documents)
+
+
+def get_seed_documents(
+    *,
+    include_demo: bool = True,
+    include_official: bool = True,
+) -> tuple[SeedDocument, ...]:
+    documents: list[SeedDocument] = []
+    if include_demo:
+        documents.extend(SEED_DOCUMENTS)
+    if include_official:
+        documents.extend(load_official_documents())
+    identifiers = [document.id for document in documents]
+    if len(identifiers) != len(set(identifiers)):
+        raise ValueError("种子语料包含重复 ID")
+    return tuple(documents)

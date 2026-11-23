@@ -1,4 +1,4 @@
-import { FileUp, RefreshCw, RotateCcw, ShieldCheck, X } from 'lucide-react'
+import { ExternalLink, FileUp, RefreshCw, RotateCcw, ShieldCheck, X } from 'lucide-react'
 import { useRef } from 'react'
 
 import { PageHeader } from '../components/PageHeader'
@@ -23,6 +23,17 @@ const statusLabels: Record<IndexTaskStatus, string> = {
 }
 
 const activeStatuses = new Set(['queued', 'parsing', 'chunking', 'embedding'])
+
+function formatRetrievedAt(value: string | null) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date)
+}
 
 export function DocumentsPage() {
   const documents = useDocuments()
@@ -83,7 +94,7 @@ export function DocumentsPage() {
               <thead>
                 <tr>
                   <th>文档 / 部门</th>
-                  <th>生效日期</th>
+                  <th>生效 / 抓取</th>
                   <th>Chunk</th>
                   <th>状态</th>
                   <th />
@@ -96,6 +107,26 @@ export function DocumentsPage() {
                       <div className="document-title">
                         <strong>{document.title}</strong>
                         <span>{document.department}</span>
+                        <div className="document-source-line">
+                          {document.source_url ? (
+                            <a
+                              className="source-badge is-official"
+                              href={document.source_url}
+                              rel="noreferrer"
+                              target="_blank"
+                              title="打开官方办事指南"
+                            >
+                              <ShieldCheck size={11} />
+                              官方来源
+                              <ExternalLink size={10} />
+                            </a>
+                          ) : (
+                            <span className="source-badge is-demo">演示数据</span>
+                          )}
+                          {document.source_name ? (
+                            <span className="source-name">{document.source_name}</span>
+                          ) : null}
+                        </div>
                         <div className="tag-line">
                           {document.tags.map((tag) => (
                             <span className="micro-tag" key={tag}>
@@ -105,7 +136,14 @@ export function DocumentsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="mono-cell">{document.effective_date}</td>
+                    <td className="mono-cell">
+                      <span>{document.effective_date}</span>
+                      {document.source_retrieved_at ? (
+                        <small className="source-date">
+                          抓取 {formatRetrievedAt(document.source_retrieved_at)}
+                        </small>
+                      ) : null}
+                    </td>
                     <td className="mono-cell">{document.chunk_count}</td>
                     <td>
                       <div className="document-status-cell">

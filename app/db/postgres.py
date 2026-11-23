@@ -38,7 +38,7 @@ from app.schemas import (
 from app.services.chunking import chunk_document
 from app.services.embedding import EmbeddingProvider, get_embedding_provider
 from app.services.parsing import parse_document
-from app.services.seed import SEED_DOCUMENTS
+from app.services.seed import get_seed_documents
 from app.services.text import tokenize
 from app.store import (
     ALLOWED_TASK_TRANSITIONS,
@@ -70,6 +70,7 @@ class PostgresStore:
         database_url: str,
         *,
         seed_demo_data: bool = True,
+        seed_official_data: bool = True,
         embedding_provider: EmbeddingProvider | None = None,
         initialize_schema: bool = False,
     ) -> "PostgresStore":
@@ -81,6 +82,7 @@ class PostgresStore:
         )
         await store.initialize(
             seed_demo_data=seed_demo_data,
+            seed_official_data=seed_official_data,
             initialize_schema=initialize_schema,
         )
         return store
@@ -89,14 +91,18 @@ class PostgresStore:
         self,
         *,
         seed_demo_data: bool,
+        seed_official_data: bool,
         initialize_schema: bool,
     ) -> None:
         if initialize_schema:
             async with self.engine.begin() as connection:
                 await connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
                 await connection.run_sync(Base.metadata.create_all)
-        if seed_demo_data:
-            await self._seed()
+        if seed_demo_data or seed_official_data:
+            await self._seed(
+                include_demo=seed_demo_data,
+                include_official=seed_official_data,
+            )
             await self._backfill_embeddings()
 
     async def _backfill_embeddings(self) -> None:
@@ -138,9 +144,12 @@ class PostgresStore:
     async def close(self) -> None:
         await self.engine.dispose()
 
-    async def _seed(self) -> None:
+    async def _seed(self, *, include_demo: bool, include_official: bool) -> None:
         existing_ids = {document.id for document in await self.list_documents()}
-        for seed in SEED_DOCUMENTS:
+        for seed in get_seed_documents(
+            include_demo=include_demo,
+            include_official=include_official,
+        ):
             if seed.id in existing_ids:
                 continue
             await self._create_document(
@@ -151,6 +160,10 @@ class PostgresStore:
                 effective_date=seed.effective_date,
                 tags=list(seed.tags),
                 content_text=seed.text,
+                source_name=seed.source_name,
+                source_url=seed.source_url,
+                source_retrieved_at=seed.source_retrieved_at,
+                source_sha256=seed.source_sha256,
             )
 
     async def _create_document(
@@ -163,6 +176,10 @@ class PostgresStore:
         effective_date: str,
         tags: list[str],
         content_text: str,
+        source_name: str | None = None,
+        source_url: str | None = None,
+        source_retrieved_at: datetime | None = None,
+        source_sha256: str | None = None,
     ) -> DocumentSummary:
         now = datetime.now(UTC)
         document = DocumentRow(
@@ -178,6 +195,10 @@ class PostgresStore:
             updated_at=now,
             tags=tags,
             index_progress=100,
+            source_name=source_name,
+            source_url=source_url,
+            source_retrieved_at=source_retrieved_at,
+            source_sha256=source_sha256,
         )
         all_chunks: list[ChunkRecord] = []
         for strategy in ChunkStrategy:
@@ -780,6 +801,10 @@ class PostgresStore:
             index_task_id=row.index_task_id,
             index_progress=row.index_progress,
             index_error=row.index_error,
+            source_name=row.source_name,
+            source_url=row.source_url,
+            source_retrieved_at=row.source_retrieved_at,
+            source_sha256=row.source_sha256,
         )
 
     @staticmethod

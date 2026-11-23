@@ -46,7 +46,7 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 
 - FastAPI 后端提供文档、Chunk、检索、Trace 和评测 API
 - React + TypeScript 研究工作台包含 6 个核心页面
-- 内置 3 份演示政策，支持固定长度、标题层级、递归三种切片
+- 内置 3 份演示政策与 2 份官方办事指南，支持固定长度、标题层级、递归三种切片
 - 实现 BM25、可配置 Embedding Provider、RRF 融合，以及启发式、LLM、本地 BGE 重排
 - 检索工作台可生成带编号引用的回答，并可直接查看对应 Trace
 - 评测看板实时计算检索指标；离线脚本补充引用质量、LLM 裁判和人工复核工作表
@@ -374,7 +374,8 @@ uv run python -m app.experiments.import_official_guides
 - `data/official/raw/jszwfw/`：官方原始 PDF、DOCX 和示例图片
 
 首批事项包括“公司变更登记注册（设区的市级权限）”和“用人单位公益性岗位补贴和社保补贴申领”。
-导入过程不访问登录后的个人数据，也不在全站范围内爬取。
+导入过程不访问登录后的个人数据，也不在全站范围内爬取。应用启动时默认将官方语料与演示
+文档一起写入仓储；设置 `SEED_OFFICIAL_DATA=false` 可以关闭官方语料加载。
 
 ## 数据与合规
 
@@ -401,7 +402,7 @@ uv run python -m app.experiments.import_official_guides
 - GitHub Release：[v0.2.0](https://github.com/quanzhan-zzz/policy-rag-studio/releases/tag/v0.2.0)
 - 3 分钟演示脚本：[docs/demo-script.md](docs/demo-script.md)
 - v0.2.0 发布说明：[docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)
-- CI 覆盖后端、前端、PostgreSQL 契约和 5 条 Playwright 用户路径
+- CI 覆盖后端、前端、PostgreSQL 契约和 6 条 Playwright 用户路径
 
 ## License
 

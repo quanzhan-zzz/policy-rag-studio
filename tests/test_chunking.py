@@ -37,3 +37,14 @@ def test_heading_chunks_fall_back_to_recursive_when_no_headings_exist() -> None:
     assert len(chunks) > 1
     assert all(chunk.strategy is ChunkStrategy.HEADING for chunk in chunks)
     assert all("自动递归切片" in chunk.heading_path for chunk in chunks)
+
+
+def test_heading_chunks_remove_all_markdown_markers() -> None:
+    chunks = chunk_document(
+        "# 官方指南\n\n## 办理材料\n提交申请书。\n\n### 补充说明\n提供身份证明。",
+        "official-guide",
+        "官方指南",
+        ChunkStrategy.HEADING,
+    )
+
+    assert [chunk.heading_path for chunk in chunks] == ["办理材料", "补充说明"]

@@ -74,6 +74,22 @@ def test_document_detail_api(client: TestClient) -> None:
     assert response.json()["id"] == document["id"]
 
 
+def test_official_document_exposes_provenance_and_chunks(client: TestClient) -> None:
+    documents = client.get("/api/v1/documents").json()
+    official = next(document for document in documents if document["source_url"])
+    assert official["source_name"] == "江苏政务服务网·常州法人服务"
+    assert official["source_retrieved_at"]
+    assert len(official["source_sha256"] or "") == 64
+
+    for strategy in ("fixed", "heading", "recursive"):
+        response = client.get(
+            f"/api/v1/documents/{official['id']}/chunks",
+            params={"strategy": strategy},
+        )
+        assert response.status_code == 200
+        assert response.json()
+
+
 def test_evaluation_api_persists_snapshot(client: TestClient) -> None:
     response = client.get("/api/v1/evaluations/summary")
     assert response.status_code == 200

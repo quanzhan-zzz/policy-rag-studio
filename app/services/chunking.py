@@ -93,7 +93,7 @@ def heading_chunks(
         if HEADING_RE.match(line):
             flush()
             buffer = [line]
-            current_heading = line.removeprefix("#").strip()
+            current_heading = line.lstrip("#").strip()
             recognized_headings += 1
         else:
             buffer.append(line)

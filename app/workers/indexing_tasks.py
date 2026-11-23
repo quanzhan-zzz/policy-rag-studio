@@ -15,6 +15,7 @@ async def _run_index_task(task_id: str):
     store = await PostgresStore.create(
         settings.database_url,
         seed_demo_data=False,
+        seed_official_data=False,
     )
     try:
         task = await execute_index_task(
@@ -49,6 +50,7 @@ async def _recover_stale_tasks() -> None:
     store = await PostgresStore.create(
         settings.database_url,
         seed_demo_data=False,
+        seed_official_data=False,
     )
     try:
         stale = await store.list_stale_index_tasks(settings.index_task_stale_seconds)

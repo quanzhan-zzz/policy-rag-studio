@@ -22,6 +22,10 @@ export type DocumentSummary = {
   index_task_id: string | null
   index_progress: number
   index_error: string | null
+  source_name: string | null
+  source_url: string | null
+  source_retrieved_at: string | null
+  source_sha256: string | null
 }
 
 export type IndexTask = {
