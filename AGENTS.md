@@ -16,6 +16,13 @@ Single-context layout with `GLOSSARY.md` and ADRs in `docs/adr/`. See `docs/agen
 
 Use `auto` mode with Claude and Codex effort set to `high`. See `docs/agents/cross-model.json`.
 
+## Testing
+
+Environment verification and E2E acceptance must use the real PostgreSQL/Redis stack and the
+configured real Embedding and LLM providers. Do not substitute a self-built mock server or
+deterministic demo provider for acceptance evidence. Isolated unit tests may use test doubles for
+internal control flow, but they never count as environment verification.
+
 ## Development planning
 
 Read `docs/development-roadmap.md` before choosing or starting the next milestone.

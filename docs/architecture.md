@@ -134,5 +134,5 @@ flowchart LR
 ## Delivery Automation
 
 GitHub Actions runs four gates: backend checks, frontend checks, PostgreSQL contract tests and
-Playwright E2E. The E2E compose override uses a deterministic mock LLM so CI does not depend on
-external model quota.
+Playwright E2E. The E2E gate requires repository secrets for the real Embedding and LLM providers;
+missing credentials fail the job instead of falling back to a mock provider.

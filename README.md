@@ -322,7 +322,8 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-`pnpm test:e2e` 需要前端和 API 已经启动。
+`pnpm test:e2e` 需要前端、API、PostgreSQL、真实 Embedding Provider 和真实 LLM 已经启动。
+环境验收不以 mock 模型或 Hash Embedding 的结果作为通过依据；CI 缺少真实模型 Secrets 时会直接失败。
 
 ## API 一览
 
