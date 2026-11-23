@@ -93,6 +93,7 @@ export type RetrievalResponse = {
 export type AnswerCitation = {
   source_id: number
   chunk_id: string
+  document_id: string
   document_title: string
   heading_path: string
   page: number

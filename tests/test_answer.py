@@ -41,6 +41,7 @@ async def test_build_context_numbers_citations() -> None:
     assert "[1]" in context
     assert citations[0].source_id == 1
     assert citations[0].chunk_id == run.results[0].chunk_id
+    assert citations[0].document_id == run.results[0].document_id
 
 
 @pytest.mark.asyncio

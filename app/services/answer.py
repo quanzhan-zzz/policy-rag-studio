@@ -55,6 +55,7 @@ def build_context(results: Sequence[RetrievedChunk]) -> tuple[str, list[AnswerCi
             AnswerCitation(
                 source_id=index,
                 chunk_id=result.chunk_id,
+                document_id=result.document_id,
                 document_title=result.document_title,
                 heading_path=result.heading_path,
                 page=result.page,

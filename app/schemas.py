@@ -141,6 +141,7 @@ class AnswerRequest(BaseModel):
 class AnswerCitation(BaseModel):
     source_id: int
     chunk_id: str
+    document_id: str
     document_title: str
     heading_path: str
     page: int
