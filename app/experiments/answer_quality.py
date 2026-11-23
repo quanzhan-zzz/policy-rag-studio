@@ -82,6 +82,8 @@ class CaseResult:
     judge: JudgeScore | None
     judge_error: str | None
     answer_error: str | None
+    expected_document_id: str = ""
+    gold_evidence: str = ""
 
 
 def _clamp_score(value: Any) -> int:
@@ -264,6 +266,8 @@ async def evaluate_case(
                 judge=None,
                 judge_error=None,
                 answer_error=f"{type(error).__name__}: {error}",
+                expected_document_id=case.expected_document_id,
+                gold_evidence=case.gold_evidence or "",
             )
 
         gold_rank = next(
@@ -322,6 +326,8 @@ async def evaluate_case(
             judge=judge,
             judge_error=judge_error,
             answer_error=None,
+            expected_document_id=case.expected_document_id,
+            gold_evidence=case.gold_evidence or "",
         )
 
 
@@ -407,6 +413,7 @@ def render_report(
         "",
         f"- Generated: {generated_at.isoformat()}",
         f"- Dataset: {dataset_name} / {split}",
+        f"- Dataset source: `data/eval/{dataset_name}.jsonl`",
         f"- Cases: {summary['case_count']}",
         f"- Embedding: {embedding_model}",
         f"- Reranker: {reranker_model}",
@@ -504,8 +511,13 @@ def render_report(
             "",
             "## Limitations",
             "",
-            f"- The dataset is synthetic and small ({summary['case_count']} cases); absolute "
-            "scores are not production claims.",
+            (
+                f"- The dataset contains hand-authored questions over official guides "
+                f"({summary['case_count']} cases); it is not observed production traffic."
+                if dataset_name == "policy-official-v1"
+                else f"- The dataset is synthetic and small ({summary['case_count']} cases); "
+                "absolute scores are not production claims."
+            ),
             "- The judge is the same model family as the answer model. Cross-model judging is "
             "recommended.",
             f"- A {review_size}-case human review sheet is generated next to this report; fill "
@@ -560,6 +572,11 @@ def render_review_sheet(
                 f"## {index}. `{result.case_id}`",
                 "",
                 f"**问题**：{result.query}",
+                "",
+                f"**目标文档 / 章节**：{result.expected_document_id or 'unknown'} / "
+                f"{result.expected_heading}",
+                "",
+                f"**Gold evidence**：{result.gold_evidence or 'missing'}",
                 "",
                 f"**回答**：{answer}",
                 "",
