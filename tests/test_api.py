@@ -37,6 +37,70 @@ def test_compare_api(client: TestClient) -> None:
     assert payload["runs"][-1]["results"]
 
 
+def test_compare_api_applies_metadata_filters_and_traces_them(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/retrieval/compare",
+        json={
+            "query": "公司变更法定代表人需要哪些材料？",
+            "strategies": ["hybrid_rerank"],
+            "chunk_strategy": "heading",
+            "top_k": 5,
+            "filters": {
+                "region": "常州市",
+                "item_type": "行政许可",
+                "official_only": True,
+            },
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["filters"]["official_only"] is True
+    results = payload["runs"][0]["results"]
+    assert results
+    assert {result["document_id"] for result in results} == {
+        "cz-company-change-registration"
+    }
+
+    trace = client.get(f"/api/v1/traces/{payload['runs'][0]['trace_id']}").json()
+    filter_stage = next(stage for stage in trace["stages"] if stage["key"] == "metadata_filter")
+    assert "item_type=行政许可" in filter_stage["detail"]
+    assert filter_stage["input_count"] is not None
+    assert filter_stage["input_count"] > filter_stage["output_count"]
+
+
+def test_compare_api_returns_clear_error_when_filters_match_nothing(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/api/v1/retrieval/compare",
+        json={
+            "query": "公司变更法定代表人需要哪些材料？",
+            "strategies": ["hybrid_rerank"],
+            "chunk_strategy": "heading",
+            "top_k": 5,
+            "filters": {"region": "南京市", "official_only": True},
+        },
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "没有符合筛选条件的可检索内容"
+
+
+def test_answer_api_returns_clear_error_when_filters_match_nothing(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/api/v1/answer",
+        json={
+            "query": "公司变更法定代表人需要哪些材料？",
+            "chunk_strategy": "heading",
+            "top_k": 5,
+            "filters": {"region": "南京市", "official_only": True},
+        },
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "没有符合筛选条件的可检索内容"
+
+
 def test_upload_api_queues_without_inline_indexing(client: TestClient) -> None:
     response = client.post(
         "/api/v1/documents",

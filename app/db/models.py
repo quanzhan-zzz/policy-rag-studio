@@ -22,6 +22,9 @@ from app.db.base import Base
 
 class DocumentRow(Base):
     __tablename__ = "documents"
+    __table_args__ = (
+        Index("ix_documents_region_item_type", "region", "item_type"),
+    )
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -45,6 +48,8 @@ class DocumentRow(Base):
         DateTime(timezone=True), nullable=True
     )
     source_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    region: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    item_type: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     chunks: Mapped[list["ChunkRow"]] = relationship(
         back_populates="document",

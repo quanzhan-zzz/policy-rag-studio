@@ -260,6 +260,29 @@ test split 的 20 条结果：
 报告保留完整回答、引用、Trace 和失败原因：
 [对抗评测报告](docs/experiments/20261124-adversarial-evaluation.md)。
 
+### 政策元数据过滤
+
+检索与回答 API 支持显式过滤地区、事项类型、部门、官方来源、生效日期和抓取时间。过滤在
+PostgreSQL 查询层完成，并在 Trace 中记录条件和候选数变化。
+
+```json
+{
+  "filters": {
+    "region": "常州市",
+    "item_type": "行政许可",
+    "official_only": true,
+    "effective_from": "2025-01-01",
+    "retrieved_from": "2026-01-01T00:00:00Z"
+  }
+}
+```
+
+在含旧版/注入干扰材料的隔离评测库中，官方过滤将 Document Precision@5 从 `0.60` 提升到
+`0.79`、MRR 从 `0.7725` 提升到 `0.8417`，P95 从 `2012 ms` 降至 `821 ms`。它同时把对抗集的
+注入材料暴露从 `4/4` 降到 `0/4`，但没有自动修复所有无依据推断。
+
+完整记录：[元数据过滤评测总结](docs/experiments/20261124-metadata-filter-evaluation-summary.md)。
+
 ## 技术栈
 
 **后端**

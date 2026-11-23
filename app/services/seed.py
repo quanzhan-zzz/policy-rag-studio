@@ -21,6 +21,8 @@ class SeedDocument:
     source_url: str | None = None
     source_retrieved_at: datetime | None = None
     source_sha256: str | None = None
+    region: str | None = None
+    item_type: str | None = None
 
 
 SEED_DOCUMENTS: tuple[SeedDocument, ...] = (
@@ -241,6 +243,8 @@ def load_official_documents() -> tuple[SeedDocument, ...]:
                 source_url=source_url,
                 source_retrieved_at=retrieved_at,
                 source_sha256=str(row["source_pdf_sha256"]),
+                region=str(row["region"]) if row.get("region") else None,
+                item_type=str(row["item_type"]) if row.get("item_type") else None,
             )
         )
     identifiers = [document.id for document in documents]

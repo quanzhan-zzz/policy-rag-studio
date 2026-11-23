@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-11-23T20:00:00.485087+00:00",
+  "dataset": "policy-official-v1",
+  "split": "test",
+  "embedding_model": "OpenAI-compatible embedding · qwen3.7-text-embedding-flash",
+  "reranker_model": "BGE reranker · BAAI/bge-reranker-base",
+  "metrics": [
+    {
+      "name": "unfiltered",
+      "filters": null,
+      "recall_at_5": 1.0,
+      "mrr": 0.7725,
+      "ndcg_at_5": 0.829,
+      "document_precision_at_5": 0.6,
+      "p95_ms": 2012.147,
+      "avg_candidate_count": 31.0,
+      "failures": [],
+      "ranks": {
+        "official-company-02": 1,
+        "official-company-04": 1,
+        "official-company-06": 1,
+        "official-company-08": 2,
+        "official-company-10": 1,
+        "official-company-12": 1,
+        "official-company-14": 1,
+        "official-company-16": 1,
+        "official-company-18": 3,
+        "official-company-20": 3,
+        "official-company-22": 1,
+        "official-company-24": 1,
+        "official-welfare-02": 4,
+        "official-welfare-04": 1,
+        "official-welfare-06": 1,
+        "official-welfare-08": 1,
+        "official-welfare-10": 5,
+        "official-welfare-12": 3,
+        "official-welfare-14": 1,
+        "official-welfare-16": 2
+      }
+    },
+    {
+      "name": "official_filter",
+      "filters": {
+        "region": "常州市",
+        "official_only": true
+      },
+      "recall_at_5": 1.0,
+      "mrr": 0.8417,
+      "ndcg_at_5": 0.8812,
+      "document_precision_at_5": 0.79,
+      "p95_ms": 820.72,
+      "avg_candidate_count": 24.0,
+      "failures": [],
+      "ranks": {
+        "official-company-02": 1,
+        "official-company-04": 1,
+        "official-company-06": 1,
+        "official-company-08": 1,
+        "official-company-10": 1,
+        "official-company-12": 1,
+        "official-company-14": 1,
+        "official-company-16": 1,
+        "official-company-18": 2,
+        "official-company-20": 2,
+        "official-company-22": 1,
+        "official-company-24": 1,
+        "official-welfare-02": 4,
+        "official-welfare-04": 1,
+        "official-welfare-06": 1,
+        "official-welfare-08": 1,
+        "official-welfare-10": 4,
+        "official-welfare-12": 3,
+        "official-welfare-14": 1,
+        "official-welfare-16": 1
+      }
+    }
+  ]
+}

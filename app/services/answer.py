@@ -101,14 +101,27 @@ async def prepare_answer(
     llm_provider: LLMProvider | None = None,
 ) -> AnswerPreparation:
     started_at = time.perf_counter()
-    chunks = await store.all_chunks(request.chunk_strategy)
+    filter_started = time.perf_counter()
+    chunks = await store.all_chunks(
+        request.chunk_strategy,
+        filters=request.filters,
+    )
     if not chunks:
+        if request.filters is not None and request.filters.has_conditions():
+            raise ValueError("没有符合筛选条件的可检索内容")
         raise ValueError("当前切片策略下没有可检索内容")
+    unfiltered_chunk_count = (
+        await store.count_chunks_for_strategy(request.chunk_strategy)
+        if request.filters is not None and request.filters.has_conditions()
+        else None
+    )
+    filter_latency_ms = (time.perf_counter() - filter_started) * 1000
     embedding_provider, dense_scores, dense_latency_ms = await prepare_dense_scores(
         store,
         chunks,
         request.query,
         request.chunk_strategy,
+        filters=request.filters,
     )
     run, trace = await asyncio.to_thread(
         run_retrieval,
@@ -120,6 +133,9 @@ async def prepare_answer(
         embedding_provider=embedding_provider,
         dense_scores_by_chunk=dense_scores,
         precomputed_latency_ms=dense_latency_ms,
+        filters=request.filters,
+        unfiltered_chunk_count=unfiltered_chunk_count,
+        filter_latency_ms=filter_latency_ms,
     )
     await store.record_trace(trace)
     context, citations = build_context(run.results)

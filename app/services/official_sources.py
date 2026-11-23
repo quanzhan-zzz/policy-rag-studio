@@ -68,6 +68,8 @@ class GuideSource:
     yw_code: str
     ql_code: str
     tags: tuple[str, ...]
+    region: str | None = None
+    item_type: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -255,6 +257,8 @@ def load_source_catalog(path: Path) -> SourceCatalog:
                 yw_code=str(item["yw_code"]),
                 ql_code=str(item["ql_code"]),
                 tags=tuple(str(tag) for tag in item.get("tags", [])),
+                region=str(item["region"]) if item.get("region") else None,
+                item_type=str(item["item_type"]) if item.get("item_type") else None,
             )
             for item in payload["guides"]
         )
@@ -488,11 +492,15 @@ def _import_one_guide(
         "text_sha256": text_hash,
         "text": parsed.text,
         "attachments": attachment_records,
+        "region": guide.region,
+        "item_type": guide.item_type,
     }
     manifest_entry: dict[str, object] = {
         "id": guide.id,
         "title": parsed.title,
         "source_url": str(detail_response.url),
+        "region": guide.region,
+        "item_type": guide.item_type,
         "source_pdf": {
             "remote_name": pdf.remote_name,
             "content_type": pdf.content_type,

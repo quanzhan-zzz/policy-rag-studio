@@ -32,13 +32,14 @@ from app.schemas import (
     IndexTaskKind,
     IndexTaskStatus,
     MetricRow,
+    RetrievalFilters,
     TraceRecord,
     TraceStage,
 )
 from app.services.chunking import chunk_document
 from app.services.embedding import EmbeddingProvider, get_embedding_provider
 from app.services.parsing import parse_document
-from app.services.seed import get_seed_documents
+from app.services.seed import SeedDocument, get_seed_documents
 from app.services.text import tokenize
 from app.store import (
     ALLOWED_TASK_TRANSITIONS,
@@ -151,6 +152,7 @@ class PostgresStore:
             include_official=include_official,
         ):
             if seed.id in existing_ids:
+                await self._refresh_seed_metadata(seed)
                 continue
             await self._create_document(
                 document_id=seed.id,
@@ -164,7 +166,32 @@ class PostgresStore:
                 source_url=seed.source_url,
                 source_retrieved_at=seed.source_retrieved_at,
                 source_sha256=seed.source_sha256,
+                region=seed.region,
+                item_type=seed.item_type,
             )
+
+    async def _refresh_seed_metadata(self, seed: SeedDocument) -> None:
+        if seed.source_url is None and seed.region is None and seed.item_type is None:
+            return
+        async with self.sessions() as session:
+            row = await session.get(DocumentRow, seed.id)
+            if row is None:
+                return
+            changed = False
+            for field in (
+                "source_name",
+                "source_url",
+                "source_retrieved_at",
+                "source_sha256",
+                "region",
+                "item_type",
+            ):
+                value = getattr(seed, field)
+                if value is not None and getattr(row, field) != value:
+                    setattr(row, field, value)
+                    changed = True
+            if changed:
+                await session.commit()
 
     async def _create_document(
         self,
@@ -180,6 +207,8 @@ class PostgresStore:
         source_url: str | None = None,
         source_retrieved_at: datetime | None = None,
         source_sha256: str | None = None,
+        region: str | None = None,
+        item_type: str | None = None,
     ) -> DocumentSummary:
         now = datetime.now(UTC)
         document = DocumentRow(
@@ -199,6 +228,8 @@ class PostgresStore:
             source_url=source_url,
             source_retrieved_at=source_retrieved_at,
             source_sha256=source_sha256,
+            region=region,
+            item_type=item_type,
         )
         all_chunks: list[ChunkRecord] = []
         for strategy in ChunkStrategy:
@@ -247,14 +278,26 @@ class PostgresStore:
             ).all()
         return [self._to_chunk(row) for row in rows]
 
-    async def all_chunks(self, strategy: ChunkStrategy) -> list[ChunkRecord]:
+    async def all_chunks(
+        self,
+        strategy: ChunkStrategy,
+        filters: RetrievalFilters | None = None,
+    ) -> list[ChunkRecord]:
         async with self.sessions() as session:
             rows = (
                 await session.scalars(
                     select(ChunkRow)
                     .join(DocumentRow, DocumentRow.id == ChunkRow.document_id)
-                    .where(ChunkRow.strategy == strategy.value)
-                    .order_by(DocumentRow.updated_at.desc(), ChunkRow.position)
+                    .where(
+                        ChunkRow.strategy == strategy.value,
+                        *self._filter_conditions(filters),
+                    )
+                    .order_by(
+                        DocumentRow.source_retrieved_at.desc().nullslast(),
+                        DocumentRow.effective_date.desc(),
+                        DocumentRow.updated_at.desc(),
+                        ChunkRow.position,
+                    )
                 )
             ).all()
         return [self._to_chunk(row) for row in rows]
@@ -264,6 +307,7 @@ class PostgresStore:
         strategy: ChunkStrategy,
         query_vector: list[float],
         limit: int = 64,
+        filters: RetrievalFilters | None = None,
     ) -> list[tuple[str, float]]:
         distance = EmbeddingRow.embedding.cosine_distance(query_vector).label("distance")
         async with self.sessions() as session:
@@ -271,9 +315,11 @@ class PostgresStore:
                 await session.execute(
                     select(ChunkRow.id, distance)
                     .join(EmbeddingRow, EmbeddingRow.chunk_id == ChunkRow.id)
+                    .join(DocumentRow, DocumentRow.id == ChunkRow.document_id)
                     .where(
                         ChunkRow.strategy == strategy.value,
                         EmbeddingRow.model_name == self.embedding_provider.name,
+                        *self._filter_conditions(filters),
                     )
                     .order_by(distance)
                     .limit(limit)
@@ -713,6 +759,25 @@ class PostgresStore:
         async with self.sessions() as session:
             return int(await session.scalar(select(func.count()).select_from(ChunkRow)) or 0)
 
+    async def count_chunks_for_strategy(
+        self,
+        strategy: ChunkStrategy,
+        filters: RetrievalFilters | None = None,
+    ) -> int:
+        async with self.sessions() as session:
+            return int(
+                await session.scalar(
+                    select(func.count())
+                    .select_from(ChunkRow)
+                    .join(DocumentRow, DocumentRow.id == ChunkRow.document_id)
+                    .where(
+                        ChunkRow.strategy == strategy.value,
+                        *self._filter_conditions(filters),
+                    )
+                )
+                or 0
+            )
+
     async def count_retrieval_runs(self) -> int:
         async with self.sessions() as session:
             return int(await session.scalar(select(func.count()).select_from(TraceRow)) or 0)
@@ -787,6 +852,43 @@ class PostgresStore:
         ]
 
     @staticmethod
+    def _filter_conditions(filters: RetrievalFilters | None):
+        if filters is None or not filters.has_conditions():
+            return []
+        conditions = []
+        if filters.region is not None:
+            conditions.append(func.lower(DocumentRow.region) == filters.region.lower())
+        if filters.item_type is not None:
+            conditions.append(
+                func.lower(DocumentRow.item_type) == filters.item_type.lower()
+            )
+        if filters.department is not None:
+            conditions.append(
+                func.lower(DocumentRow.department) == filters.department.lower()
+            )
+        if filters.official_only:
+            conditions.append(DocumentRow.source_url.is_not(None))
+        if filters.effective_from is not None:
+            conditions.extend(
+                [
+                    DocumentRow.effective_date.op("~")(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"),
+                    DocumentRow.effective_date >= filters.effective_from.isoformat(),
+                ]
+            )
+        if filters.effective_to is not None:
+            conditions.extend(
+                [
+                    DocumentRow.effective_date.op("~")(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"),
+                    DocumentRow.effective_date <= filters.effective_to.isoformat(),
+                ]
+            )
+        if filters.retrieved_from is not None:
+            conditions.append(DocumentRow.source_retrieved_at >= filters.retrieved_from)
+        if filters.retrieved_to is not None:
+            conditions.append(DocumentRow.source_retrieved_at <= filters.retrieved_to)
+        return conditions
+
+    @staticmethod
     def _to_document(row: DocumentRow) -> DocumentSummary:
         return DocumentSummary(
             id=row.id,
@@ -805,6 +907,8 @@ class PostgresStore:
             source_url=row.source_url,
             source_retrieved_at=row.source_retrieved_at,
             source_sha256=row.source_sha256,
+            region=row.region,
+            item_type=row.item_type,
         )
 
     @staticmethod

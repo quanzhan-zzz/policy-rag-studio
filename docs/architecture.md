@@ -115,11 +115,20 @@ erDiagram
     EVALUATION_RUNS }o--|| DOCUMENTS : evaluates
 ```
 
+## Metadata Filtering
+
+Region, item type, department, official-source and date filters are applied inside the
+PostgreSQL chunk queries before candidate material is loaded. The memory adapter uses the same
+predicates for contract consistency. Traces include a `metadata_filter` stage with the criteria,
+candidate counts and filter latency. Unmatched filters fail explicitly rather than falling back
+to another region or source.
+
 ## Retrieval and Grounding Flow
 
 ```mermaid
 flowchart LR
-    Q[Query] --> D[Dense / pgvector]
+    Q[Query] --> F[Metadata Filters]
+    F --> D[Dense / pgvector]
     Q --> B[BM25]
     D --> RRF[RRF Fusion]
     B --> RRF

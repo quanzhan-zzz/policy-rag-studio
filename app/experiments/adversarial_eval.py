@@ -7,7 +7,7 @@ from pathlib import Path
 
 from app.config import get_settings
 from app.db.postgres import PostgresStore
-from app.schemas import AnswerRequest, ChunkStrategy
+from app.schemas import AnswerRequest, ChunkStrategy, RetrievalFilters
 from app.services.adversarial_eval import (
     AdversarialCase,
     load_adversarial_cases,
@@ -78,6 +78,7 @@ async def _run_case(
     top_k: int,
     semaphore: asyncio.Semaphore,
     injection_document_ids: set[str],
+    filters: RetrievalFilters | None,
 ) -> CaseRun:
     async with semaphore:
         try:
@@ -87,6 +88,7 @@ async def _run_case(
                     query=case.query,
                     chunk_strategy=ChunkStrategy.HEADING,
                     top_k=top_k,
+                    filters=filters,
                 ),
             )
         except Exception as error:  # noqa: BLE001 - retain per-case evidence
@@ -201,6 +203,7 @@ def _render_report(
     embedding_model: str,
     reranker_model: str,
     answer_model: str,
+    filters: RetrievalFilters | None,
 ) -> str:
     pass_rate = _percent(summary["pass_rate"])
     false_rate = _percent(summary["false_answer_rate"])
@@ -216,6 +219,7 @@ def _render_report(
         f"- Embedding: {embedding_model}",
         f"- Reranker: {reranker_model}",
         f"- Answer model: {answer_model}",
+        f"- Filters: {filters.trace_detail() if filters else 'none'}",
         "",
         "## Summary",
         "",
@@ -307,7 +311,13 @@ def _render_report(
     return "\n".join(lines)
 
 
-async def run_evaluation(*, output: Path, concurrency: int, top_k: int) -> int:
+async def run_evaluation(
+    *,
+    output: Path,
+    concurrency: int,
+    top_k: int,
+    filters: RetrievalFilters | None = None,
+) -> int:
     settings = get_settings()
     if settings.store_backend != "postgres":
         raise SystemExit("Adversarial evaluation requires STORE_BACKEND=postgres")
@@ -335,6 +345,7 @@ async def run_evaluation(*, output: Path, concurrency: int, top_k: int) -> int:
                         top_k=top_k,
                         semaphore=semaphore,
                         injection_document_ids=injection_ids,
+                        filters=filters,
                     )
                     for case in cases
                 ]
@@ -353,6 +364,7 @@ async def run_evaluation(*, output: Path, concurrency: int, top_k: int) -> int:
         embedding_model=get_embedding_provider().name,
         reranker_model=get_reranker_provider().name,
         answer_model=get_llm_provider().name,
+        filters=filters,
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(report, encoding="utf-8")
@@ -361,6 +373,11 @@ async def run_evaluation(*, output: Path, concurrency: int, top_k: int) -> int:
             {
                 "generated_at": generated_at.isoformat(),
                 "summary": summary,
+                "filters": (
+                    filters.model_dump(mode="json", exclude_none=True)
+                    if filters
+                    else None
+                ),
                 "results": [asdict(result) for result in results],
                 "corpus_ids": corpus_ids,
             },
@@ -382,13 +399,26 @@ def main() -> None:
     )
     parser.add_argument("--concurrency", type=int, default=2)
     parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--official-only", action="store_true")
+    parser.add_argument("--region")
+    parser.add_argument("--item-type")
+    parser.add_argument("--department")
     args = parser.parse_args()
+    filters = RetrievalFilters(
+        region=args.region,
+        item_type=args.item_type,
+        department=args.department,
+        official_only=args.official_only,
+    )
+    if not filters.has_conditions():
+        filters = None
     raise SystemExit(
         asyncio.run(
             run_evaluation(
                 output=args.output,
                 concurrency=args.concurrency,
                 top_k=args.top_k,
+                filters=filters,
             )
         )
     )

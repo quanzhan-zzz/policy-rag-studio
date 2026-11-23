@@ -2,12 +2,14 @@
   "schema_version": 1,
   "source_name": "江苏政务服务网·常州法人服务",
   "list_url": "https://cz.jszwfw.gov.cn/jszwfw/bscx/itemlist/fr_index.do?webId=5&themid=allzt&deptid=",
-  "generated_at": "2026-11-23T18:30:39.345165Z",
+  "generated_at": "2026-11-23T19:55:53.229649Z",
   "guides": [
     {
       "id": "cz-company-change-registration",
       "title": "公司变更登记注册（设区的市级权限）",
       "source_url": "https://cz.jszwfw.gov.cn/jszwfw/bscx/itemlist/bszn.do?webId=5&iddept_yw_inf=113204000141102350332013104500202&ql_kind=01&iddept_ql_inf=1132040001411023503320131045002",
+      "region": "常州市",
+      "item_type": "行政许可",
       "source_pdf": {
         "remote_name": "公司变更登记注册（设区的市级权限）(详版).pdf",
         "content_type": "application/octet-stream",
@@ -38,6 +40,8 @@
       "id": "cz-public-welfare-post-subsidy",
       "title": "用人单位公益性岗位补贴和社保补贴申领",
       "source_url": "https://cz.jszwfw.gov.cn/jszwfw/publicservice/itemlist/showDetail.do?webId=5&iddept_yw_inf=11320400014110315K332201431400601&ql_kind=20&iddept_ql_inf=11320400014110315K3322014314006",
+      "region": "常州市",
+      "item_type": "公共服务",
       "source_pdf": {
         "remote_name": "用人单位公益性岗位补贴和社保补贴申领(详版).pdf",
         "content_type": "application/octet-stream",

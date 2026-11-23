@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from hashlib import sha256
 from threading import RLock
 from typing import Protocol
@@ -14,6 +14,7 @@ from app.schemas import (
     IndexTask,
     IndexTaskKind,
     IndexTaskStatus,
+    RetrievalFilters,
     TraceRecord,
     TraceStage,
 )
@@ -80,14 +81,25 @@ class Store(Protocol):
         strategy: ChunkStrategy,
     ) -> list[ChunkRecord]: ...
 
-    async def all_chunks(self, strategy: ChunkStrategy) -> list[ChunkRecord]: ...
+    async def all_chunks(
+        self,
+        strategy: ChunkStrategy,
+        filters: RetrievalFilters | None = None,
+    ) -> list[ChunkRecord]: ...
 
     async def dense_scores(
         self,
         strategy: ChunkStrategy,
         query_vector: list[float],
         limit: int = 64,
+        filters: RetrievalFilters | None = None,
     ) -> list[tuple[str, float]]: ...
+
+    async def count_chunks_for_strategy(
+        self,
+        strategy: ChunkStrategy,
+        filters: RetrievalFilters | None = None,
+    ) -> int: ...
 
     async def update_chunk(self, chunk_id: str, text: str) -> ChunkRecord | None: ...
 
@@ -217,6 +229,8 @@ class InMemoryStore:
                 source_url=seed.source_url,
                 source_retrieved_at=seed.source_retrieved_at,
                 source_sha256=seed.source_sha256,
+                region=seed.region,
+                item_type=seed.item_type,
             )
 
     def _create_document(
@@ -232,6 +246,8 @@ class InMemoryStore:
         source_url: str | None = None,
         source_retrieved_at: datetime | None = None,
         source_sha256: str | None = None,
+        region: str | None = None,
+        item_type: str | None = None,
     ) -> DocumentSummary:
         now = datetime.now(UTC)
         chunks_by_strategy: dict[ChunkStrategy, list[ChunkRecord]] = {}
@@ -256,6 +272,8 @@ class InMemoryStore:
             source_url=source_url,
             source_retrieved_at=source_retrieved_at,
             source_sha256=source_sha256,
+            region=region,
+            item_type=item_type,
         )
         self.documents[document_id] = document
         self.document_text[document_id] = text
@@ -278,10 +296,14 @@ class InMemoryStore:
         with self.lock:
             return list(self.chunks.get((document_id, strategy), []))
 
-    async def all_chunks(self, strategy: ChunkStrategy) -> list[ChunkRecord]:
+    async def all_chunks(
+        self,
+        strategy: ChunkStrategy,
+        filters: RetrievalFilters | None = None,
+    ) -> list[ChunkRecord]:
         with self.lock:
             result: list[ChunkRecord] = []
-            for document in self.documents.values():
+            for document in self._matching_documents(filters):
                 result.extend(self.chunks.get((document.id, strategy), []))
             return result
 
@@ -290,11 +312,12 @@ class InMemoryStore:
         strategy: ChunkStrategy,
         query_vector: list[float],
         limit: int = 64,
+        filters: RetrievalFilters | None = None,
     ) -> list[tuple[str, float]]:
         with self.lock:
             chunks = [
                 chunk
-                for document in self.documents.values()
+                for document in self._matching_documents(filters)
                 for chunk in self.chunks.get((document.id, strategy), [])
             ]
             scores = [
@@ -701,9 +724,31 @@ class InMemoryStore:
         with self.lock:
             return len(self.chunk_index)
 
+    async def count_chunks_for_strategy(
+        self,
+        strategy: ChunkStrategy,
+        filters: RetrievalFilters | None = None,
+    ) -> int:
+        with self.lock:
+            return sum(
+                len(self.chunks.get((document.id, strategy), []))
+                for document in self._matching_documents(filters)
+            )
+
     async def count_retrieval_runs(self) -> int:
         with self.lock:
             return len(self.traces)
+
+    def _matching_documents(
+        self,
+        filters: RetrievalFilters | None,
+    ) -> list[DocumentSummary]:
+        documents = [
+            document
+            for document in self.documents.values()
+            if _document_matches_filters(document, filters)
+        ]
+        return sorted(documents, key=_document_version_key, reverse=True)
 
     def _remember_vectors(self, chunks: list[ChunkRecord]) -> None:
         if not chunks:
@@ -720,3 +765,63 @@ class InMemoryStore:
     @staticmethod
     def _cosine(left: list[float], right: list[float]) -> float:
         return sum(a * b for a, b in zip(left, right, strict=True))
+
+
+def _document_matches_filters(
+    document: DocumentSummary,
+    filters: RetrievalFilters | None,
+) -> bool:
+    if filters is None or not filters.has_conditions():
+        return True
+    if filters.region is not None and (
+        (document.region or "").casefold() != filters.region.casefold()
+    ):
+        return False
+    if filters.item_type is not None and (
+        (document.item_type or "").casefold() != filters.item_type.casefold()
+    ):
+        return False
+    if filters.department is not None and (
+        document.department.casefold() != filters.department.casefold()
+    ):
+        return False
+    if filters.official_only and not document.source_url:
+        return False
+    effective_date = _parse_effective_date(document.effective_date)
+    if filters.effective_from is not None and (
+        effective_date is None or effective_date < filters.effective_from
+    ):
+        return False
+    if filters.effective_to is not None and (
+        effective_date is None or effective_date > filters.effective_to
+    ):
+        return False
+    if filters.retrieved_from is not None and (
+        document.source_retrieved_at is None
+        or document.source_retrieved_at < filters.retrieved_from
+    ):
+        return False
+    if filters.retrieved_to is not None and (
+        document.source_retrieved_at is None
+        or document.source_retrieved_at > filters.retrieved_to
+    ):
+        return False
+    return True
+
+
+def _parse_effective_date(value: str) -> date | None:
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _document_version_key(document: DocumentSummary) -> tuple[datetime, date, datetime]:
+    retrieved_at = document.source_retrieved_at or datetime.min.replace(tzinfo=UTC)
+    if retrieved_at.tzinfo is None:
+        retrieved_at = retrieved_at.replace(tzinfo=UTC)
+    effective_date = _parse_effective_date(document.effective_date) or date.min
+    updated_at = document.updated_at
+    if updated_at.tzinfo is None:
+        updated_at = updated_at.replace(tzinfo=UTC)
+    return retrieved_at, effective_date, updated_at
