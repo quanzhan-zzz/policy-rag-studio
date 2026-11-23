@@ -131,6 +131,7 @@ class EvaluationCase:
     expected_heading: str
     failure_type: str
     split: str = "smoke"
+    gold_evidence: str | None = None
 
 
 EVALUATION_CASES: tuple[EvaluationCase, ...] = (

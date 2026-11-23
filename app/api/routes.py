@@ -259,7 +259,7 @@ async def evaluation_summary(
     store: StoreDep,
     dataset: Annotated[
         str,
-        Query(pattern="^(smoke|policy-synthetic-v1)$"),
+        Query(pattern="^(smoke|policy-synthetic-v1|policy-official-v1)$"),
     ] = "policy-synthetic-v1",
     split: Annotated[str, Query(pattern="^(dev|test|all)$")] = "test",
 ) -> EvaluationSummary:

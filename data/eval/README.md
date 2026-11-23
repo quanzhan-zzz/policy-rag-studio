@@ -22,6 +22,21 @@ that limitation.
 The test split must not be used to tune chunk sizes, RRF parameters or reranker prompts. Use the
 development split for iteration and the test split only for final comparison.
 
+## `policy-official-v1.jsonl`
+
+- 40 hand-written answerable cases from two official JZSWFW guides
+- 20 `dev` cases and 20 `test` cases, fixed at creation time
+- Each case records target document, target section, gold evidence summary and failure type
+- Questions cover departments, service locations, conditions, materials, processes, deadlines,
+  fees, results, legal basis, FAQs and contact information
+- Labels are validated against the official seed corpus in `tests/test_evaluation_dataset.py`
+
+The test split must not be used to tune chunking, RRF, reranker prompts or query rewriting. Use
+`dev` for iteration and run `test` only for final comparisons.
+
+This benchmark uses official materials but its questions are hand-authored; it is not observed
+production traffic.
+
 ## `smoke`
 
 The original 10 hand-written cases remain in `app/services/seed.py::EVALUATION_CASES` for fast

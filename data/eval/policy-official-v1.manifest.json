@@ -1,0 +1,19 @@
+{
+  "dataset": "policy-official-v1",
+  "kind": "hand-authored answerable questions over official guides",
+  "path": "data/eval/policy-official-v1.jsonl",
+  "sha256": "89d13fca86a7a7db524721512f563cfb62c6e4be2217646fed3e15026341a96c",
+  "case_count": 40,
+  "dev_count": 20,
+  "test_count": 20,
+  "source_documents": [
+    {
+      "id": "cz-company-change-registration",
+      "source": "data/official/jszwfw-guides.v1.manifest.json"
+    },
+    {
+      "id": "cz-public-welfare-post-subsidy",
+      "source": "data/official/jszwfw-guides.v1.manifest.json"
+    }
+  ]
+}

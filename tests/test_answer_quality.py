@@ -25,6 +25,7 @@ def _case() -> EvaluationCase:
         expected_document_id="doc-1",
         expected_heading="三、申请材料",
         failure_type="test",
+        gold_evidence="应提交申请书和身份证明。",
     )
 
 
@@ -208,6 +209,8 @@ def test_review_sheet_contains_blank_human_decision() -> None:
         judge=None,
         judge_error="timeout",
         answer_error=None,
+        expected_document_id="doc-1",
+        gold_evidence="应提交申请书和身份证明。",
     )
 
     sheet = render_review_sheet(
@@ -221,3 +224,4 @@ def test_review_sheet_contains_blank_human_decision() -> None:
     assert "judge unavailable" in sheet
     assert "申请书和身份证明。[1]" in sheet
     assert "提交申请书和身份证明。" in sheet
+    assert "**Gold evidence**：应提交申请书和身份证明。" in sheet

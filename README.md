@@ -229,6 +229,21 @@ uv run python -m app.experiments.answer_quality \
 - [原始 JSON](docs/experiments/20261122-answer-quality-test.json)
 - [人工复核工作表](docs/experiments/20261122-answer-quality-test-review.md)
 
+## 官方办事指南评测
+
+在独立 PostgreSQL 评测库、真实 Qwen Embedding 与真实 GLM 链路上，使用 40 条人工编写问题
+（20 dev / 20 test）评测两份官方指南。数据集校验和记录在
+[`policy-official-v1.manifest.json`](data/eval/policy-official-v1.manifest.json)。
+
+test split 的 20 条结果：
+
+- BGE Reranker：Recall@5 `100%`、MRR `0.8417`、nDCG@5 `0.8812`、P95 `1102.1 ms`
+- 回答引用召回 `100%`、引用精确 `66.8%`、无效引用 `0%`
+- Grounding supported `100%`、LLM 裁判通过率 `100%`，但裁判与回答使用同一模型
+- 20 条人工复核工作表已生成，**尚未完成人工结论**
+
+完整记录：[官方指南评测总结](docs/experiments/20261124-official-guide-evaluation-summary.md)。
+
 ## 技术栈
 
 **后端**

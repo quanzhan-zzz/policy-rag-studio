@@ -175,7 +175,7 @@ def render_report(
         f"- Dataset: {dataset_name} / {split}",
         f"- Dataset cases: {case_count}",
         f"- Embedding provider: {embedding_provider}",
-        "- Dataset source: `data/eval/policy-synthetic-v1.jsonl`",
+        f"- Dataset source: `data/eval/{dataset_name}.jsonl`",
         "- Strategy: Hybrid RRF + Top-30 candidate reranking + Top-5 evaluation",
         "",
         "## Results",
@@ -229,7 +229,12 @@ def render_report(
             "",
             "## Limitations",
             "",
-            "- This is a synthetic policy retrieval set, not observed production traffic.",
+            (
+                "- Questions are hand-authored over official guides, not observed production "
+                "traffic."
+                if dataset_name == "policy-official-v1"
+                else "- This is a synthetic policy retrieval set, not observed production traffic."
+            ),
             "- Token usage and monetary cost are not yet recorded by the shared LLM provider.",
             "- A non-zero fallback count means reranker errors affected the measured result.",
             "- Local BGE model loading is excluded by a warmup call; API monetary cost is zero, "

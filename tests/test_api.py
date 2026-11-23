@@ -100,6 +100,19 @@ def test_evaluation_api_persists_snapshot(client: TestClient) -> None:
     assert overview["last_evaluation"]["id"] == evaluation["id"]
 
 
+def test_official_evaluation_dataset_api(client: TestClient) -> None:
+    response = client.get(
+        "/api/v1/evaluations/summary",
+        params={"dataset": "policy-official-v1", "split": "test"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["dataset_name"] == "policy-official-v1"
+    assert payload["split"] == "test"
+    assert payload["case_count"] == 20
+    assert len(payload["rows"]) == 4
+
+
 def test_overview_api(client: TestClient) -> None:
     response = client.get("/api/v1/overview")
     assert response.status_code == 200
