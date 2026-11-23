@@ -50,6 +50,13 @@ production traffic.
 This is a bounded adversarial regression set. It does not guarantee protection against every
 prompt-injection or policy-conflict scenario.
 
+## `policy-multicondition-v1.jsonl`
+
+- 12 条人工编写的多章节问题：6 dev / 6 test
+- 每条记录目标文档、必须覆盖的章节、约束摘要和固定切分
+- 用于查询规划评测，不用于回答质量平均分
+- checksum 位于 `policy-multicondition-v1.manifest.json`
+
 ## `smoke`
 
 The original 10 hand-written cases remain in `app/services/seed.py::EVALUATION_CASES` for fast

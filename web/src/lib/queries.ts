@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import type { ChunkStrategy, RetrievalFilters, RetrievalStrategy } from '../types'
+import type {
+  ChunkStrategy,
+  QueryPlanningMode,
+  RetrievalFilters,
+  RetrievalStrategy,
+} from '../types'
 import { api } from './api'
 
 export function useHealth() {
@@ -128,6 +133,7 @@ export function useAnswer() {
       top_k: number
       temperature?: number
       filters?: RetrievalFilters
+      query_planning_mode?: QueryPlanningMode
     }) => api.answer(payload),
   })
 }

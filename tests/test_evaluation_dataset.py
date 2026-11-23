@@ -8,6 +8,7 @@ from app.config import get_settings
 from app.schemas import ChunkStrategy
 from app.services.embedding import HashEmbeddingProvider
 from app.services.evaluation_dataset import get_evaluation_dataset
+from app.services.multicondition_dataset import load_multicondition_cases
 from app.store import InMemoryStore
 
 
@@ -98,3 +99,46 @@ def test_official_dataset_checksum_is_frozen() -> None:
     assert manifest["case_count"] == 40
     assert manifest["dev_count"] == 20
     assert manifest["test_count"] == 20
+
+
+@pytest.mark.asyncio
+async def test_multicondition_dataset_has_real_sections() -> None:
+    all_cases = load_multicondition_cases("all")
+    dev_cases = load_multicondition_cases("dev")
+    test_cases = load_multicondition_cases("test")
+    store = InMemoryStore(
+        HashEmbeddingProvider(dimensions=get_settings().hash_embedding_dimensions),
+        seed_demo_data=False,
+        seed_official_data=True,
+    )
+    chunks = await store.all_chunks(ChunkStrategy.HEADING)
+    labels = {(chunk.document_id, chunk.heading_path) for chunk in chunks}
+    missing = [
+        (case.id, section)
+        for case in all_cases
+        for section in case.expected_sections
+        if (case.expected_document_id, section) not in labels
+    ]
+
+    manifest = json.loads(
+        (
+            Path(__file__).resolve().parents[1]
+            / "data"
+            / "eval"
+            / "policy-multicondition-v1.manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert hashlib.sha256(
+        (
+            Path(__file__).resolve().parents[1]
+            / "data"
+            / "eval"
+            / "policy-multicondition-v1.jsonl"
+        ).read_bytes()
+    ).hexdigest() == manifest["sha256"]
+    assert len(all_cases) == 12
+    assert len(dev_cases) == 6
+    assert len(test_cases) == 6
+    assert {case.id for case in dev_cases}.isdisjoint({case.id for case in test_cases})
+    assert missing == []
+    assert all(len(case.expected_sections) >= 1 for case in all_cases)

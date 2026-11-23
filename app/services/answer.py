@@ -6,17 +6,24 @@ from dataclasses import dataclass
 from threading import Event
 from typing import Any
 
+from app.config import get_settings
 from app.schemas import (
     AnswerCitation,
     AnswerRequest,
     AnswerResponse,
+    QueryPlanningMode,
     RetrievalRun,
     RetrievalStrategy,
     RetrievedChunk,
     TraceStage,
 )
 from app.services.llm import LLMProvider, TokenUsage, get_llm_provider
-from app.services.retrieval import prepare_dense_scores, run_retrieval
+from app.services.query_planning import plan_query
+from app.services.retrieval import (
+    prepare_dense_scores,
+    run_planned_retrieval,
+    run_retrieval,
+)
 from app.store import Store
 
 SYSTEM_PROMPT = """你是政务政策检索助手。
@@ -116,27 +123,50 @@ async def prepare_answer(
         else None
     )
     filter_latency_ms = (time.perf_counter() - filter_started) * 1000
-    embedding_provider, dense_scores, dense_latency_ms = await prepare_dense_scores(
-        store,
-        chunks,
-        request.query,
-        request.chunk_strategy,
-        filters=request.filters,
+    provider = llm_provider or get_llm_provider()
+    settings = get_settings()
+    mode = request.query_planning_mode or QueryPlanningMode(
+        settings.query_planning_mode
     )
-    run, trace = await asyncio.to_thread(
-        run_retrieval,
-        chunks=chunks,
-        query=request.query,
-        strategy=RetrievalStrategy.HYBRID_RERANK,
-        chunk_strategy=request.chunk_strategy,
-        top_k=request.top_k,
-        embedding_provider=embedding_provider,
-        dense_scores_by_chunk=dense_scores,
-        precomputed_latency_ms=dense_latency_ms,
-        filters=request.filters,
-        unfiltered_chunk_count=unfiltered_chunk_count,
-        filter_latency_ms=filter_latency_ms,
-    )
+    if mode is QueryPlanningMode.NONE:
+        embedding_provider, dense_scores, dense_latency_ms = await prepare_dense_scores(
+            store,
+            chunks,
+            request.query,
+            request.chunk_strategy,
+            filters=request.filters,
+        )
+        run, trace = await asyncio.to_thread(
+            run_retrieval,
+            chunks=chunks,
+            query=request.query,
+            strategy=RetrievalStrategy.HYBRID_RERANK,
+            chunk_strategy=request.chunk_strategy,
+            top_k=request.top_k,
+            embedding_provider=embedding_provider,
+            dense_scores_by_chunk=dense_scores,
+            precomputed_latency_ms=dense_latency_ms,
+            filters=request.filters,
+            unfiltered_chunk_count=unfiltered_chunk_count,
+            filter_latency_ms=filter_latency_ms,
+        )
+    else:
+        plan = await plan_query(
+            request.query,
+            mode,
+            llm_provider=provider,
+            timeout_seconds=settings.query_planning_timeout_seconds,
+            max_subqueries=settings.query_planning_max_subqueries,
+        )
+        run, trace = await run_planned_retrieval(
+            store,
+            chunks,
+            plan,
+            top_k=request.top_k,
+            filters=request.filters,
+            unfiltered_chunk_count=unfiltered_chunk_count,
+            filter_latency_ms=filter_latency_ms,
+        )
     await store.record_trace(trace)
     context, citations = build_context(run.results)
     messages = [
@@ -147,7 +177,7 @@ async def prepare_answer(
         },
     ]
     return AnswerPreparation(
-        provider=llm_provider or get_llm_provider(),
+        provider=provider,
         run=run,
         citations=citations,
         messages=messages,

@@ -1,0 +1,9 @@
+{
+  "dataset": "policy-multicondition-v1",
+  "path": "data/eval/policy-multicondition-v1.jsonl",
+  "sha256": "09671553dfb56bea4328d66add5d83143020733e74d5cdd4a943cda828d3e5a8",
+  "case_count": 12,
+  "dev_count": 6,
+  "test_count": 6,
+  "kind": "hand-authored multi-section policy questions"
+}

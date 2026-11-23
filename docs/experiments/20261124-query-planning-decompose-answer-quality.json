@@ -1,0 +1,1027 @@
+{
+  "generated_at": "2026-11-23T20:47:41.065322+00:00",
+  "dataset": "policy-official-v1",
+  "split": "test",
+  "embedding_model": "OpenAI-compatible embedding · qwen3.7-text-embedding-flash",
+  "reranker_model": "BGE reranker · BAAI/bge-reranker-base",
+  "answer_model": "OpenAI-compatible chat · glm-5.3-flash",
+  "query_planning_mode": "decompose",
+  "judge_model": "OpenAI-compatible chat · glm-5.3-flash",
+  "judge_enabled": true,
+  "top_k": 5,
+  "review_size": 20,
+  "summary": {
+    "case_count": 20,
+    "answered": 20,
+    "answer_errors": 0,
+    "retrieval_hit_rate": 1.0,
+    "citation_precision": 0.6583,
+    "citation_recall": 1.0,
+    "invalid_citation_rate": 0.0,
+    "grounding_supported_rate": 1.0,
+    "reranker_fallbacks": 0,
+    "judged": 20,
+    "judge_errors": 0,
+    "judge_pass_rate": 1.0,
+    "avg_faithfulness": 5.0,
+    "avg_relevance": 5.0,
+    "avg_completeness": 4.8,
+    "avg_answer_ms": 12170.6,
+    "avg_total_tokens": 1218.5
+  },
+  "results": [
+    {
+      "case_id": "official-company-02",
+      "query": "到常州市政务服务中心办理公司变更登记应该去哪个窗口？",
+      "expected_heading": "窗口办理",
+      "trace_id": "tr_77d528f323",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "到常州市政务服务中心办理公司变更登记，请前往：**常州市锦绣路2号常州市政务服务中心1-1号楼2楼B区B3窗口** [1]。\n\n办理时间为周一至周五，上午09:00-12:00，下午13:00-17:00，法定节假日除外 [1]。\n\n温馨提示：请提前备齐《公司登记（备案）申请书》等必要材料 [3]。",
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1,
+        3
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "窗口办理",
+          "page": 1,
+          "text": "## 窗口办理\n是否进驻政务大厅 | 是\n办理地点 | 常州市锦绣路2号常州市政务服务中心1-1号楼2楼B区B3窗口\n办理时间 | 周一至周五，上午 09:00-12:00,下午 13:00-17:00，法定节假日除外"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 《公司登记（备案）申请书》 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公司变更登记事项涉及修改公司章程的，提交修改后的公司章程或公司章程修正案，以及公司依法作出的修改公司章程的决议或决定等文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 变更公司名称：向登记机关提出申请（经营范围涉及前置许可且需变更名称的，应当先办理公司名称自主申报）。 | 申请人自备 | 1份 | 必要 | 查看更多\n4 | 变更住所：提交变更后住所使用相关文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n5 | 变更经营范围：应当按照国家市场监督管理总局公布的经营项目分类标准办理经营范围登记。经营范围中有法律、行政法规和国务院决定规定在登记前依法须经批准的项目的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n6 | 变更法定代表人：提交新任法定代表人的自然人身份证明复印件，以及载明法定代表人任免职情况的相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n7 | 法定代表人更改姓名：提交本人更改姓名后的身份证明复印件及公安部门出具的证明。 | 申请人自备 | 1份 | 必要 | 查看更多\n8 | 增加注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n9 | 减少注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n10 | 有限责任公司变更股东，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n11 | 因股东或发起人自身更名，需要变更登记的股东或发起人名称或姓名：提交股东或发起人名称或姓名变更证明，以及更名后新的主体资格文件或自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n12 | 申请材料的人员（经办人）的自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n13 | 有限责任公司变更为股份有限公司，或股份有限公司变更为有限责任公司的，应当符合《公司法》规定，按照变更后的公司类型设立登记条件提交相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n14 | 法律、行政法规和国务院决定规定公司变更登记事项必须报经批准的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 20866.051,
+      "total_tokens": 1285,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确引用证据[1]给出窗口地点和办理时间，材料提示也有证据[3]支持。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "办理地点为常州市锦绣路2号常州市政务服务中心1-1号楼2楼B区B3窗口。"
+    },
+    {
+      "case_id": "official-company-04",
+      "query": "哪些主体可以作为公司变更登记的服务对象？",
+      "expected_heading": "受理标准",
+      "trace_id": "tr_eb6af7ab39",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "根据公司变更登记注册（设区的市级权限）的受理标准，服务对象包括：**自然人、企业法人、事业法人、社会组织法人、非法人企业、行政机关、其他组织** [1]。",
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 自然人,企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n登记机关应当对申请材料进行形式审查。对申请材料齐全、符合法定形式的予以确认并当场登记。不能当场登记的，应当在3个工作日内予以登记；情形复杂的，经登记机关负责人批准，可以再延长3个工作日。申请材料不齐全或者不符合法定形式的，登记机关应当一次性告知申请人需要补正的材料。 登记申请不符合法律、行政法规规定，或者可能危害国家安全、社会公共利益的，登记机关不予登记并说明理由。^"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 20907.34,
+      "total_tokens": 1685,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确引用证据[1]中的服务对象清单，完整且无多余推断。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "服务对象包括自然人、企业法人、事业法人、社会组织法人、非法人企业、行政机关和其他组织。"
+    },
+    {
+      "case_id": "official-company-06",
+      "query": "公司变更登记情形复杂时最多还能延长几个工作日？",
+      "expected_heading": "受理标准",
+      "trace_id": "tr_4436acf162",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "**最多可再延长3个工作日。**\n\n依据受理标准：公司变更登记不能当场登记的，应当在3个工作日内予以登记；情形复杂的，经登记机关负责人批准，可以再延长3个工作日 [1]。",
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 自然人,企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n登记机关应当对申请材料进行形式审查。对申请材料齐全、符合法定形式的予以确认并当场登记。不能当场登记的，应当在3个工作日内予以登记；情形复杂的，经登记机关负责人批准，可以再延长3个工作日。申请材料不齐全或者不符合法定形式的，登记机关应当一次性告知申请人需要补正的材料。 登记申请不符合法律、行政法规规定，或者可能危害国家安全、社会公共利益的，登记机关不予登记并说明理由。^"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 10614.807,
+      "total_tokens": 706,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确引用证据[1]，明确情形复杂时经批准可再延长3个工作日，完全切题且有证据支持。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "情形复杂的，经登记机关负责人批准，可以再延长3个工作日。"
+    },
+    {
+      "case_id": "official-company-08",
+      "query": "公司变更登记支持网上、窗口和快递申请吗？需要到现场吗？",
+      "expected_heading": "基本信息",
+      "trace_id": "tr_452fde85ef",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "**支持。** 根据政策片段，公司变更登记注册（设区的市级权限）的办理形式包括**窗口办理、网上办理、快递申请**三种方式，且**到办事现场次数为0次**，即无需到现场即可办理 [1]。\n\n补充说明：\n- 该事项不收费，为承诺件，无特别程序和中介服务 [1]。\n- 办理需准备《公司登记（备案）申请书》等材料（材料清单详见办理材料要求）[3]。\n- 受理标准：材料齐全、符合法定形式的予以确认并当场登记；不能当场登记的，3个工作日内登记，复杂情形经批准可再延长3个工作日 [4]。",
+      "citation_precision": 0.3333,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1,
+        3,
+        4
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "基本信息",
+          "page": 1,
+          "text": "## 基本信息\n承诺件 不收费\n事项类型 | 行政许可 | 基本编码 | 320131045002\n业务办理项编码 | 113204000141102350332013104500202\n行使层级 | 市级 | 办理形式 | 窗口办理,网上办理,快递申请\n到办事现场次数 | 0\n特别程序 | 无 | 中介服务 | 无中介服务事项"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 《公司登记（备案）申请书》 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公司变更登记事项涉及修改公司章程的，提交修改后的公司章程或公司章程修正案，以及公司依法作出的修改公司章程的决议或决定等文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 变更公司名称：向登记机关提出申请（经营范围涉及前置许可且需变更名称的，应当先办理公司名称自主申报）。 | 申请人自备 | 1份 | 必要 | 查看更多\n4 | 变更住所：提交变更后住所使用相关文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n5 | 变更经营范围：应当按照国家市场监督管理总局公布的经营项目分类标准办理经营范围登记。经营范围中有法律、行政法规和国务院决定规定在登记前依法须经批准的项目的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n6 | 变更法定代表人：提交新任法定代表人的自然人身份证明复印件，以及载明法定代表人任免职情况的相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n7 | 法定代表人更改姓名：提交本人更改姓名后的身份证明复印件及公安部门出具的证明。 | 申请人自备 | 1份 | 必要 | 查看更多\n8 | 增加注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n9 | 减少注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n10 | 有限责任公司变更股东，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n11 | 因股东或发起人自身更名，需要变更登记的股东或发起人名称或姓名：提交股东或发起人名称或姓名变更证明，以及更名后新的主体资格文件或自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n12 | 申请材料的人员（经办人）的自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n13 | 有限责任公司变更为股份有限公司，或股份有限公司变更为有限责任公司的，应当符合《公司法》规定，按照变更后的公司类型设立登记条件提交相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n14 | 法律、行政法规和国务院决定规定公司变更登记事项必须报经批准的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多"
+        },
+        {
+          "source_id": 4,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 自然人,企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n登记机关应当对申请材料进行形式审查。对申请材料齐全、符合法定形式的予以确认并当场登记。不能当场登记的，应当在3个工作日内予以登记；情形复杂的，经登记机关负责人批准，可以再延长3个工作日。申请材料不齐全或者不符合法定形式的，登记机关应当一次性告知申请人需要补正的材料。 登记申请不符合法律、行政法规规定，或者可能危害国家安全、社会公共利益的，登记机关不予登记并说明理由。^"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 14011.124,
+      "total_tokens": 1435,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确引用证据[1]说明三种办理形式及现场次数为0，补充信息亦有证据支持。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "办理形式为窗口办理、网上办理、快递申请，到办事现场次数为0次。"
+    },
+    {
+      "case_id": "official-company-10",
+      "query": "公司经营范围涉及前置许可时，变更公司名称应先办什么？",
+      "expected_heading": "办理材料",
+      "trace_id": "tr_001e4102b3",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "根据政策片段，经营范围涉及前置许可且需变更名称的，应当**先办理公司名称自主申报**，然后再向登记机关提出名称变更申请 [1]。\n\n同时，办理公司名称变更需提交《公司登记（备案）申请书》，若变更涉及修改公司章程的，还须提交修改后的公司章程或章程修正案，以及公司依法作出的修改章程的决议或决定等文件 [1]。",
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 《公司登记（备案）申请书》 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公司变更登记事项涉及修改公司章程的，提交修改后的公司章程或公司章程修正案，以及公司依法作出的修改公司章程的决议或决定等文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 变更公司名称：向登记机关提出申请（经营范围涉及前置许可且需变更名称的，应当先办理公司名称自主申报）。 | 申请人自备 | 1份 | 必要 | 查看更多\n4 | 变更住所：提交变更后住所使用相关文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n5 | 变更经营范围：应当按照国家市场监督管理总局公布的经营项目分类标准办理经营范围登记。经营范围中有法律、行政法规和国务院决定规定在登记前依法须经批准的项目的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n6 | 变更法定代表人：提交新任法定代表人的自然人身份证明复印件，以及载明法定代表人任免职情况的相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n7 | 法定代表人更改姓名：提交本人更改姓名后的身份证明复印件及公安部门出具的证明。 | 申请人自备 | 1份 | 必要 | 查看更多\n8 | 增加注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n9 | 减少注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n10 | 有限责任公司变更股东，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n11 | 因股东或发起人自身更名，需要变更登记的股东或发起人名称或姓名：提交股东或发起人名称或姓名变更证明，以及更名后新的主体资格文件或自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n12 | 申请材料的人员（经办人）的自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n13 | 有限责任公司变更为股份有限公司，或股份有限公司变更为有限责任公司的，应当符合《公司法》规定，按照变更后的公司类型设立登记条件提交相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n14 | 法律、行政法规和国务院决定规定公司变更登记事项必须报经批准的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 12186.663,
+      "total_tokens": 1558,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 4,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确依据证据[1]指出应先办理公司名称自主申报，并补充了相关材料要求，无超出证据的结论。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "经营范围涉及前置许可且需变更名称的，应先办理公司名称自主申报。"
+    },
+    {
+      "case_id": "official-company-12",
+      "query": "公司增加许可经营项目时，材料中可能需要哪些批准文件？",
+      "expected_heading": "办理材料",
+      "trace_id": "tr_c6ae351a23",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "根据政策片段，公司增加许可经营项目（属变更经营范围）时，可能需要的批准文件如下：\n\n1. 变更经营范围应按照国家市场监督管理总局公布的经营项目分类标准办理登记 [1]。\n2. 经营范围中有法律、行政法规和国务院决定规定在登记前依法须经批准的项目的，应提交有关**批准文件或许可证件的复印件**（1份，申请人自备）[1]。\n3. 如该变更事项涉及修改公司章程，还需提交修改后的公司章程或章程修正案，以及公司依法作出的修改公司章程的决议或决定等文件 [1]。\n4. 法律、行政法规和国务院决定规定公司变更登记事项必须报经批准的，也需提交有关批准文件或许可证件的复印件 [1]。\n\n此外还需提交《公司登记（备案）申请书》等基本材料 [1]。具体批准文件类型取决于所涉及的经营项目，片段中未列明具体项目清单，无法进一步确认。",
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 《公司登记（备案）申请书》 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公司变更登记事项涉及修改公司章程的，提交修改后的公司章程或公司章程修正案，以及公司依法作出的修改公司章程的决议或决定等文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 变更公司名称：向登记机关提出申请（经营范围涉及前置许可且需变更名称的，应当先办理公司名称自主申报）。 | 申请人自备 | 1份 | 必要 | 查看更多\n4 | 变更住所：提交变更后住所使用相关文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n5 | 变更经营范围：应当按照国家市场监督管理总局公布的经营项目分类标准办理经营范围登记。经营范围中有法律、行政法规和国务院决定规定在登记前依法须经批准的项目的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n6 | 变更法定代表人：提交新任法定代表人的自然人身份证明复印件，以及载明法定代表人任免职情况的相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n7 | 法定代表人更改姓名：提交本人更改姓名后的身份证明复印件及公安部门出具的证明。 | 申请人自备 | 1份 | 必要 | 查看更多\n8 | 增加注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n9 | 减少注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n10 | 有限责任公司变更股东，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n11 | 因股东或发起人自身更名，需要变更登记的股东或发起人名称或姓名：提交股东或发起人名称或姓名变更证明，以及更名后新的主体资格文件或自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n12 | 申请材料的人员（经办人）的自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n13 | 有限责任公司变更为股份有限公司，或股份有限公司变更为有限责任公司的，应当符合《公司法》规定，按照变更后的公司类型设立登记条件提交相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n14 | 法律、行政法规和国务院决定规定公司变更登记事项必须报经批准的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 11287.984,
+      "total_tokens": 1639,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答完全基于证据[1]，准确列出了变更经营范围涉及许可项目时需提交的批准文件或许可证件复印件及相关材料，切题且完整。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "经营范围中依法须经批准的项目，应提交有关批准文件或许可证件的复印件。"
+    },
+    {
+      "case_id": "official-company-14",
+      "query": "公司法定代表人更改姓名时是否需要公安部门证明？",
+      "expected_heading": "办理材料",
+      "trace_id": "tr_858db90405",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "**需要。**\n\n根据检索到的政策片段，公司法定代表人更改姓名时，属于公司变更登记的办理材料之一，需提交：\n- 本人更改姓名后的身份证明复印件；\n- **公安部门出具的证明**。\n\n以上材料均为必要材料，由申请人自备，纸质材料1份 [1]。",
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 《公司登记（备案）申请书》 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公司变更登记事项涉及修改公司章程的，提交修改后的公司章程或公司章程修正案，以及公司依法作出的修改公司章程的决议或决定等文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 变更公司名称：向登记机关提出申请（经营范围涉及前置许可且需变更名称的，应当先办理公司名称自主申报）。 | 申请人自备 | 1份 | 必要 | 查看更多\n4 | 变更住所：提交变更后住所使用相关文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n5 | 变更经营范围：应当按照国家市场监督管理总局公布的经营项目分类标准办理经营范围登记。经营范围中有法律、行政法规和国务院决定规定在登记前依法须经批准的项目的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n6 | 变更法定代表人：提交新任法定代表人的自然人身份证明复印件，以及载明法定代表人任免职情况的相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n7 | 法定代表人更改姓名：提交本人更改姓名后的身份证明复印件及公安部门出具的证明。 | 申请人自备 | 1份 | 必要 | 查看更多\n8 | 增加注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n9 | 减少注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n10 | 有限责任公司变更股东，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n11 | 因股东或发起人自身更名，需要变更登记的股东或发起人名称或姓名：提交股东或发起人名称或姓名变更证明，以及更名后新的主体资格文件或自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n12 | 申请材料的人员（经办人）的自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n13 | 有限责任公司变更为股份有限公司，或股份有限公司变更为有限责任公司的，应当符合《公司法》规定，按照变更后的公司类型设立登记条件提交相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n14 | 法律、行政法规和国务院决定规定公司变更登记事项必须报经批准的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 10739.157,
+      "total_tokens": 1569,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答直接依据证据[1]第7项，明确法定代表人更改姓名需提交本人更改姓名后的身份证明复印件及公安部门出具的证明，内容准确且引用支持充分。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "需要提交更改姓名后的身份证明复印件及公安部门出具的证明。"
+    },
+    {
+      "case_id": "official-company-16",
+      "query": "有限责任公司变更为股份有限公司时材料按什么标准准备？",
+      "expected_heading": "办理材料",
+      "trace_id": "tr_72ea18e49b",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "# 有限责任公司变更为股份有限公司的材料准备标准\n\n根据检索到的政策片段，材料准备标准如下：\n\n## 核心标准\n\n**有限责任公司变更为股份有限公司的，应当符合《公司法》规定，按照变更后的公司类型设立登记条件提交相关材料** [1]。\n\n也就是说，不能仅按“变更”准备材料，而要按照**股份有限公司的设立登记条件**来准备相应材料 [1]。\n\n## 相关通用材料要求\n\n除上述核心材料外，变更登记通常还需提交 [1]：\n- 《公司登记（备案）申请书》1份（申请人自备，必要）；\n- 涉及修改公司章程的，提交修改后的章程或章程修正案，以及公司依法作出的修改章程的决议或决定 [1]；\n- 变更登记事项涉及法律、行政法规和国务院决定规定须报经批准的，提交有关批准文件或许可证件的复印件 [1]；\n- 经办人（申请材料人员）的自然人身份证明复印件 [1]。\n\n## 登记管辖提示\n\n依据《市场主体登记管理条例实施细则》第四条，**股份有限公司的登记管理由地市级以上地方登记机关负责** [3]。\n\n## 补充说明\n\n- 具体股份有限公司设立登记所需的详细材料清单，在当前检索片段中未逐项列明（片段中多处标注“具体见备注”，备注内容未提供），**根据当前检索到的政策片段无法确认**完整材料明细。\n- 登记机关对申请材料进行形式审查；材料齐全、符合法定形式的当场登记，不能当场登记的在3个工作日内予以登记（复杂情形经批准可再延长3个工作日）[2]。\n\n建议办理前向所在地市级登记机关咨询股份有限公司设立登记的具体材料清单。",
+      "citation_precision": 0.3333,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1,
+        2,
+        3
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 《公司登记（备案）申请书》 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公司变更登记事项涉及修改公司章程的，提交修改后的公司章程或公司章程修正案，以及公司依法作出的修改公司章程的决议或决定等文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 变更公司名称：向登记机关提出申请（经营范围涉及前置许可且需变更名称的，应当先办理公司名称自主申报）。 | 申请人自备 | 1份 | 必要 | 查看更多\n4 | 变更住所：提交变更后住所使用相关文件。 | 申请人自备 | 1份 | 必要 | 查看更多\n5 | 变更经营范围：应当按照国家市场监督管理总局公布的经营项目分类标准办理经营范围登记。经营范围中有法律、行政法规和国务院决定规定在登记前依法须经批准的项目的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n6 | 变更法定代表人：提交新任法定代表人的自然人身份证明复印件，以及载明法定代表人任免职情况的相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n7 | 法定代表人更改姓名：提交本人更改姓名后的身份证明复印件及公安部门出具的证明。 | 申请人自备 | 1份 | 必要 | 查看更多\n8 | 增加注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n9 | 减少注册资本，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n10 | 有限责任公司变更股东，具体见备注。 | 申请人自备 | 1份 | 必要 | 查看更多\n11 | 因股东或发起人自身更名，需要变更登记的股东或发起人名称或姓名：提交股东或发起人名称或姓名变更证明，以及更名后新的主体资格文件或自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n12 | 申请材料的人员（经办人）的自然人身份证明复印件。 | 申请人自备 | 1份 | 必要 | 查看更多\n13 | 有限责任公司变更为股份有限公司，或股份有限公司变更为有限责任公司的，应当符合《公司法》规定，按照变更后的公司类型设立登记条件提交相关材料。 | 申请人自备 | 1份 | 必要 | 查看更多\n14 | 法律、行政法规和国务院决定规定公司变更登记事项必须报经批准的，提交有关批准文件或许可证件的复印件。 | 申请人自备 | 1份 | 必要 | 查看更多"
+        },
+        {
+          "source_id": 2,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 自然人,企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n登记机关应当对申请材料进行形式审查。对申请材料齐全、符合法定形式的予以确认并当场登记。不能当场登记的，应当在3个工作日内予以登记；情形复杂的，经登记机关负责人批准，可以再延长3个工作日。申请材料不齐全或者不符合法定形式的，登记机关应当一次性告知申请人需要补正的材料。 登记申请不符合法律、行政法规规定，或者可能危害国家安全、社会公共利益的，登记机关不予登记并说明理由。^"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "法律依据",
+          "page": 1,
+          "text": "## 法律依据\n设定依据\n《公司法》第六条 ：“设立公司，应当依法向公司登记机关申请设立登记。”《市场主体登记管理条例》 第二条：“本条例所称市场主体，是指在中华人民共和国境内以营利为目的从事经营活动的下列自然人、法人及非法人组织：（一）公司、非公司企业法人及其分支机构；（二）个人独资企业、合伙企业及其分支机构；（三）农民专业合作社（联合社）及其分支机构； （四）个体工商户； （五）外国公司分支机构；（六）法律、行政法规规定的其他市场主体。” 《市场主体登记管理条例》 第五条 ：“国务院市场监督管理部门主管全国市场主体登记管理工作。县级以上地方人民政府市场监督管理部门主管本辖区市场主体登记管理工作，加强统筹指导和监督管理。”《市场主体登记管理条例实施细则》第四条：“ 省级以上人民政府或者其授权的国有资产监督管理机构履行出资人职责的公司，以及该公司投资设立并持有50%以上股权或者股份的公司的登记管理由省级登记机关负责；股份有限公司的登记管理由地市级以上地方登记机关负责。除前款规定的情形外，省级市场监督管理部门依法对本辖区登记管辖作出统一规定；上级登记机关在特定情形下，可以依法将部分市场主体登记管理工作交由下级登记机关承担，或者承担下级登记机关的部分登记管理工作。外商投资企业登记管理由国家市场监督管理总局或者其授权的地方市场监督管理部门负责。”\n增补依据"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 13020.586,
+      "total_tokens": 1814,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 4,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答核心结论（按变更后公司类型的设立登记条件提交材料）直接来自证据[1]，引用准确，未添加无证据支持的结论，并诚实指出材料明细未完全列明。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "应符合《公司法》规定，并按照变更后公司类型的设立登记条件提交材料。"
+    },
+    {
+      "case_id": "official-company-18",
+      "query": "公司变更登记承诺几个工作日办结？",
+      "expected_heading": "办理时限",
+      "trace_id": "tr_12115e6980",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 2,
+      "answer": "公司变更登记注册（设区的市级权限）的承诺办结时限为 **3个工作日** [2]，法定办结时限为6个工作日 [2]。承诺办结时限不包含依法进行听证、招标、拍卖、检验、检测、检疫、鉴定和专家评审等所需的时间 [2]。\n\n另需注意受理标准：申请材料齐全、符合法定形式的当场登记；不能当场登记的，应在3个工作日内予以登记；情形复杂的，经登记机关负责人批准可再延长3个工作日 [3]。",
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        2,
+        3
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 2,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "办理时限",
+          "page": 1,
+          "text": "## 办理时限\n办件类型 | 承诺件\n法定办结时限 | 6个工作日 | 承诺办结时限 | 3个工作日\n法定办结时限说明 | 无 | 承诺办结时限说明 | 承诺办结时限不包含依法进行听证、招标、拍卖、检验、检测、检疫、鉴定和专家评审等所需的时间。"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 自然人,企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n登记机关应当对申请材料进行形式审查。对申请材料齐全、符合法定形式的予以确认并当场登记。不能当场登记的，应当在3个工作日内予以登记；情形复杂的，经登记机关负责人批准，可以再延长3个工作日。申请材料不齐全或者不符合法定形式的，登记机关应当一次性告知申请人需要补正的材料。 登记申请不符合法律、行政法规规定，或者可能危害国家安全、社会公共利益的，登记机关不予登记并说明理由。^"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 9353.108,
+      "total_tokens": 768,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确依据证据[2]给出承诺办结时限3个工作日，并补充了延长情形，与证据完全一致。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "承诺办结时限为3个工作日。"
+    },
+    {
+      "case_id": "official-company-20",
+      "query": "办理公司变更登记需要缴费吗？",
+      "expected_heading": "收费情况",
+      "trace_id": "tr_83fcd4466a",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 2,
+      "answer": "办理公司变更登记（设区的市级权限）**不需要缴费**，收费情况为“不收费”[2]，基本信息中也注明“不收费”[5]。\n\n补充信息：该事项可通过窗口办理、网上办理或快递申请，到办事现场次数为0，无中介服务事项[5]。",
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        2,
+        5
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 2,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "收费情况",
+          "page": 1,
+          "text": "## 收费情况\n不收费"
+        },
+        {
+          "source_id": 5,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "基本信息",
+          "page": 1,
+          "text": "## 基本信息\n承诺件 不收费\n事项类型 | 行政许可 | 基本编码 | 320131045002\n业务办理项编码 | 113204000141102350332013104500202\n行使层级 | 市级 | 办理形式 | 窗口办理,网上办理,快递申请\n到办事现场次数 | 0\n特别程序 | 无 | 中介服务 | 无中介服务事项"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 9763.193,
+      "total_tokens": 1146,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确引用证据[2][5]说明公司变更登记不收费，补充信息也有证据支持。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "收费情况为不收费、否。"
+    },
+    {
+      "case_id": "official-company-22",
+      "query": "公司变更登记指南列出的主要法律依据有哪些？",
+      "expected_heading": "法律依据",
+      "trace_id": "tr_534e4062e7",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "公司变更登记指南列出的主要法律依据如下：\n\n**设定依据：**\n1. 《公司法》第六条（设立公司应依法向公司登记机关申请设立登记）[1]\n2. 《市场主体登记管理条例》第二条（市场主体范围界定）[1]\n3. 《市场主体登记管理条例》第五条（登记管理工作的主管部门及职责分工）[1]\n4. 《市场主体登记管理条例实施细则》第四条（各级登记机关的登记管辖规定）[1]\n\n增补依据部分在指南中未列出具体内容 [1]。",
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "法律依据",
+          "page": 1,
+          "text": "## 法律依据\n设定依据\n《公司法》第六条 ：“设立公司，应当依法向公司登记机关申请设立登记。”《市场主体登记管理条例》 第二条：“本条例所称市场主体，是指在中华人民共和国境内以营利为目的从事经营活动的下列自然人、法人及非法人组织：（一）公司、非公司企业法人及其分支机构；（二）个人独资企业、合伙企业及其分支机构；（三）农民专业合作社（联合社）及其分支机构； （四）个体工商户； （五）外国公司分支机构；（六）法律、行政法规规定的其他市场主体。” 《市场主体登记管理条例》 第五条 ：“国务院市场监督管理部门主管全国市场主体登记管理工作。县级以上地方人民政府市场监督管理部门主管本辖区市场主体登记管理工作，加强统筹指导和监督管理。”《市场主体登记管理条例实施细则》第四条：“ 省级以上人民政府或者其授权的国有资产监督管理机构履行出资人职责的公司，以及该公司投资设立并持有50%以上股权或者股份的公司的登记管理由省级登记机关负责；股份有限公司的登记管理由地市级以上地方登记机关负责。除前款规定的情形外，省级市场监督管理部门依法对本辖区登记管辖作出统一规定；上级登记机关在特定情形下，可以依法将部分市场主体登记管理工作交由下级登记机关承担，或者承担下级登记机关的部分登记管理工作。外商投资企业登记管理由国家市场监督管理总局或者其授权的地方市场监督管理部门负责。”\n增补依据"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 11470.979,
+      "total_tokens": 1827,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答完整列出证据[1]中公司变更登记指南的全部设定依据（公司法第六条、市场主体登记管理条例第二条和第五条、实施细则第四条），并如实说明增补依据未列具体内容，均有证据支持。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "依据包括《公司法》《市场主体登记管理条例》《市场主体登记管理条例实施细则》等。"
+    },
+    {
+      "case_id": "official-company-24",
+      "query": "哪些情形下企业名称变更可能不予核准？",
+      "expected_heading": "常见问题",
+      "trace_id": "tr_ffe0963321",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "根据检索到的政策片段，以下情形下企业名称变更可能不予核准：\n\n1. **与已预先核准登记的企业名称相同**，不予核准 [1]；\n2. **与其他企业变更名称未满一年的原名称相同**，不予核准 [1]；\n3. **与注销登记或者被吊销营业执照未满3年的企业名称相同**，不予核准 [1]；\n4. **企业登记注册后，无特殊原因在1年内不得申请名称变更** [1]。\n\n补充说明：除上述名称核准情形外，登记机关在审查变更登记时，若申请不符合法律、行政法规规定，或者可能危害国家安全、社会公共利益的，也将不予登记并说明理由 [3]。\n\n如需了解更完整的名称不予核准情形，建议以《企业名称登记管理规定》全文或登记机关的最新要求为准。",
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1,
+        3
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "常见问题",
+          "page": 1,
+          "text": "## 常见问题\n问：\n申请使用不含行政区划的企业名称是什么条件？\n答：\n《企业名称登记管理规定》第七条 企业名称应当由以下部分依次组成：字号（或者商号，下同）、行业或者经营特点、组织形式。 企业名称应当冠以企业所在地省（包括自治区、直辖市，下同）或者市（包括州，下同）或者县（包括市辖区，下同）行政区划名称。 经国家工商行政管理局核准，下列企业的企业名称可以不冠以企业所在地行政区划名称： （一）本规定第十三条所列企业； （二）历史悠久、字号驰名的企业； （三）外商投资企业。 第十三条 下列企业，可以申请在企业名称中使用“中国”、“中华”或者冠以“国际”字词： （一）全国性公司； （二）国务院或其授权的机关批准的大型进出口企业； （三）国务院或其授权的机关批准的大型企业集团； （四）国家工商行政管理局规定的其他企业。\n问：\n申请企业名称在哪种情况下不能预先（或变更）核准？\n答：\n①与已预先核准登记的企业名称相同或其它企业变更名称未满一年的原名称相同不予核准；②与注销登记或者被吊销营业执照未满3年的企业名称相同不予核准；③企业登记注册后，无特殊原因在1年内不得申请名称变更。"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-company-change-registration",
+          "document_title": "公司变更登记注册（设区的市级权限）",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 自然人,企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n登记机关应当对申请材料进行形式审查。对申请材料齐全、符合法定形式的予以确认并当场登记。不能当场登记的，应当在3个工作日内予以登记；情形复杂的，经登记机关负责人批准，可以再延长3个工作日。申请材料不齐全或者不符合法定形式的，登记机关应当一次性告知申请人需要补正的材料。 登记申请不符合法律、行政法规规定，或者可能危害国家安全、社会公共利益的，登记机关不予登记并说明理由。^"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 11863.204,
+      "total_tokens": 1875,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答完全基于证据[1]列出的不予核准情形，并合理补充证据[3]的一般不予登记条件，切题且完整。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-company-change-registration",
+      "gold_evidence": "与已预先核准或变更未满一年的原名称相同、与注销或吊销未满三年的名称相同、无特殊原因一年内再次申请名称变更等情形可能不予核准。"
+    },
+    {
+      "case_id": "official-welfare-02",
+      "query": "用人单位线下申领公益性岗位补贴去哪里办理？",
+      "expected_heading": "窗口办理",
+      "trace_id": "tr_6f4c63c6a2",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 3,
+      "answer": "用人单位线下申领公益性岗位补贴，可前往常州市政务服务中心办理：\n\n- **办理地点**：常州市锦绣路2号常州市政务服务中心1号楼，1号楼一楼D区自助窗口 [3]\n- **办理时间**：法定工作日周一至周五，上午9:00-12:00，下午13:00-17:00，法定节假日除外 [3]\n\n**办理条件**：①安置就业困难人员；②通过公益性岗位安置，并签订劳动合同、按时足额缴纳社会保险费 [5]\n\n**需携带材料**：公益性岗位补贴花名册、公益性岗位补贴申请表、工资明细账单，各1份（均需申请人自备）[1]",
+      "citation_precision": 0.3333,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1,
+        3,
+        5
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 公益性岗位补贴花名册 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公益性岗位补贴申请表 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 工资明细账单 | 申请人自备 | 1份 | 必要 | 查看更多"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "窗口办理",
+          "page": 1,
+          "text": "## 窗口办理\n是否进驻政务大厅 | 是\n办理地点 | 常州市锦绣路2号常州市政务服务中心1号楼,1号楼一楼D区自助窗口\n办理时间 | 法定工作日，周一至周五，上午9：00-12：00，下午13：00-17：00。法定节假日除外。"
+        },
+        {
+          "source_id": 5,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n①就业困难人员；②通过公益性岗位安置，并签订劳动合同、按时足额缴纳社会保险费。"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 9393.873,
+      "total_tokens": 843,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 4,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答的办理地点、时间、条件和材料均由证据[1][3][5]支持，切题且无未经支持的结论。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-public-welfare-post-subsidy",
+      "gold_evidence": "办理地点为常州市锦绣路2号常州市政务服务中心1号楼一楼D区自助窗口。"
+    },
+    {
+      "case_id": "official-welfare-04",
+      "query": "公益性岗位补贴和社保补贴的服务对象包括哪些单位？",
+      "expected_heading": "受理标准",
+      "trace_id": "tr_249e3c820f",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "根据政策片段，用人单位公益性岗位补贴和社保补贴申领的服务对象包括：企业法人、事业法人、社会组织法人、非法人企业、行政机关、其他组织 [1]。\n\n补充办理条件：需安置就业困难人员，通过公益性岗位安置，并签订劳动合同、按时足额缴纳社会保险费 [1]。该事项实施主体为常州市人力资源社会保障局 [5]。",
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1,
+        5
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n①就业困难人员；②通过公益性岗位安置，并签订劳动合同、按时足额缴纳社会保险费。"
+        },
+        {
+          "source_id": 5,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "部门信息",
+          "page": 1,
+          "text": "## 部门信息\n实施主体 | 常州市人力资源社会保障局 | 实施主体性质 | 法定机关"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 9930.491,
+      "total_tokens": 783,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确引用证据[1]完整列出服务对象类型，并补充了受理条件和实施主体，全部有证据支持，切题且完整。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-public-welfare-post-subsidy",
+      "gold_evidence": "包括企业法人、事业法人、社会组织法人、非法人企业、行政机关和其他组织。"
+    },
+    {
+      "case_id": "official-welfare-06",
+      "query": "申请公益性岗位补贴时，安置人员名单用哪份材料体现？",
+      "expected_heading": "办理材料",
+      "trace_id": "tr_8d183bb0ed",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "根据政策片段，申请公益性岗位补贴时，安置人员名单应通过**公益性岗位补贴花名册**体现，该材料为申请人自备、纸质1份、必要材料 [1]。\n\n同时需一并提交公益性岗位补贴申请表和工资明细账单 [1]。",
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 公益性岗位补贴花名册 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公益性岗位补贴申请表 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 工资明细账单 | 申请人自备 | 1份 | 必要 | 查看更多"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 11206.857,
+      "total_tokens": 827,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 4,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确指出公益性岗位补贴花名册为体现安置人员名单的必要材料，与证据[1]一致。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-public-welfare-post-subsidy",
+      "gold_evidence": "需提交公益性岗位补贴花名册，原件1份、必要。"
+    },
+    {
+      "case_id": "official-welfare-08",
+      "query": "除了花名册和申请表，还要提交什么工资支付凭证？",
+      "expected_heading": "办理材料",
+      "trace_id": "tr_3a44d1ae90",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "根据办理材料清单，除了公益性岗位补贴花名册和申请表外，还需提交**工资明细账单**，来源渠道为申请人自备，纸质材料1份，属于必要材料 [1]。\n\n补充说明：该事项为“用人单位公益性岗位补贴和社保补贴申领”，支持窗口办理和网上办理，到办事现场次数为0 [3]。",
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1,
+        3
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "办理材料",
+          "page": 1,
+          "text": "## 办理材料\n序号 | 材料名称 | 表格下载 | 来源渠道 | 纸质材料 | 材料必要性 | 填报须知 | 详情\n1 | 公益性岗位补贴花名册 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n2 | 公益性岗位补贴申请表 | 空白表格 示例样表 | 申请人自备 | 1份 | 必要 | 查看更多\n3 | 工资明细账单 | 申请人自备 | 1份 | 必要 | 查看更多"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "基本信息",
+          "page": 1,
+          "text": "## 基本信息\n承诺件 不收费\n事项类型 | 公共服务 | 基本编码 | 322014314006\n业务办理项编码 | 11320400014110315K332201431400601\n行使层级 | 市级 | 办理形式 | 窗口办理,网上办理\n中介服务 | 无 | 到办事现场次数 | 0\n特别程序 | 无"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 10338.281,
+      "total_tokens": 1432,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确依据证据[1]指出还需提交工资明细账单（申请人自备、纸质1份、必要），并引用证据[3]补充办理形式，全部内容有证据支持且切题。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-public-welfare-post-subsidy",
+      "gold_evidence": "还需提交工资明细账单，原件1份、必要。"
+    },
+    {
+      "case_id": "official-welfare-10",
+      "query": "公益性岗位补贴和社保补贴的法定办结时限是多少？",
+      "expected_heading": "办理时限",
+      "trace_id": "tr_e3877c870b",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 4,
+      "answer": "根据检索到的政策片段，**用人单位公益性岗位补贴和社保补贴申领**的法定办结时限为 **20个工作日**，承诺办结时限为18个工作日 [4]。\n\n补充说明：该事项的受理条件为就业困难人员通过公益性岗位安置，并签订劳动合同、按时足额缴纳社会保险费 [2]；法律依据为《中华人民共和国就业促进法》和《江苏省就业促进条例》相关规定 [3]。",
+      "citation_precision": 0.3333,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        2,
+        3,
+        4
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 2,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n①就业困难人员；②通过公益性岗位安置，并签订劳动合同、按时足额缴纳社会保险费。"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "法律依据",
+          "page": 1,
+          "text": "## 法律依据\n设定依据\n中华人民共和国就业促进法,中华人民共和国主席令第七十号, 各级人民政府建立健全就业援助制度，采取税费减免、贷款贴息、社会保险补贴、岗位补贴等办法，通过公益性岗位安置等途径，对就业困难人员实行优先扶持和重点帮助。江苏省就业促进条例第七十四条，设区的市、县（市、区）人力资源社会保障部门对提供公益性岗位的用人单位，根据实际安置人数给予岗位补贴。第七十六条，公益性岗位和各类企业招用就业困难人员的，按照实际招用的人数，给予社会保险补贴。\n增补依据"
+        },
+        {
+          "source_id": 4,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "办理时限",
+          "page": 1,
+          "text": "## 办理时限\n办件类型 | 承诺件\n法定办结时限 | 20个工作日 | 承诺办结时限 | 18个工作日"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 11055.352,
+      "total_tokens": 717,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确引用证据[4]，正确给出法定办结时限20个工作日及承诺办结时限18个工作日，并补充了相关受理条件和法律依据，均与证据一致。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-public-welfare-post-subsidy",
+      "gold_evidence": "法定办结时限为20个工作日。"
+    },
+    {
+      "case_id": "official-welfare-12",
+      "query": "申领公益性岗位补贴和社保补贴是否收费？",
+      "expected_heading": "收费情况",
+      "trace_id": "tr_23457da4b0",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 3,
+      "answer": "申领公益性岗位补贴和社保补贴**不收费**。\n\n- 该事项收费情况明确为“不收费” [3]，基本信息中也标注为“不收费”的公共服务事项 [5]。\n\n补充办理条件供参考：服务对象为企业法人、事业法人、社会组织法人等，需满足①就业困难人员；②通过公益性岗位安置，并签订劳动合同、按时足额缴纳社会保险费 [2]。该事项支持窗口办理和网上办理，无需到办事现场 [5]。",
+      "citation_precision": 0.3333,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        2,
+        3,
+        5
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 2,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "受理标准",
+          "page": 1,
+          "text": "## 受理标准\n服务对象： 企业法人,事业法人,社会组织法人,非法人企业,行政机关,其他组织\n受理条件：\n①就业困难人员；②通过公益性岗位安置，并签订劳动合同、按时足额缴纳社会保险费。"
+        },
+        {
+          "source_id": 3,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "收费情况",
+          "page": 1,
+          "text": "## 收费情况\n不收费"
+        },
+        {
+          "source_id": 5,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "基本信息",
+          "page": 1,
+          "text": "## 基本信息\n承诺件 不收费\n事项类型 | 公共服务 | 基本编码 | 322014314006\n业务办理项编码 | 11320400014110315K332201431400601\n行使层级 | 市级 | 办理形式 | 窗口办理,网上办理\n中介服务 | 无 | 到办事现场次数 | 0\n特别程序 | 无"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 13409.629,
+      "total_tokens": 602,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答明确依据证据[3][5]指出不收费，并准确补充受理条件，完全有据可查。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-public-welfare-post-subsidy",
+      "gold_evidence": "收费情况为不收费。"
+    },
+    {
+      "case_id": "official-welfare-14",
+      "query": "公益性岗位补贴的依据涉及哪些法律和条例？",
+      "expected_heading": "法律依据",
+      "trace_id": "tr_f4b110c3cc",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "公益性岗位补贴的法律依据包括：\n\n1. **《中华人民共和国就业促进法》**（中华人民共和国主席令第七十号）：各级人民政府建立健全就业援助制度，采取税费减免、贷款贴息、社会保险补贴、岗位补贴等办法，通过公益性岗位安置等途径，对就业困难人员实行优先扶持和重点帮助 [1]。\n\n2. **《江苏省就业促进条例》**：\n   - 第七十四条：设区的市、县（市、区）人力资源社会保障部门对提供公益性岗位的用人单位，根据实际安置人数给予岗位补贴 [1]；\n   - 第七十六条：公益性岗位和各类企业招用就业困难人员的，按照实际招用的人数，给予社会保险补贴 [1]。",
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "法律依据",
+          "page": 1,
+          "text": "## 法律依据\n设定依据\n中华人民共和国就业促进法,中华人民共和国主席令第七十号, 各级人民政府建立健全就业援助制度，采取税费减免、贷款贴息、社会保险补贴、岗位补贴等办法，通过公益性岗位安置等途径，对就业困难人员实行优先扶持和重点帮助。江苏省就业促进条例第七十四条，设区的市、县（市、区）人力资源社会保障部门对提供公益性岗位的用人单位，根据实际安置人数给予岗位补贴。第七十六条，公益性岗位和各类企业招用就业困难人员的，按照实际招用的人数，给予社会保险补贴。\n增补依据"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 11482.364,
+      "total_tokens": 1000,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答准确引用证据[1]中就业促进法和江苏省就业促进条例的相关条款，完全切题且无超出证据的结论。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-public-welfare-post-subsidy",
+      "gold_evidence": "涉及《中华人民共和国就业促进法》和《江苏省就业促进条例》第七十四条、第七十六条。"
+    },
+    {
+      "case_id": "official-welfare-16",
+      "query": "该补贴申领能否网上办理，必须到现场吗？",
+      "expected_heading": "基本信息",
+      "trace_id": "tr_224fd80078",
+      "reranker_detail": "unknown",
+      "retrieval_hit": true,
+      "gold_rank": 1,
+      "answer": "可以网上办理，无需到现场。根据检索到的政策片段，“用人单位公益性岗位补贴和社保补贴申领”的办理形式为“窗口办理、网上办理”，到办事现场次数为0 [1]，即可全程网上办理，不必到现场。如选择窗口办理，地点为常州市锦绣路2号常州市政务服务中心1号楼一楼D区自助窗口（法定工作日 9:00-12:00、13:00-17:00）[4]。",
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "cited_source_ids": [
+        1,
+        4
+      ],
+      "cited_evidence": [
+        {
+          "source_id": 1,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "基本信息",
+          "page": 1,
+          "text": "## 基本信息\n承诺件 不收费\n事项类型 | 公共服务 | 基本编码 | 322014314006\n业务办理项编码 | 11320400014110315K332201431400601\n行使层级 | 市级 | 办理形式 | 窗口办理,网上办理\n中介服务 | 无 | 到办事现场次数 | 0\n特别程序 | 无"
+        },
+        {
+          "source_id": 4,
+          "document_id": "cz-public-welfare-post-subsidy",
+          "document_title": "用人单位公益性岗位补贴和社保补贴申领",
+          "heading_path": "窗口办理",
+          "page": 1,
+          "text": "## 窗口办理\n是否进驻政务大厅 | 是\n办理地点 | 常州市锦绣路2号常州市政务服务中心1号楼,1号楼一楼D区自助窗口\n办理时间 | 法定工作日，周一至周五，上午9：00-12：00，下午13：00-17：00。法定节假日除外。"
+        }
+      ],
+      "invalid_citation_ids": [],
+      "grounding_status": "supported",
+      "answer_ms": 10510.454,
+      "total_tokens": 860,
+      "judge": {
+        "faithfulness": 5,
+        "relevance": 5,
+        "completeness": 5,
+        "citation_support": "supported",
+        "unsupported_claims": [],
+        "passed": true,
+        "reason": "回答完全基于证据[1]和[4]，准确说明该补贴可网上办理且无需到现场。"
+      },
+      "judge_error": null,
+      "answer_error": null,
+      "expected_document_id": "cz-public-welfare-post-subsidy",
+      "gold_evidence": "办理形式为窗口办理、网上办理，到办事现场次数为0次。"
+    }
+  ]
+}

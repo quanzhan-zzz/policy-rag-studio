@@ -283,6 +283,21 @@ PostgreSQL 查询层完成，并在 Trace 中记录条件和候选数变化。
 
 完整记录：[元数据过滤评测总结](docs/experiments/20261124-metadata-filter-evaluation-summary.md)。
 
+### 查询规划
+
+实现 `none / rewrite / decompose` 三种可切换模式，保留原始查询作为 RRF 输入，并在 LLM
+规划超时、输出格式错误或子查询不足时回退原始查询。
+
+test split 结果不支持默认启用：
+
+- `none`：MRR `0.8417`、答案完整度 `4.85`、平均回答耗时 `6.56 s`
+- `rewrite`：MRR `0.8458`，但答案完整度降到 `4.60`，平均耗时升到 `12.49 s`
+- `decompose`：MRR 降到 `0.8250`，平均耗时 `12.17 s`
+
+因此默认继续使用 `QUERY_PLANNING_MODE=none`，另外两种模式保留为可复现实验开关。
+
+完整记录：[查询规划评测总结](docs/experiments/20261124-query-planning-evaluation-summary.md)。
+
 ## 技术栈
 
 **后端**
@@ -448,7 +463,7 @@ uv run python -m app.experiments.import_official_guides
 - [x] M2：真实 Reranker 与可信评测
 - [x] M3：流式回答与引用校验
 - [x] M4：CI、E2E、监控与发布
-- [ ] M5：回答质量人工复核、公网 Demo 与查询规划
+- [ ] M5：回答质量人工复核、引用支持校验与公网 Demo
 
 `PROJECT_PLAN.md` 保留为项目设计方案；实际执行顺序、验收标准和当前状态以开发路线图为准。
 

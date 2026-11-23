@@ -16,7 +16,7 @@ from typing import Any
 
 from app.config import get_settings
 from app.db.postgres import PostgresStore
-from app.schemas import AnswerRequest, AnswerResponse, ChunkStrategy
+from app.schemas import AnswerRequest, AnswerResponse, ChunkStrategy, QueryPlanningMode
 from app.services.answer import CITATION_PATTERN, answer_query
 from app.services.embedding import get_embedding_provider
 from app.services.evaluation_dataset import get_evaluation_dataset
@@ -210,6 +210,7 @@ async def answer_with_retry(
     provider: LLMProvider,
     *,
     top_k: int,
+    query_planning_mode: QueryPlanningMode = QueryPlanningMode.NONE,
     attempts: int = 3,
 ) -> AnswerResponse:
     delay = 4.0
@@ -222,6 +223,7 @@ async def answer_with_retry(
                     query=case.query,
                     chunk_strategy=ChunkStrategy.HEADING,
                     top_k=top_k,
+                    query_planning_mode=query_planning_mode,
                 ),
                 llm_provider=provider,
             )
@@ -241,10 +243,17 @@ async def evaluate_case(
     top_k: int,
     judge_enabled: bool,
     semaphore: asyncio.Semaphore,
+    query_planning_mode: QueryPlanningMode = QueryPlanningMode.NONE,
 ) -> CaseResult:
     async with semaphore:
         try:
-            response = await answer_with_retry(store, case, provider, top_k=top_k)
+            response = await answer_with_retry(
+                store,
+                case,
+                provider,
+                top_k=top_k,
+                query_planning_mode=query_planning_mode,
+            )
         except Exception as error:  # noqa: BLE001 - record per-case failures
             return CaseResult(
                 case_id=case.id,
@@ -407,6 +416,7 @@ def render_report(
     reranker_model: str,
     top_k: int,
     review_size: int,
+    query_planning_mode: QueryPlanningMode,
 ) -> str:
     lines = [
         "# Answer Quality Report",
@@ -418,6 +428,7 @@ def render_report(
         f"- Embedding: {embedding_model}",
         f"- Reranker: {reranker_model}",
         f"- Answer model: {answer_model}",
+        f"- Query planning: {query_planning_mode.value}",
         f"- Judge model: {judge_model if judge_enabled else 'disabled'}",
         f"- Human review: {review_size}-case worksheet generated; pending manual completion",
         "- Path: Hybrid + Rerank -> Context Pack -> answer -> citation metrics/judge",
@@ -605,6 +616,7 @@ async def run_evaluation(
     judge_enabled: bool,
     output: Path | None,
     review_size: int,
+    query_planning_mode: QueryPlanningMode = QueryPlanningMode.NONE,
 ) -> int:
     settings = get_settings()
     if settings.store_backend != "postgres":
@@ -630,6 +642,7 @@ async def run_evaluation(
                     top_k=top_k,
                     judge_enabled=judge_enabled,
                     semaphore=semaphore,
+                    query_planning_mode=query_planning_mode,
                 )
                 for case in cases
             ]
@@ -658,6 +671,7 @@ async def run_evaluation(
         reranker_model=reranker_model,
         top_k=top_k,
         review_size=review_size,
+        query_planning_mode=query_planning_mode,
     )
     output.write_text(report, encoding="utf-8")
     json_path = output.with_suffix(".json")
@@ -670,6 +684,7 @@ async def run_evaluation(
                 "embedding_model": embedding_model,
                 "reranker_model": reranker_model,
                 "answer_model": provider.name,
+                "query_planning_mode": query_planning_mode.value,
                 "judge_model": provider.name if judge_enabled else None,
                 "judge_enabled": judge_enabled,
                 "top_k": top_k,
@@ -712,6 +727,11 @@ def main() -> None:
     )
     parser.add_argument("--output", type=Path)
     parser.add_argument("--review-size", type=int, default=20)
+    parser.add_argument(
+        "--query-planning-mode",
+        choices=[mode.value for mode in QueryPlanningMode],
+        default=QueryPlanningMode.NONE.value,
+    )
     args = parser.parse_args()
     raise SystemExit(
         asyncio.run(
@@ -724,6 +744,7 @@ def main() -> None:
                 judge_enabled=not args.skip_judge,
                 output=args.output,
                 review_size=args.review_size,
+                query_planning_mode=QueryPlanningMode(args.query_planning_mode),
             )
         )
     )

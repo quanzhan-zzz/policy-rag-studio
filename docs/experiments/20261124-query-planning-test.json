@@ -1,0 +1,2395 @@
+{
+  "generated_at": "2026-11-23T20:41:33.364610+00:00",
+  "split": "test",
+  "planner_model": "OpenAI-compatible chat · glm-5.3-flash",
+  "embedding_model": "OpenAI-compatible embedding · qwen3.7-text-embedding-flash",
+  "reranker_model": "BGE reranker · BAAI/bge-reranker-base",
+  "summaries": [
+    {
+      "mode": "none",
+      "recall_at_5": 1.0,
+      "mrr": 0.8417,
+      "ndcg_at_5": 0.8812,
+      "planner_p95_ms": 0.0,
+      "retrieval_p95_ms": 964.405,
+      "avg_planner_tokens": 0.0,
+      "avg_retrieval_queries": 1.0,
+      "fallbacks": 0,
+      "failures": []
+    },
+    {
+      "mode": "rewrite",
+      "recall_at_5": 1.0,
+      "mrr": 0.8458,
+      "ndcg_at_5": 0.8846,
+      "planner_p95_ms": 4556.019,
+      "retrieval_p95_ms": 6303.032,
+      "avg_planner_tokens": 275.5,
+      "avg_retrieval_queries": 2.0,
+      "fallbacks": 0,
+      "failures": []
+    },
+    {
+      "mode": "decompose",
+      "recall_at_5": 1.0,
+      "mrr": 0.825,
+      "ndcg_at_5": 0.8693,
+      "planner_p95_ms": 4444.152,
+      "retrieval_p95_ms": 9398.386,
+      "avg_planner_tokens": 277.7,
+      "avg_retrieval_queries": 3.85,
+      "fallbacks": 0,
+      "failures": []
+    }
+  ],
+  "coverage_summaries": [
+    {
+      "mode": "none",
+      "coverage_rate": 0.8182,
+      "full_coverage_rate": 0.6667,
+      "planner_p95_ms": 0.0,
+      "retrieval_p95_ms": 1112.369,
+      "avg_planner_tokens": 0.0,
+      "avg_retrieval_queries": 1.0,
+      "fallbacks": 0,
+      "failures": [
+        "multi-04: 部门信息",
+        "multi-08: 部门信息"
+      ]
+    },
+    {
+      "mode": "rewrite",
+      "coverage_rate": 0.8182,
+      "full_coverage_rate": 0.6667,
+      "planner_p95_ms": 4578.35,
+      "retrieval_p95_ms": 6317.505,
+      "avg_planner_tokens": 280.8,
+      "avg_retrieval_queries": 2.0,
+      "fallbacks": 0,
+      "failures": [
+        "multi-04: 部门信息",
+        "multi-08: 部门信息"
+      ]
+    },
+    {
+      "mode": "decompose",
+      "coverage_rate": 0.7273,
+      "full_coverage_rate": 0.5,
+      "planner_p95_ms": 5487.402,
+      "retrieval_p95_ms": 9443.346,
+      "avg_planner_tokens": 276.0,
+      "avg_retrieval_queries": 4.0,
+      "fallbacks": 0,
+      "failures": [
+        "multi-04: 部门信息",
+        "multi-06: 办理时限",
+        "multi-08: 部门信息"
+      ]
+    }
+  ],
+  "records": [
+    {
+      "mode": "none",
+      "case_id": "official-company-02",
+      "query": "到常州市政务服务中心办理公司变更登记应该去哪个窗口？",
+      "rewritten_query": "到常州市政务服务中心办理公司变更登记应该去哪个窗口？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "到常州市政务服务中心办理公司变更登记应该去哪个窗口？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 1249.433,
+      "retrieved_sections": [
+        "cz-company-change-registration::窗口办理",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::部门信息",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::基本信息"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-04",
+      "query": "哪些主体可以作为公司变更登记的服务对象？",
+      "rewritten_query": "哪些主体可以作为公司变更登记的服务对象？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "哪些主体可以作为公司变更登记的服务对象？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 959.708,
+      "retrieved_sections": [
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-06",
+      "query": "公司变更登记情形复杂时最多还能延长几个工作日？",
+      "rewritten_query": "公司变更登记情形复杂时最多还能延长几个工作日？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司变更登记情形复杂时最多还能延长几个工作日？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 948.722,
+      "retrieved_sections": [
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理时限",
+        "cz-company-change-registration::办理材料"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-08",
+      "query": "公司变更登记支持网上、窗口和快递申请吗？需要到现场吗？",
+      "rewritten_query": "公司变更登记支持网上、窗口和快递申请吗？需要到现场吗？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司变更登记支持网上、窗口和快递申请吗？需要到现场吗？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 952.321,
+      "retrieved_sections": [
+        "cz-company-change-registration::基本信息",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::窗口办理"
+      ],
+      "covered_sections": [
+        "基本信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-10",
+      "query": "公司经营范围涉及前置许可时，变更公司名称应先办什么？",
+      "rewritten_query": "公司经营范围涉及前置许可时，变更公司名称应先办什么？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司经营范围涉及前置许可时，变更公司名称应先办什么？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 964.405,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-12",
+      "query": "公司增加许可经营项目时，材料中可能需要哪些批准文件？",
+      "rewritten_query": "公司增加许可经营项目时，材料中可能需要哪些批准文件？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司增加许可经营项目时，材料中可能需要哪些批准文件？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 934.395,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::审批结果",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::基本信息"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-14",
+      "query": "公司法定代表人更改姓名时是否需要公安部门证明？",
+      "rewritten_query": "公司法定代表人更改姓名时是否需要公安部门证明？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司法定代表人更改姓名时是否需要公安部门证明？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 918.783,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-public-welfare-post-subsidy::基本信息"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-16",
+      "query": "有限责任公司变更为股份有限公司时材料按什么标准准备？",
+      "rewritten_query": "有限责任公司变更为股份有限公司时材料按什么标准准备？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "有限责任公司变更为股份有限公司时材料按什么标准准备？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 932.819,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::常见问题"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-18",
+      "query": "公司变更登记承诺几个工作日办结？",
+      "rewritten_query": "公司变更登记承诺几个工作日办结？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司变更登记承诺几个工作日办结？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 932.698,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::办理时限",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理流程",
+        "cz-public-welfare-post-subsidy::基本信息"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-20",
+      "query": "办理公司变更登记需要缴费吗？",
+      "rewritten_query": "办理公司变更登记需要缴费吗？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "办理公司变更登记需要缴费吗？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 952.546,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::收费情况",
+        "cz-company-change-registration::收费情况",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::基本信息"
+      ],
+      "covered_sections": [
+        "收费情况"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-22",
+      "query": "公司变更登记指南列出的主要法律依据有哪些？",
+      "rewritten_query": "公司变更登记指南列出的主要法律依据有哪些？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司变更登记指南列出的主要法律依据有哪些？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 953.5,
+      "retrieved_sections": [
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "法律依据"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-company-24",
+      "query": "哪些情形下企业名称变更可能不予核准？",
+      "rewritten_query": "哪些情形下企业名称变更可能不予核准？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "哪些情形下企业名称变更可能不予核准？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 929.286,
+      "retrieved_sections": [
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程"
+      ],
+      "covered_sections": [
+        "常见问题"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-welfare-02",
+      "query": "用人单位线下申领公益性岗位补贴去哪里办理？",
+      "rewritten_query": "用人单位线下申领公益性岗位补贴去哪里办理？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "用人单位线下申领公益性岗位补贴去哪里办理？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 935.821,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::窗口办理"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [],
+      "gold_rank": 4
+    },
+    {
+      "mode": "none",
+      "case_id": "official-welfare-04",
+      "query": "公益性岗位补贴和社保补贴的服务对象包括哪些单位？",
+      "rewritten_query": "公益性岗位补贴和社保补贴的服务对象包括哪些单位？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公益性岗位补贴和社保补贴的服务对象包括哪些单位？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 962.84,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::部门信息",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-welfare-06",
+      "query": "申请公益性岗位补贴时，安置人员名单用哪份材料体现？",
+      "rewritten_query": "申请公益性岗位补贴时，安置人员名单用哪份材料体现？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "申请公益性岗位补贴时，安置人员名单用哪份材料体现？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 943.327,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-welfare-08",
+      "query": "除了花名册和申请表，还要提交什么工资支付凭证？",
+      "rewritten_query": "除了花名册和申请表，还要提交什么工资支付凭证？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "除了花名册和申请表，还要提交什么工资支付凭证？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 950.367,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-public-welfare-post-subsidy::受理标准"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-welfare-10",
+      "query": "公益性岗位补贴和社保补贴的法定办结时限是多少？",
+      "rewritten_query": "公益性岗位补贴和社保补贴的法定办结时限是多少？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公益性岗位补贴和社保补贴的法定办结时限是多少？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 951.811,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::办理时限",
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 4
+    },
+    {
+      "mode": "none",
+      "case_id": "official-welfare-12",
+      "query": "申领公益性岗位补贴和社保补贴是否收费？",
+      "rewritten_query": "申领公益性岗位补贴和社保补贴是否收费？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "申领公益性岗位补贴和社保补贴是否收费？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 960.63,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::收费情况",
+        "cz-company-change-registration::收费情况",
+        "cz-public-welfare-post-subsidy::基本信息"
+      ],
+      "covered_sections": [
+        "收费情况"
+      ],
+      "missing_sections": [],
+      "gold_rank": 3
+    },
+    {
+      "mode": "none",
+      "case_id": "official-welfare-14",
+      "query": "公益性岗位补贴的依据涉及哪些法律和条例？",
+      "rewritten_query": "公益性岗位补贴的依据涉及哪些法律和条例？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公益性岗位补贴的依据涉及哪些法律和条例？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 945.319,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::部门信息"
+      ],
+      "covered_sections": [
+        "法律依据"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "official-welfare-16",
+      "query": "该补贴申领能否网上办理，必须到现场吗？",
+      "rewritten_query": "该补贴申领能否网上办理，必须到现场吗？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "该补贴申领能否网上办理，必须到现场吗？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 937.362,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::基本信息",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::受理标准"
+      ],
+      "covered_sections": [
+        "基本信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "multi-02",
+      "query": "公司变更名称涉及前置许可时，需要先做什么，办理流程有哪些环节？",
+      "rewritten_query": "公司变更名称涉及前置许可时，需要先做什么，办理流程有哪些环节？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司变更名称涉及前置许可时，需要先做什么，办理流程有哪些环节？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 975.426,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::审批结果",
+        "cz-company-change-registration::基本信息",
+        "cz-company-change-registration::常见问题"
+      ],
+      "covered_sections": [
+        "办理材料",
+        "办理流程"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "multi-04",
+      "query": "公司变更登记由哪个部门实施，材料不齐时如何处理？",
+      "rewritten_query": "公司变更登记由哪个部门实施，材料不齐时如何处理？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司变更登记由哪个部门实施，材料不齐时如何处理？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 927.132,
+      "retrieved_sections": [
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::法律救济",
+        "cz-company-change-registration::咨询投诉"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [
+        "部门信息"
+      ],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "multi-06",
+      "query": "公司变更登记的法律依据是什么，承诺多久办结？",
+      "rewritten_query": "公司变更登记的法律依据是什么，承诺多久办结？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公司变更登记的法律依据是什么，承诺多久办结？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 946.022,
+      "retrieved_sections": [
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理时限",
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "法律依据",
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "multi-08",
+      "query": "用人单位去哪个部门申请公益性岗位补贴，窗口什么时候办理？",
+      "rewritten_query": "用人单位去哪个部门申请公益性岗位补贴，窗口什么时候办理？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "用人单位去哪个部门申请公益性岗位补贴，窗口什么时候办理？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 931.13,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-company-change-registration::窗口办理",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [
+        "部门信息"
+      ],
+      "gold_rank": 3
+    },
+    {
+      "mode": "none",
+      "case_id": "multi-10",
+      "query": "补贴法定和承诺办结时限分别是多少工作日？",
+      "rewritten_query": "补贴法定和承诺办结时限分别是多少工作日？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "补贴法定和承诺办结时限分别是多少工作日？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 1112.369,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::办理时限",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理流程"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "none",
+      "case_id": "multi-12",
+      "query": "公益性岗位补贴的法律依据和实施部门是什么？",
+      "rewritten_query": "公益性岗位补贴的法律依据和实施部门是什么？",
+      "subqueries": [],
+      "retrieval_queries": [
+        "公益性岗位补贴的法律依据和实施部门是什么？"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 0.0,
+      "planner_tokens": 0,
+      "retrieval_ms": 968.881,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::部门信息",
+        "cz-company-change-registration::法律依据",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "法律依据",
+        "部门信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-02",
+      "query": "到常州市政务服务中心办理公司变更登记应该去哪个窗口？",
+      "rewritten_query": "常州市政务服务中心公司变更登记办理窗口",
+      "subqueries": [
+        "常州市政务服务中心公司变更登记在哪个窗口办理"
+      ],
+      "retrieval_queries": [
+        "到常州市政务服务中心办理公司变更登记应该去哪个窗口？",
+        "常州市政务服务中心公司变更登记办理窗口"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3286.836,
+      "planner_tokens": 282,
+      "retrieval_ms": 5106.673,
+      "retrieved_sections": [
+        "cz-company-change-registration::窗口办理",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::部门信息",
+        "cz-public-welfare-post-subsidy::基本信息"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-04",
+      "query": "哪些主体可以作为公司变更登记的服务对象？",
+      "rewritten_query": "公司变更登记服务对象 适用主体范围",
+      "subqueries": [
+        "公司变更登记的适用主体有哪些"
+      ],
+      "retrieval_queries": [
+        "哪些主体可以作为公司变更登记的服务对象？",
+        "公司变更登记服务对象 适用主体范围"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3158.01,
+      "planner_tokens": 245,
+      "retrieval_ms": 4928.123,
+      "retrieved_sections": [
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::部门信息"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-06",
+      "query": "公司变更登记情形复杂时最多还能延长几个工作日？",
+      "rewritten_query": "公司变更登记 审批时限 延长 工作日 复杂情形",
+      "subqueries": [
+        "公司变更登记复杂情形下审批期限最多延长几个工作日",
+        "公司登记办理时限延长的规定"
+      ],
+      "retrieval_queries": [
+        "公司变更登记情形复杂时最多还能延长几个工作日？",
+        "公司变更登记 审批时限 延长 工作日 复杂情形"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3505.106,
+      "planner_tokens": 299,
+      "retrieval_ms": 5711.222,
+      "retrieved_sections": [
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::办理时限"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-08",
+      "query": "公司变更登记支持网上、窗口和快递申请吗？需要到现场吗？",
+      "rewritten_query": "公司变更登记办理渠道 网上申请 窗口申请 快递申请 是否需现场办理",
+      "subqueries": [
+        "公司变更登记可通过哪些渠道申请（网上、窗口、快递）",
+        "公司变更登记是否必须到现场办理"
+      ],
+      "retrieval_queries": [
+        "公司变更登记支持网上、窗口和快递申请吗？需要到现场吗？",
+        "公司变更登记办理渠道 网上申请 窗口申请 快递申请 是否需现场办理"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3673.004,
+      "planner_tokens": 304,
+      "retrieval_ms": 5524.157,
+      "retrieved_sections": [
+        "cz-company-change-registration::基本信息",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::窗口办理"
+      ],
+      "covered_sections": [
+        "基本信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-10",
+      "query": "公司经营范围涉及前置许可时，变更公司名称应先办什么？",
+      "rewritten_query": "公司名称变更涉及前置许可事项的办理顺序要求",
+      "subqueries": [
+        "公司经营范围涉及前置许可时变更名称的办理顺序",
+        "前置许可与公司名称变更登记的先后关系规定"
+      ],
+      "retrieval_queries": [
+        "公司经营范围涉及前置许可时，变更公司名称应先办什么？",
+        "公司名称变更涉及前置许可事项的办理顺序要求"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3792.743,
+      "planner_tokens": 288,
+      "retrieval_ms": 5570.307,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::基本信息"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-12",
+      "query": "公司增加许可经营项目时，材料中可能需要哪些批准文件？",
+      "rewritten_query": "公司变更（增加）许可经营项目登记所需批准文件要求",
+      "subqueries": [
+        "公司增加许可经营项目登记需要提交哪些批准文件",
+        "许可经营项目经营范围变更登记材料要求"
+      ],
+      "retrieval_queries": [
+        "公司增加许可经营项目时，材料中可能需要哪些批准文件？",
+        "公司变更（增加）许可经营项目登记所需批准文件要求"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3673.973,
+      "planner_tokens": 289,
+      "retrieval_ms": 5434.261,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::审批结果",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-14",
+      "query": "公司法定代表人更改姓名时是否需要公安部门证明？",
+      "rewritten_query": "公司法定代表人变更姓名 公安部门证明 要求",
+      "subqueries": [
+        "公司法定代表人更改姓名需提交哪些材料",
+        "法定代表人姓名变更是否需要公安部门证明文件",
+        "公司登记事项变更中法定代表人姓名变更的办理要求"
+      ],
+      "retrieval_queries": [
+        "公司法定代表人更改姓名时是否需要公安部门证明？",
+        "公司法定代表人变更姓名 公安部门证明 要求"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3802.54,
+      "planner_tokens": 287,
+      "retrieval_ms": 5563.922,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::法律依据"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-16",
+      "query": "有限责任公司变更为股份有限公司时材料按什么标准准备？",
+      "rewritten_query": "有限责任公司变更为股份有限公司 需提交的申请材料及标准",
+      "subqueries": [
+        "有限责任公司变更为股份有限公司需提交哪些申请材料",
+        "有限责任公司变更为股份有限公司的变更登记办理条件和依据"
+      ],
+      "retrieval_queries": [
+        "有限责任公司变更为股份有限公司时材料按什么标准准备？",
+        "有限责任公司变更为股份有限公司 需提交的申请材料及标准"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4019.092,
+      "planner_tokens": 285,
+      "retrieval_ms": 5993.245,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::常见问题"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-18",
+      "query": "公司变更登记承诺几个工作日办结？",
+      "rewritten_query": "公司变更登记办理时限 承诺办结工作日",
+      "subqueries": [
+        "公司变更登记承诺办结时限是多少个工作日"
+      ],
+      "retrieval_queries": [
+        "公司变更登记承诺几个工作日办结？",
+        "公司变更登记办理时限 承诺办结工作日"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 2913.094,
+      "planner_tokens": 257,
+      "retrieval_ms": 4664.342,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::办理时限",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::窗口办理"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-20",
+      "query": "办理公司变更登记需要缴费吗？",
+      "rewritten_query": "公司变更登记 收费标准 工本费",
+      "subqueries": [
+        "公司变更登记是否需要缴纳登记费或工本费"
+      ],
+      "retrieval_queries": [
+        "办理公司变更登记需要缴费吗？",
+        "公司变更登记 收费标准 工本费"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3317.76,
+      "planner_tokens": 266,
+      "retrieval_ms": 5100.276,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::收费情况",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::收费情况",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "收费情况"
+      ],
+      "missing_sections": [],
+      "gold_rank": 3
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-22",
+      "query": "公司变更登记指南列出的主要法律依据有哪些？",
+      "rewritten_query": "公司变更登记指南 法律依据",
+      "subqueries": [
+        "公司变更登记指南列出的主要法律依据有哪些"
+      ],
+      "retrieval_queries": [
+        "公司变更登记指南列出的主要法律依据有哪些？",
+        "公司变更登记指南 法律依据"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 2950.248,
+      "planner_tokens": 258,
+      "retrieval_ms": 4699.575,
+      "retrieved_sections": [
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "法律依据"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-company-24",
+      "query": "哪些情形下企业名称变更可能不予核准？",
+      "rewritten_query": "企业名称变更登记不予核准的情形",
+      "subqueries": [
+        "企业名称变更登记不予核准的法律规定情形",
+        "企业名称登记管理规定中禁止或限制使用的情形"
+      ],
+      "retrieval_queries": [
+        "哪些情形下企业名称变更可能不予核准？",
+        "企业名称变更登记不予核准的情形"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3686.036,
+      "planner_tokens": 263,
+      "retrieval_ms": 5486.075,
+      "retrieved_sections": [
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程"
+      ],
+      "covered_sections": [
+        "常见问题"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-welfare-02",
+      "query": "用人单位线下申领公益性岗位补贴去哪里办理？",
+      "rewritten_query": "公益性岗位补贴线下申领办理地点",
+      "subqueries": [
+        "公益性岗位补贴线下办理窗口及受理地点",
+        "公益性岗位补贴申领经办机构规定"
+      ],
+      "retrieval_queries": [
+        "用人单位线下申领公益性岗位补贴去哪里办理？",
+        "公益性岗位补贴线下申领办理地点"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3826.281,
+      "planner_tokens": 277,
+      "retrieval_ms": 5689.934,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-company-change-registration::窗口办理"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-welfare-04",
+      "query": "公益性岗位补贴和社保补贴的服务对象包括哪些单位？",
+      "rewritten_query": "公益性岗位补贴和社保补贴政策的服务对象单位范围",
+      "subqueries": [
+        "公益性岗位补贴政策的补贴对象包括哪些单位",
+        "社保补贴政策的服务对象包括哪些单位"
+      ],
+      "retrieval_queries": [
+        "公益性岗位补贴和社保补贴的服务对象包括哪些单位？",
+        "公益性岗位补贴和社保补贴政策的服务对象单位范围"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3510.328,
+      "planner_tokens": 264,
+      "retrieval_ms": 5258.38,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::部门信息",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-welfare-06",
+      "query": "申请公益性岗位补贴时，安置人员名单用哪份材料体现？",
+      "rewritten_query": "公益性岗位补贴申请材料中体现安置人员名单的文件名称",
+      "subqueries": [
+        "公益性岗位补贴申请所需材料清单",
+        "公益性岗位补贴申请中安置人员名单通过什么材料体现"
+      ],
+      "retrieval_queries": [
+        "申请公益性岗位补贴时，安置人员名单用哪份材料体现？",
+        "公益性岗位补贴申请材料中体现安置人员名单的文件名称"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3665.29,
+      "planner_tokens": 277,
+      "retrieval_ms": 5424.362,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::基本信息"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-welfare-08",
+      "query": "除了花名册和申请表，还要提交什么工资支付凭证？",
+      "rewritten_query": "工资支付保障 除花名册和申请表外需提交的工资支付凭证材料",
+      "subqueries": [
+        "工资支付保障申领需提交的工资支付凭证材料有哪些",
+        "农民工工资专用账户或工资发放记录等凭证要求"
+      ],
+      "retrieval_queries": [
+        "除了花名册和申请表，还要提交什么工资支付凭证？",
+        "工资支付保障 除花名册和申请表外需提交的工资支付凭证材料"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4556.019,
+      "planner_tokens": 292,
+      "retrieval_ms": 6303.032,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::受理标准"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-welfare-10",
+      "query": "公益性岗位补贴和社保补贴的法定办结时限是多少？",
+      "rewritten_query": "公益性岗位补贴和社保补贴 法定办结时限",
+      "subqueries": [
+        "公益性岗位补贴 法定办结时限",
+        "社保补贴 法定办结时限"
+      ],
+      "retrieval_queries": [
+        "公益性岗位补贴和社保补贴的法定办结时限是多少？",
+        "公益性岗位补贴和社保补贴 法定办结时限"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 2703.866,
+      "planner_tokens": 269,
+      "retrieval_ms": 4490.669,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::办理时限",
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 4
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-welfare-12",
+      "query": "申领公益性岗位补贴和社保补贴是否收费？",
+      "rewritten_query": "公益性岗位补贴申领 社会保险补贴申领 收费标准",
+      "subqueries": [
+        "申领公益性岗位补贴是否收费",
+        "申领社会保险补贴是否收费"
+      ],
+      "retrieval_queries": [
+        "申领公益性岗位补贴和社保补贴是否收费？",
+        "公益性岗位补贴申领 社会保险补贴申领 收费标准"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3414.839,
+      "planner_tokens": 273,
+      "retrieval_ms": 5284.932,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::收费情况",
+        "cz-company-change-registration::收费情况",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "收费情况"
+      ],
+      "missing_sections": [],
+      "gold_rank": 3
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-welfare-14",
+      "query": "公益性岗位补贴的依据涉及哪些法律和条例？",
+      "rewritten_query": "公益性岗位补贴的法律依据和政策条例",
+      "subqueries": [
+        "公益性岗位补贴的政策依据文件",
+        "公益性岗位补贴涉及的法律和条例规定"
+      ],
+      "retrieval_queries": [
+        "公益性岗位补贴的依据涉及哪些法律和条例？",
+        "公益性岗位补贴的法律依据和政策条例"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3970.824,
+      "planner_tokens": 267,
+      "retrieval_ms": 5836.508,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::部门信息"
+      ],
+      "covered_sections": [
+        "法律依据"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "official-welfare-16",
+      "query": "该补贴申领能否网上办理，必须到现场吗？",
+      "rewritten_query": "补贴申领办理方式 网上办理 现场办理",
+      "subqueries": [
+        "补贴申领是否支持网上办理",
+        "补贴申领是否必须到现场办理"
+      ],
+      "retrieval_queries": [
+        "该补贴申领能否网上办理，必须到现场吗？",
+        "补贴申领办理方式 网上办理 现场办理"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4866.0,
+      "planner_tokens": 268,
+      "retrieval_ms": 6633.16,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::基本信息",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "基本信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "multi-02",
+      "query": "公司变更名称涉及前置许可时，需要先做什么，办理流程有哪些环节？",
+      "rewritten_query": "公司名称变更涉及前置审批许可事项的办理前置条件及流程",
+      "subqueries": [
+        "公司变更名称涉及前置许可的需先办理的审批事项",
+        "公司名称变更登记办理流程环节",
+        "前置许可文件在公司变更登记中的作用和要求"
+      ],
+      "retrieval_queries": [
+        "公司变更名称涉及前置许可时，需要先做什么，办理流程有哪些环节？",
+        "公司名称变更涉及前置审批许可事项的办理前置条件及流程"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4578.35,
+      "planner_tokens": 308,
+      "retrieval_ms": 6317.505,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::基本信息",
+        "cz-company-change-registration::审批结果"
+      ],
+      "covered_sections": [
+        "办理材料",
+        "办理流程"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "multi-04",
+      "query": "公司变更登记由哪个部门实施，材料不齐时如何处理？",
+      "rewritten_query": "公司变更登记的实施部门及申请材料不齐时的处理方式",
+      "subqueries": [
+        "公司变更登记由哪个部门实施",
+        "公司变更登记申请材料不齐全如何处理"
+      ],
+      "retrieval_queries": [
+        "公司变更登记由哪个部门实施，材料不齐时如何处理？",
+        "公司变更登记的实施部门及申请材料不齐时的处理方式"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3920.187,
+      "planner_tokens": 284,
+      "retrieval_ms": 5694.925,
+      "retrieved_sections": [
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::法律救济"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [
+        "部门信息"
+      ],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "multi-06",
+      "query": "公司变更登记的法律依据是什么，承诺多久办结？",
+      "rewritten_query": "公司变更登记事项的法律依据及办理时限（承诺办结时限）",
+      "subqueries": [
+        "公司变更登记的法律依据（法律法规、规章依据）",
+        "公司变更登记的承诺办结时限"
+      ],
+      "retrieval_queries": [
+        "公司变更登记的法律依据是什么，承诺多久办结？",
+        "公司变更登记事项的法律依据及办理时限（承诺办结时限）"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3756.72,
+      "planner_tokens": 281,
+      "retrieval_ms": 5525.443,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理时限",
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::办理流程"
+      ],
+      "covered_sections": [
+        "法律依据",
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "multi-08",
+      "query": "用人单位去哪个部门申请公益性岗位补贴，窗口什么时候办理？",
+      "rewritten_query": "公益性岗位补贴申请受理部门及办理窗口工作时间",
+      "subqueries": [
+        "公益性岗位补贴申请由哪个部门受理",
+        "公益性岗位补贴申请办理窗口的工作时间"
+      ],
+      "retrieval_queries": [
+        "用人单位去哪个部门申请公益性岗位补贴，窗口什么时候办理？",
+        "公益性岗位补贴申请受理部门及办理窗口工作时间"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3507.657,
+      "planner_tokens": 276,
+      "retrieval_ms": 5254.412,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::窗口办理",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [
+        "部门信息"
+      ],
+      "gold_rank": 2
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "multi-10",
+      "query": "补贴法定和承诺办结时限分别是多少工作日？",
+      "rewritten_query": "补贴事项法定办结时限和承诺办结时限（工作日）",
+      "subqueries": [
+        "补贴事项的法定办结时限是多少工作日",
+        "补贴事项的承诺办结时限是多少工作日"
+      ],
+      "retrieval_queries": [
+        "补贴法定和承诺办结时限分别是多少工作日？",
+        "补贴事项法定办结时限和承诺办结时限（工作日）"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3528.917,
+      "planner_tokens": 270,
+      "retrieval_ms": 5331.007,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::办理时限",
+        "cz-company-change-registration::办理流程",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "rewrite",
+      "case_id": "multi-12",
+      "query": "公益性岗位补贴的法律依据和实施部门是什么？",
+      "rewritten_query": "公益性岗位补贴政策 法律依据 实施部门",
+      "subqueries": [
+        "公益性岗位补贴的政策文件依据",
+        "公益性岗位补贴由哪个部门负责实施"
+      ],
+      "retrieval_queries": [
+        "公益性岗位补贴的法律依据和实施部门是什么？",
+        "公益性岗位补贴政策 法律依据 实施部门"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3362.653,
+      "planner_tokens": 266,
+      "retrieval_ms": 5337.665,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::部门信息",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-company-change-registration::法律依据"
+      ],
+      "covered_sections": [
+        "法律依据",
+        "部门信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-02",
+      "query": "到常州市政务服务中心办理公司变更登记应该去哪个窗口？",
+      "rewritten_query": "常州市政务服务中心 公司变更登记 办理窗口",
+      "subqueries": [
+        "常州市政务服务中心办理公司变更登记在哪个窗口",
+        "常州市公司变更登记办理窗口及地址"
+      ],
+      "retrieval_queries": [
+        "到常州市政务服务中心办理公司变更登记应该去哪个窗口？",
+        "常州市政务服务中心 公司变更登记 办理窗口",
+        "常州市政务服务中心办理公司变更登记在哪个窗口",
+        "常州市公司变更登记办理窗口及地址"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3690.924,
+      "planner_tokens": 319,
+      "retrieval_ms": 9799.181,
+      "retrieved_sections": [
+        "cz-company-change-registration::窗口办理",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::基本信息"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-04",
+      "query": "哪些主体可以作为公司变更登记的服务对象？",
+      "rewritten_query": "公司变更登记服务对象主体范围",
+      "subqueries": [
+        "公司变更登记的申请人范围包括哪些主体",
+        "公司变更登记办理主体资格条件"
+      ],
+      "retrieval_queries": [
+        "哪些主体可以作为公司变更登记的服务对象？",
+        "公司变更登记服务对象主体范围",
+        "公司变更登记的申请人范围包括哪些主体",
+        "公司变更登记办理主体资格条件"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3673.39,
+      "planner_tokens": 264,
+      "retrieval_ms": 8265.814,
+      "retrieved_sections": [
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::常见问题"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-06",
+      "query": "公司变更登记情形复杂时最多还能延长几个工作日？",
+      "rewritten_query": "公司变更登记情形复杂时办理期限延长的最多个工作日数",
+      "subqueries": [
+        "公司变更登记一般办理期限是多少个工作日",
+        "公司变更登记情形复杂时可延长多少个工作日"
+      ],
+      "retrieval_queries": [
+        "公司变更登记情形复杂时最多还能延长几个工作日？",
+        "公司变更登记情形复杂时办理期限延长的最多个工作日数",
+        "公司变更登记一般办理期限是多少个工作日",
+        "公司变更登记情形复杂时可延长多少个工作日"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3853.176,
+      "planner_tokens": 284,
+      "retrieval_ms": 9284.466,
+      "retrieved_sections": [
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::办理时限",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::办理流程"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-08",
+      "query": "公司变更登记支持网上、窗口和快递申请吗？需要到现场吗？",
+      "rewritten_query": "公司变更登记办理方式 网上申请 窗口申请 快递申请 是否需现场办理",
+      "subqueries": [
+        "公司变更登记能否通过网上申请办理",
+        "公司变更登记能否通过窗口或快递提交申请材料",
+        "公司变更登记是否需要申请人到现场办理"
+      ],
+      "retrieval_queries": [
+        "公司变更登记支持网上、窗口和快递申请吗？需要到现场吗？",
+        "公司变更登记办理方式 网上申请 窗口申请 快递申请 是否需现场办理",
+        "公司变更登记能否通过网上申请办理",
+        "公司变更登记能否通过窗口或快递提交申请材料"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4444.152,
+      "planner_tokens": 319,
+      "retrieval_ms": 8448.171,
+      "retrieved_sections": [
+        "cz-company-change-registration::基本信息",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::窗口办理"
+      ],
+      "covered_sections": [
+        "基本信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-10",
+      "query": "公司经营范围涉及前置许可时，变更公司名称应先办什么？",
+      "rewritten_query": "公司名称变更 前置许可 经营范围 先办手续",
+      "subqueries": [
+        "公司经营范围涉及前置许可时变更公司名称应先办理的手续",
+        "前置许可事项办理后再申请公司名称变更登记的规定"
+      ],
+      "retrieval_queries": [
+        "公司经营范围涉及前置许可时，变更公司名称应先办什么？",
+        "公司名称变更 前置许可 经营范围 先办手续",
+        "公司经营范围涉及前置许可时变更公司名称应先办理的手续",
+        "前置许可事项办理后再申请公司名称变更登记的规定"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3492.009,
+      "planner_tokens": 293,
+      "retrieval_ms": 8309.488,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-12",
+      "query": "公司增加许可经营项目时，材料中可能需要哪些批准文件？",
+      "rewritten_query": "公司增加许可经营项目所需提交的批准文件材料要求",
+      "subqueries": [
+        "公司增加许可经营项目变更登记需提交哪些批准文件"
+      ],
+      "retrieval_queries": [
+        "公司增加许可经营项目时，材料中可能需要哪些批准文件？",
+        "公司增加许可经营项目所需提交的批准文件材料要求",
+        "公司增加许可经营项目变更登记需提交哪些批准文件"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4199.93,
+      "planner_tokens": 262,
+      "retrieval_ms": 8535.552,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::审批结果",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::基本信息",
+        "cz-company-change-registration::权利义务"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-14",
+      "query": "公司法定代表人更改姓名时是否需要公安部门证明？",
+      "rewritten_query": "公司法定代表人变更姓名 公安部门出具证明要求",
+      "subqueries": [
+        "公司法定代表人更改姓名的变更登记办理流程",
+        "法定代表人姓名变更登记所需证明材料 公安部门证明要求"
+      ],
+      "retrieval_queries": [
+        "公司法定代表人更改姓名时是否需要公安部门证明？",
+        "公司法定代表人变更姓名 公安部门出具证明要求",
+        "公司法定代表人更改姓名的变更登记办理流程",
+        "法定代表人姓名变更登记所需证明材料 公安部门证明要求"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 2857.766,
+      "planner_tokens": 280,
+      "retrieval_ms": 6995.169,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理流程",
+        "cz-public-welfare-post-subsidy::基本信息"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-16",
+      "query": "有限责任公司变更为股份有限公司时材料按什么标准准备？",
+      "rewritten_query": "有限责任公司变更为股份有限公司 所需申请材料 提交规范标准",
+      "subqueries": [
+        "有限责任公司变更为股份有限公司需要提交哪些申请材料",
+        "公司变更登记申请材料的格式和要求标准"
+      ],
+      "retrieval_queries": [
+        "有限责任公司变更为股份有限公司时材料按什么标准准备？",
+        "有限责任公司变更为股份有限公司 所需申请材料 提交规范标准",
+        "有限责任公司变更为股份有限公司需要提交哪些申请材料",
+        "公司变更登记申请材料的格式和要求标准"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4320.48,
+      "planner_tokens": 281,
+      "retrieval_ms": 9398.386,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::审批结果"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-18",
+      "query": "公司变更登记承诺几个工作日办结？",
+      "rewritten_query": "公司变更登记办理时限 承诺办结工作日",
+      "subqueries": [
+        "公司变更登记承诺办结时限为几个工作日"
+      ],
+      "retrieval_queries": [
+        "公司变更登记承诺几个工作日办结？",
+        "公司变更登记办理时限 承诺办结工作日",
+        "公司变更登记承诺办结时限为几个工作日"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 2896.702,
+      "planner_tokens": 269,
+      "retrieval_ms": 5513.008,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::办理时限",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理流程",
+        "cz-public-welfare-post-subsidy::窗口办理"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-20",
+      "query": "办理公司变更登记需要缴费吗？",
+      "rewritten_query": "公司变更登记 办理费用 收费标准",
+      "subqueries": [
+        "公司变更登记是否收费",
+        "公司变更登记收费标准及缴费方式"
+      ],
+      "retrieval_queries": [
+        "办理公司变更登记需要缴费吗？",
+        "公司变更登记 办理费用 收费标准",
+        "公司变更登记是否收费",
+        "公司变更登记收费标准及缴费方式"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3390.434,
+      "planner_tokens": 263,
+      "retrieval_ms": 8649.582,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::收费情况",
+        "cz-company-change-registration::收费情况",
+        "cz-company-change-registration::办理材料",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "收费情况"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-22",
+      "query": "公司变更登记指南列出的主要法律依据有哪些？",
+      "rewritten_query": "公司变更登记办事指南 主要法律依据",
+      "subqueries": [
+        "公司变更登记指南依据的法律法规有哪些"
+      ],
+      "retrieval_queries": [
+        "公司变更登记指南列出的主要法律依据有哪些？",
+        "公司变更登记办事指南 主要法律依据",
+        "公司变更登记指南依据的法律法规有哪些"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3076.514,
+      "planner_tokens": 263,
+      "retrieval_ms": 5918.903,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::法律依据",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "法律依据"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-company-24",
+      "query": "哪些情形下企业名称变更可能不予核准？",
+      "rewritten_query": "企业名称变更登记不予核准的情形",
+      "subqueries": [
+        "企业名称变更登记不予核准的情形有哪些",
+        "企业名称登记管理规定中禁止或限制使用的名称情形",
+        "企业名称变更与同行业企业名称近似不予核准的条件"
+      ],
+      "retrieval_queries": [
+        "哪些情形下企业名称变更可能不予核准？",
+        "企业名称变更登记不予核准的情形",
+        "企业名称变更登记不予核准的情形有哪些",
+        "企业名称登记管理规定中禁止或限制使用的名称情形"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4245.163,
+      "planner_tokens": 286,
+      "retrieval_ms": 7997.066,
+      "retrieved_sections": [
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程"
+      ],
+      "covered_sections": [
+        "常见问题"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-welfare-02",
+      "query": "用人单位线下申领公益性岗位补贴去哪里办理？",
+      "rewritten_query": "公益性岗位补贴线下申领办理地点",
+      "subqueries": [
+        "公益性岗位补贴线下申领的办理机构及地址",
+        "用人单位申领公益性岗位补贴的办理流程和窗口"
+      ],
+      "retrieval_queries": [
+        "用人单位线下申领公益性岗位补贴去哪里办理？",
+        "公益性岗位补贴线下申领办理地点",
+        "公益性岗位补贴线下申领的办理机构及地址",
+        "用人单位申领公益性岗位补贴的办理流程和窗口"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3667.326,
+      "planner_tokens": 280,
+      "retrieval_ms": 7404.615,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::窗口办理"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [],
+      "gold_rank": 4
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-welfare-04",
+      "query": "公益性岗位补贴和社保补贴的服务对象包括哪些单位？",
+      "rewritten_query": "公益性岗位补贴和社保补贴政策的服务对象范围（单位类型）",
+      "subqueries": [
+        "公益性岗位补贴政策覆盖哪些单位",
+        "社保补贴政策覆盖哪些单位"
+      ],
+      "retrieval_queries": [
+        "公益性岗位补贴和社保补贴的服务对象包括哪些单位？",
+        "公益性岗位补贴和社保补贴政策的服务对象范围（单位类型）",
+        "公益性岗位补贴政策覆盖哪些单位",
+        "社保补贴政策覆盖哪些单位"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3345.404,
+      "planner_tokens": 259,
+      "retrieval_ms": 7874.58,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::部门信息",
+        "cz-public-welfare-post-subsidy::办理材料"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-welfare-06",
+      "query": "申请公益性岗位补贴时，安置人员名单用哪份材料体现？",
+      "rewritten_query": "公益性岗位补贴申请 安置人员名单 材料要求",
+      "subqueries": [
+        "公益性岗位补贴申领所需材料清单",
+        "公益性岗位补贴申请中安置人员名单如何提供"
+      ],
+      "retrieval_queries": [
+        "申请公益性岗位补贴时，安置人员名单用哪份材料体现？",
+        "公益性岗位补贴申请 安置人员名单 材料要求",
+        "公益性岗位补贴申领所需材料清单",
+        "公益性岗位补贴申请中安置人员名单如何提供"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3515.866,
+      "planner_tokens": 273,
+      "retrieval_ms": 7658.552,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-welfare-08",
+      "query": "除了花名册和申请表，还要提交什么工资支付凭证？",
+      "rewritten_query": "工资支付保障 除花名册和申请表外需提交的工资支付凭证材料",
+      "subqueries": [
+        "工资支付申请所需提交材料清单",
+        "工资支付凭证的具体类型和要求"
+      ],
+      "retrieval_queries": [
+        "除了花名册和申请表，还要提交什么工资支付凭证？",
+        "工资支付保障 除花名册和申请表外需提交的工资支付凭证材料",
+        "工资支付申请所需提交材料清单",
+        "工资支付凭证的具体类型和要求"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 4503.992,
+      "planner_tokens": 283,
+      "retrieval_ms": 8268.241,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "办理材料"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-welfare-10",
+      "query": "公益性岗位补贴和社保补贴的法定办结时限是多少？",
+      "rewritten_query": "公益性岗位补贴和社保补贴法定办结时限",
+      "subqueries": [
+        "公益性岗位补贴法定办结时限",
+        "社保补贴法定办结时限"
+      ],
+      "retrieval_queries": [
+        "公益性岗位补贴和社保补贴的法定办结时限是多少？",
+        "公益性岗位补贴和社保补贴法定办结时限",
+        "公益性岗位补贴法定办结时限",
+        "社保补贴法定办结时限"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3700.893,
+      "planner_tokens": 259,
+      "retrieval_ms": 8146.365,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理时限",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-company-change-registration::办理流程"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 4
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-welfare-12",
+      "query": "申领公益性岗位补贴和社保补贴是否收费？",
+      "rewritten_query": "公益性岗位补贴和社保补贴申领是否收费",
+      "subqueries": [
+        "公益性岗位补贴申领是否收费",
+        "社会保险补贴申领是否收费"
+      ],
+      "retrieval_queries": [
+        "申领公益性岗位补贴和社保补贴是否收费？",
+        "公益性岗位补贴和社保补贴申领是否收费",
+        "公益性岗位补贴申领是否收费",
+        "社会保险补贴申领是否收费"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3570.949,
+      "planner_tokens": 272,
+      "retrieval_ms": 7725.829,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::收费情况",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::收费情况",
+        "cz-public-welfare-post-subsidy::基本信息"
+      ],
+      "covered_sections": [
+        "收费情况"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-welfare-14",
+      "query": "公益性岗位补贴的依据涉及哪些法律和条例？",
+      "rewritten_query": "公益性岗位补贴 法律依据 法规 条例",
+      "subqueries": [
+        "公益性岗位补贴的法律依据有哪些",
+        "公益性岗位补贴相关的条例和政策文件"
+      ],
+      "retrieval_queries": [
+        "公益性岗位补贴的依据涉及哪些法律和条例？",
+        "公益性岗位补贴 法律依据 法规 条例",
+        "公益性岗位补贴的法律依据有哪些",
+        "公益性岗位补贴相关的条例和政策文件"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3552.232,
+      "planner_tokens": 265,
+      "retrieval_ms": 8656.52,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-company-change-registration::法律依据",
+        "cz-public-welfare-post-subsidy::部门信息"
+      ],
+      "covered_sections": [
+        "法律依据"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "official-welfare-16",
+      "query": "该补贴申领能否网上办理，必须到现场吗？",
+      "rewritten_query": "补贴申领事项的办理方式 网上办理 现场办理要求",
+      "subqueries": [
+        "补贴申领是否支持网上办理",
+        "补贴申领是否必须到现场办理"
+      ],
+      "retrieval_queries": [
+        "该补贴申领能否网上办理，必须到现场吗？",
+        "补贴申领事项的办理方式 网上办理 现场办理要求",
+        "补贴申领是否支持网上办理",
+        "补贴申领是否必须到现场办理"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3187.442,
+      "planner_tokens": 280,
+      "retrieval_ms": 7350.438,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::基本信息",
+        "cz-company-change-registration::基本信息",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-company-change-registration::受理标准",
+        "cz-public-welfare-post-subsidy::受理标准"
+      ],
+      "covered_sections": [
+        "基本信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "multi-02",
+      "query": "公司变更名称涉及前置许可时，需要先做什么，办理流程有哪些环节？",
+      "rewritten_query": "公司变更名称涉及前置许可事项的办理流程",
+      "subqueries": [
+        "公司变更名称涉及前置许可的办理流程和前置审批要求",
+        "公司名称变更登记的办理环节和步骤"
+      ],
+      "retrieval_queries": [
+        "公司变更名称涉及前置许可时，需要先做什么，办理流程有哪些环节？",
+        "公司变更名称涉及前置许可事项的办理流程",
+        "公司变更名称涉及前置许可的办理流程和前置审批要求",
+        "公司名称变更登记的办理环节和步骤"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 5487.402,
+      "planner_tokens": 283,
+      "retrieval_ms": 9443.346,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::常见问题",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::基本信息"
+      ],
+      "covered_sections": [
+        "办理材料",
+        "办理流程"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    },
+    {
+      "mode": "decompose",
+      "case_id": "multi-04",
+      "query": "公司变更登记由哪个部门实施，材料不齐时如何处理？",
+      "rewritten_query": "公司变更登记实施部门及材料不齐补正处理规定",
+      "subqueries": [
+        "公司变更登记由哪个部门实施",
+        "公司变更登记申请材料不齐全时如何补正处理"
+      ],
+      "retrieval_queries": [
+        "公司变更登记由哪个部门实施，材料不齐时如何处理？",
+        "公司变更登记实施部门及材料不齐补正处理规定",
+        "公司变更登记由哪个部门实施",
+        "公司变更登记申请材料不齐全时如何补正处理"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3413.464,
+      "planner_tokens": 284,
+      "retrieval_ms": 7332.738,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::办理流程",
+        "cz-public-welfare-post-subsidy::基本信息"
+      ],
+      "covered_sections": [
+        "受理标准"
+      ],
+      "missing_sections": [
+        "部门信息"
+      ],
+      "gold_rank": 2
+    },
+    {
+      "mode": "decompose",
+      "case_id": "multi-06",
+      "query": "公司变更登记的法律依据是什么，承诺多久办结？",
+      "rewritten_query": "公司变更登记 法律依据 办结时限",
+      "subqueries": [
+        "公司变更登记的法律依据有哪些",
+        "公司变更登记的承诺办结时限是多少"
+      ],
+      "retrieval_queries": [
+        "公司变更登记的法律依据是什么，承诺多久办结？",
+        "公司变更登记 法律依据 办结时限",
+        "公司变更登记的法律依据有哪些",
+        "公司变更登记的承诺办结时限是多少"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3214.041,
+      "planner_tokens": 271,
+      "retrieval_ms": 7365.537,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理材料",
+        "cz-company-change-registration::法律依据",
+        "cz-company-change-registration::受理标准",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::常见问题"
+      ],
+      "covered_sections": [
+        "法律依据"
+      ],
+      "missing_sections": [
+        "办理时限"
+      ],
+      "gold_rank": 2
+    },
+    {
+      "mode": "decompose",
+      "case_id": "multi-08",
+      "query": "用人单位去哪个部门申请公益性岗位补贴，窗口什么时候办理？",
+      "rewritten_query": "公益性岗位补贴申请受理部门及窗口办理时间",
+      "subqueries": [
+        "公益性岗位补贴由哪个部门受理申请",
+        "公益性岗位补贴申请窗口的办公办理时间"
+      ],
+      "retrieval_queries": [
+        "用人单位去哪个部门申请公益性岗位补贴，窗口什么时候办理？",
+        "公益性岗位补贴申请受理部门及窗口办理时间",
+        "公益性岗位补贴由哪个部门受理申请",
+        "公益性岗位补贴申请窗口的办公办理时间"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3479.88,
+      "planner_tokens": 275,
+      "retrieval_ms": 7295.795,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "窗口办理"
+      ],
+      "missing_sections": [
+        "部门信息"
+      ],
+      "gold_rank": 2
+    },
+    {
+      "mode": "decompose",
+      "case_id": "multi-10",
+      "query": "补贴法定和承诺办结时限分别是多少工作日？",
+      "rewritten_query": "补贴事项 法定办结时限 承诺办结时限 工作日",
+      "subqueries": [
+        "补贴事项的法定办结时限是多少工作日",
+        "补贴事项的承诺办结时限是多少工作日"
+      ],
+      "retrieval_queries": [
+        "补贴法定和承诺办结时限分别是多少工作日？",
+        "补贴事项 法定办结时限 承诺办结时限 工作日",
+        "补贴事项的法定办结时限是多少工作日",
+        "补贴事项的承诺办结时限是多少工作日"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3751.803,
+      "planner_tokens": 274,
+      "retrieval_ms": 7684.574,
+      "retrieved_sections": [
+        "cz-company-change-registration::办理时限",
+        "cz-public-welfare-post-subsidy::办理时限",
+        "cz-public-welfare-post-subsidy::窗口办理",
+        "cz-company-change-registration::办理流程",
+        "cz-company-change-registration::受理标准"
+      ],
+      "covered_sections": [
+        "办理时限"
+      ],
+      "missing_sections": [],
+      "gold_rank": 2
+    },
+    {
+      "mode": "decompose",
+      "case_id": "multi-12",
+      "query": "公益性岗位补贴的法律依据和实施部门是什么？",
+      "rewritten_query": "公益性岗位补贴 法律依据 实施部门",
+      "subqueries": [
+        "公益性岗位补贴 政策文件 法律依据",
+        "公益性岗位补贴 实施部门 职责分工"
+      ],
+      "retrieval_queries": [
+        "公益性岗位补贴的法律依据和实施部门是什么？",
+        "公益性岗位补贴 法律依据 实施部门",
+        "公益性岗位补贴 政策文件 法律依据",
+        "公益性岗位补贴 实施部门 职责分工"
+      ],
+      "fallback_reason": null,
+      "planner_ms": 3544.531,
+      "planner_tokens": 269,
+      "retrieval_ms": 7448.876,
+      "retrieved_sections": [
+        "cz-public-welfare-post-subsidy::法律依据",
+        "cz-public-welfare-post-subsidy::受理标准",
+        "cz-public-welfare-post-subsidy::办理材料",
+        "cz-public-welfare-post-subsidy::部门信息",
+        "cz-company-change-registration::法律依据"
+      ],
+      "covered_sections": [
+        "法律依据",
+        "部门信息"
+      ],
+      "missing_sections": [],
+      "gold_rank": 1
+    }
+  ]
+}

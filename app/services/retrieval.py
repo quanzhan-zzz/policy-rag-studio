@@ -18,6 +18,7 @@ from app.schemas import (
     TraceStage,
 )
 from app.services.embedding import EmbeddingProvider, get_embedding_provider
+from app.services.query_planning import QueryPlan
 from app.services.reranker import (
     HeuristicReranker,
     RerankCandidate,
@@ -354,3 +355,143 @@ def run_retrieval(
         results=selected,
     )
     return run, trace
+
+
+async def run_planned_retrieval(
+    store: Store,
+    chunks: list[ChunkRecord],
+    plan: QueryPlan,
+    *,
+    top_k: int,
+    reranker_provider: RerankerProvider | None = None,
+    filters: RetrievalFilters | None = None,
+    unfiltered_chunk_count: int | None = None,
+    filter_latency_ms: float = 0.0,
+) -> tuple[RetrievalRun, TraceRecord]:
+    trace_id = f"tr_{uuid4().hex[:10]}"
+    stages: list[TraceStage] = []
+    if filters is not None and filters.has_conditions():
+        stages.append(
+            TraceStage(
+                key="metadata_filter",
+                label="元数据过滤",
+                duration_ms=round(filter_latency_ms, 3),
+                input_count=unfiltered_chunk_count,
+                output_count=len(chunks),
+                detail=(
+                    f"{filters.trace_detail()}；候选 {unfiltered_chunk_count or '未知'} "
+                    f"→ {len(chunks)}"
+                ),
+            )
+        )
+    stages.append(
+        TraceStage(
+            key="query_plan",
+            label=f"查询规划 · {plan.mode.value}",
+            duration_ms=plan.latency_ms,
+            input_count=1,
+            output_count=len(plan.retrieval_queries),
+            detail=(
+                f"{plan.trace_detail()}；queries={' | '.join(plan.retrieval_queries)}"
+            ),
+        )
+    )
+
+    candidate_k = min(20, max(top_k, 10))
+    fused_scores: dict[str, float] = {}
+    result_by_chunk: dict[str, RetrievedChunk] = {}
+    query_latencies: list[float] = []
+    for index, retrieval_query in enumerate(plan.retrieval_queries, start=1):
+        embedding_provider, dense_scores, dense_latency = await prepare_dense_scores(
+            store,
+            chunks,
+            retrieval_query,
+            ChunkStrategy.HEADING,
+            filters=filters,
+        )
+        run, _ = await asyncio.to_thread(
+            run_retrieval,
+            chunks=chunks,
+            query=retrieval_query,
+            strategy=RetrievalStrategy.HYBRID_RERANK,
+            chunk_strategy=ChunkStrategy.HEADING,
+            top_k=candidate_k,
+            embedding_provider=embedding_provider,
+            dense_scores_by_chunk=dense_scores,
+            precomputed_latency_ms=dense_latency,
+            reranker_provider=reranker_provider,
+            filters=None,
+            unfiltered_chunk_count=None,
+        )
+        query_latencies.append(run.latency_ms)
+        top_ids = [result.chunk_id for result in run.results[:5]]
+        stages.append(
+            TraceStage(
+                key=f"planned_query_{index}",
+                label=f"子查询 {index}",
+                duration_ms=run.latency_ms,
+                input_count=len(chunks),
+                output_count=len(run.results),
+                detail=f"{retrieval_query}；top={' , '.join(top_ids)}",
+            )
+        )
+        for result in run.results:
+            fused_scores[result.chunk_id] = fused_scores.get(result.chunk_id, 0.0) + (
+                1.0 / (60 + result.rank)
+            )
+            result_by_chunk.setdefault(result.chunk_id, result)
+
+    ranked_chunk_ids = sorted(
+        fused_scores,
+        key=lambda chunk_id: fused_scores[chunk_id],
+        reverse=True,
+    )[:top_k]
+    chunks_by_id = {chunk.id: chunk for chunk in chunks}
+    selected: list[RetrievedChunk] = []
+    for rank, chunk_id in enumerate(ranked_chunk_ids, start=1):
+        chunk = chunks_by_id.get(chunk_id)
+        if chunk is None:
+            continue
+        original = result_by_chunk[chunk_id]
+        selected.append(
+            _to_result(
+                chunk,
+                fused_scores[chunk_id],
+                rank,
+                ranks=RankDetail(
+                    dense_rank=original.ranks.dense_rank,
+                    bm25_rank=original.ranks.bm25_rank,
+                    rerank_delta=(original.rank - rank if original.rank else None),
+                ),
+            )
+        )
+    stages.append(
+        TraceStage(
+            key="multi_query_fusion",
+            label="子查询融合",
+            duration_ms=0.2,
+            input_count=len(result_by_chunk),
+            output_count=len(selected),
+            detail=f"RRF k=60，融合 {len(plan.retrieval_queries)} 个查询",
+        )
+    )
+    total_ms = round(plan.latency_ms + sum(query_latencies), 3)
+    trace = TraceRecord(
+        id=trace_id,
+        query=plan.original_query,
+        strategy=RetrievalStrategy.HYBRID_RERANK,
+        chunk_strategy=ChunkStrategy.HEADING,
+        total_ms=total_ms,
+        created_at=datetime.now(UTC),
+        stages=stages,
+    )
+    return (
+        RetrievalRun(
+            strategy=RetrievalStrategy.HYBRID_RERANK,
+            label=f"{STRATEGY_LABELS[RetrievalStrategy.HYBRID_RERANK]} · {plan.mode.value}",
+            latency_ms=total_ms,
+            trace_id=trace_id,
+            results=selected,
+        ),
+        trace,
+    )

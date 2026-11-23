@@ -7,6 +7,7 @@ import type {
   Health,
   IndexTask,
   Overview,
+  QueryPlanningMode,
   RetrievalFilters,
   RetrievalResponse,
   RetrievalStrategy,
@@ -87,6 +88,7 @@ export const api = {
     top_k: number
     temperature?: number
     filters?: RetrievalFilters
+    query_planning_mode?: QueryPlanningMode
   }) =>
     request<AnswerResponse>('/answer', {
       method: 'POST',
@@ -111,6 +113,7 @@ export async function streamAnswer(
     top_k: number
     temperature?: number
     filters?: RetrievalFilters
+    query_planning_mode?: QueryPlanningMode
   },
   handlers: AnswerStreamHandlers,
 ): Promise<void> {
