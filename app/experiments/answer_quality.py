@@ -8,6 +8,7 @@ The output is a Markdown report, a raw JSON artifact, and a human review sheet.
 import argparse
 import asyncio
 import json
+import math
 import re
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -16,7 +17,13 @@ from typing import Any
 
 from app.config import get_settings
 from app.db.postgres import PostgresStore
-from app.schemas import AnswerRequest, AnswerResponse, ChunkStrategy, QueryPlanningMode
+from app.schemas import (
+    AnswerRequest,
+    AnswerResponse,
+    ChunkStrategy,
+    CitationVerifierProvider,
+    QueryPlanningMode,
+)
 from app.services.answer import CITATION_PATTERN, answer_query
 from app.services.embedding import get_embedding_provider
 from app.services.evaluation_dataset import get_evaluation_dataset
@@ -84,6 +91,12 @@ class CaseResult:
     answer_error: str | None
     expected_document_id: str = ""
     gold_evidence: str = ""
+    verification_provider: str = "none"
+    verification_status: str = "not_run"
+    removed_claim_count: int = 0
+    removed_citation_count: int = 0
+    verification_tokens: int = 0
+    verification_ms: float = 0.0
 
 
 def _clamp_score(value: Any) -> int:
@@ -211,6 +224,7 @@ async def answer_with_retry(
     *,
     top_k: int,
     query_planning_mode: QueryPlanningMode = QueryPlanningMode.NONE,
+    citation_verifier_provider: CitationVerifierProvider = CitationVerifierProvider.NONE,
     attempts: int = 3,
 ) -> AnswerResponse:
     delay = 4.0
@@ -224,6 +238,7 @@ async def answer_with_retry(
                     chunk_strategy=ChunkStrategy.HEADING,
                     top_k=top_k,
                     query_planning_mode=query_planning_mode,
+                    citation_verifier_provider=citation_verifier_provider,
                 ),
                 llm_provider=provider,
             )
@@ -244,6 +259,7 @@ async def evaluate_case(
     judge_enabled: bool,
     semaphore: asyncio.Semaphore,
     query_planning_mode: QueryPlanningMode = QueryPlanningMode.NONE,
+    citation_verifier_provider: CitationVerifierProvider = CitationVerifierProvider.NONE,
 ) -> CaseResult:
     async with semaphore:
         try:
@@ -253,6 +269,7 @@ async def evaluate_case(
                 provider,
                 top_k=top_k,
                 query_planning_mode=query_planning_mode,
+                citation_verifier_provider=citation_verifier_provider,
             )
         except Exception as error:  # noqa: BLE001 - record per-case failures
             return CaseResult(
@@ -277,6 +294,8 @@ async def evaluate_case(
                 answer_error=f"{type(error).__name__}: {error}",
                 expected_document_id=case.expected_document_id,
                 gold_evidence=case.gold_evidence or "",
+                verification_provider=citation_verifier_provider.value,
+                verification_status="not_generated",
             )
 
         gold_rank = next(
@@ -337,11 +356,25 @@ async def evaluate_case(
             answer_error=None,
             expected_document_id=case.expected_document_id,
             gold_evidence=case.gold_evidence or "",
+            verification_provider=response.verification_provider,
+            verification_status=response.verification_status,
+            removed_claim_count=response.removed_claim_count,
+            removed_citation_count=response.removed_citation_count,
+            verification_tokens=response.verification_tokens,
+            verification_ms=response.verification_ms,
         )
 
 
 def _average(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
+
+
+def _percentile(values: list[float], percentile: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    index = max(0, math.ceil(len(ordered) * percentile) - 1)
+    return round(ordered[index], 3)
 
 
 def summarize(results: list[CaseResult]) -> dict[str, Any]:
@@ -391,6 +424,26 @@ def summarize(results: list[CaseResult]) -> dict[str, Any]:
         else None,
         "avg_answer_ms": round(_average([result.answer_ms for result in answered]), 1),
         "avg_total_tokens": round(_average([float(result.total_tokens) for result in answered]), 1),
+        "verification_ms_p50": _percentile(
+            [result.verification_ms for result in answered],
+            0.5,
+        ),
+        "verification_ms_p95": _percentile(
+            [result.verification_ms for result in answered],
+            0.95,
+        ),
+        "removed_claims": sum(result.removed_claim_count for result in answered),
+        "removed_citations": sum(result.removed_citation_count for result in answered),
+        "avg_verification_tokens": round(
+            _average([float(result.verification_tokens) for result in answered]),
+            1,
+        ),
+        "verification_abstentions": sum(
+            result.verification_status == "abstained" for result in answered
+        ),
+        "verification_failures": sum(
+            result.verification_status == "verification_failed" for result in answered
+        ),
     }
 
 
@@ -417,6 +470,7 @@ def render_report(
     top_k: int,
     review_size: int,
     query_planning_mode: QueryPlanningMode,
+    citation_verifier_provider: CitationVerifierProvider,
 ) -> str:
     lines = [
         "# Answer Quality Report",
@@ -429,6 +483,7 @@ def render_report(
         f"- Reranker: {reranker_model}",
         f"- Answer model: {answer_model}",
         f"- Query planning: {query_planning_mode.value}",
+        f"- Citation verifier: {citation_verifier_provider.value}",
         f"- Judge model: {judge_model if judge_enabled else 'disabled'}",
         f"- Human review: {review_size}-case worksheet generated; pending manual completion",
         "- Path: Hybrid + Rerank -> Context Pack -> answer -> citation metrics/judge",
@@ -450,6 +505,13 @@ def render_report(
         f"| LLM completeness (1-5) | {_format_score(summary['avg_completeness'])} |",
         f"| Avg answer latency | {summary['avg_answer_ms']:.1f} ms |",
         f"| Avg tokens | {summary['avg_total_tokens']:.0f} |",
+        f"| Verification P50 | {summary['verification_ms_p50']:.3f} ms |",
+        f"| Verification P95 | {summary['verification_ms_p95']:.3f} ms |",
+        f"| Removed claims | {summary['removed_claims']} |",
+        f"| Removed citations | {summary['removed_citations']} |",
+        f"| Avg verification tokens | {summary['avg_verification_tokens']:.1f} |",
+        f"| Verification abstentions | {summary['verification_abstentions']} |",
+        f"| Verification failures | {summary['verification_failures']} |",
         "",
         "## Per-case results",
         "",
@@ -617,6 +679,7 @@ async def run_evaluation(
     output: Path | None,
     review_size: int,
     query_planning_mode: QueryPlanningMode = QueryPlanningMode.NONE,
+    citation_verifier_provider: CitationVerifierProvider = CitationVerifierProvider.NONE,
 ) -> int:
     settings = get_settings()
     if settings.store_backend != "postgres":
@@ -643,6 +706,7 @@ async def run_evaluation(
                     judge_enabled=judge_enabled,
                     semaphore=semaphore,
                     query_planning_mode=query_planning_mode,
+                    citation_verifier_provider=citation_verifier_provider,
                 )
                 for case in cases
             ]
@@ -672,6 +736,7 @@ async def run_evaluation(
         top_k=top_k,
         review_size=review_size,
         query_planning_mode=query_planning_mode,
+        citation_verifier_provider=citation_verifier_provider,
     )
     output.write_text(report, encoding="utf-8")
     json_path = output.with_suffix(".json")
@@ -685,6 +750,7 @@ async def run_evaluation(
                 "reranker_model": reranker_model,
                 "answer_model": provider.name,
                 "query_planning_mode": query_planning_mode.value,
+                "citation_verifier_provider": citation_verifier_provider.value,
                 "judge_model": provider.name if judge_enabled else None,
                 "judge_enabled": judge_enabled,
                 "top_k": top_k,
@@ -732,6 +798,11 @@ def main() -> None:
         choices=[mode.value for mode in QueryPlanningMode],
         default=QueryPlanningMode.NONE.value,
     )
+    parser.add_argument(
+        "--citation-verifier",
+        choices=[provider.value for provider in CitationVerifierProvider],
+        default=CitationVerifierProvider.NONE.value,
+    )
     args = parser.parse_args()
     raise SystemExit(
         asyncio.run(
@@ -745,6 +816,7 @@ def main() -> None:
                 output=args.output,
                 review_size=args.review_size,
                 query_planning_mode=QueryPlanningMode(args.query_planning_mode),
+                citation_verifier_provider=CitationVerifierProvider(args.citation_verifier),
             )
         )
     )

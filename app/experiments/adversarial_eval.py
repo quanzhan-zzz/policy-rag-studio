@@ -7,7 +7,12 @@ from pathlib import Path
 
 from app.config import get_settings
 from app.db.postgres import PostgresStore
-from app.schemas import AnswerRequest, ChunkStrategy, RetrievalFilters
+from app.schemas import (
+    AnswerRequest,
+    ChunkStrategy,
+    CitationVerifierProvider,
+    RetrievalFilters,
+)
 from app.services.adversarial_eval import (
     AdversarialCase,
     load_adversarial_cases,
@@ -46,6 +51,12 @@ class CaseRun:
     false_answer: bool
     answer_ms: float
     answer_error: str | None
+    verification_provider: str
+    verification_status: str
+    removed_claim_count: int
+    removed_citation_count: int
+    verification_tokens: int
+    verification_ms: float
     trace: dict[str, object] | None
 
 
@@ -79,6 +90,7 @@ async def _run_case(
     semaphore: asyncio.Semaphore,
     injection_document_ids: set[str],
     filters: RetrievalFilters | None,
+    citation_verifier_provider: CitationVerifierProvider,
 ) -> CaseRun:
     async with semaphore:
         try:
@@ -89,6 +101,7 @@ async def _run_case(
                     chunk_strategy=ChunkStrategy.HEADING,
                     top_k=top_k,
                     filters=filters,
+                    citation_verifier_provider=citation_verifier_provider,
                 ),
             )
         except Exception as error:  # noqa: BLE001 - retain per-case evidence
@@ -115,6 +128,12 @@ async def _run_case(
                 false_answer=True,
                 answer_ms=0.0,
                 answer_error=f"{type(error).__name__}: {error}",
+                verification_provider=citation_verifier_provider.value,
+                verification_status="not_generated",
+                removed_claim_count=0,
+                removed_citation_count=0,
+                verification_tokens=0,
+                verification_ms=0.0,
                 trace=None,
             )
 
@@ -152,6 +171,12 @@ async def _run_case(
             false_answer=outcome.false_answer,
             answer_ms=response.total_ms or 0.0,
             answer_error=None,
+            verification_provider=response.verification_provider,
+            verification_status=response.verification_status,
+            removed_claim_count=response.removed_claim_count,
+            removed_citation_count=response.removed_citation_count,
+            verification_tokens=response.verification_tokens,
+            verification_ms=response.verification_ms,
             trace=trace.model_dump(mode="json") if trace else None,
         )
 
@@ -191,6 +216,12 @@ def _summarize(results: list[CaseRun]) -> dict[str, object]:
         "avg_answer_ms": round(
             sum(r.answer_ms for r in answered) / max(1, len(answered)), 1
         ),
+        "removed_claims": sum(r.removed_claim_count for r in results),
+        "removed_citations": sum(r.removed_citation_count for r in results),
+        "verification_tokens": sum(r.verification_tokens for r in results),
+        "verification_failures": sum(
+            r.verification_status == "verification_failed" for r in results
+        ),
     }
 
 
@@ -204,6 +235,7 @@ def _render_report(
     reranker_model: str,
     answer_model: str,
     filters: RetrievalFilters | None,
+    citation_verifier_provider: CitationVerifierProvider,
 ) -> str:
     pass_rate = _percent(summary["pass_rate"])
     false_rate = _percent(summary["false_answer_rate"])
@@ -220,6 +252,7 @@ def _render_report(
         f"- Reranker: {reranker_model}",
         f"- Answer model: {answer_model}",
         f"- Filters: {filters.trace_detail() if filters else 'none'}",
+        f"- Citation verifier: {citation_verifier_provider.value}",
         "",
         "## Summary",
         "",
@@ -233,6 +266,10 @@ def _render_report(
         f"| Injection material exposed | {summary['prompt_injection_exposed']} |",
         f"| Prompt-injection leaks | {summary['prompt_injection_leaks']} ({leak_rate}) |",
         f"| Invalid citation cases | {summary['invalid_citation_cases']} ({invalid_cite_rate}) |",
+        f"| Removed unsupported claims | {summary['removed_claims']} |",
+        f"| Removed unsupported citations | {summary['removed_citations']} |",
+        f"| Verification tokens | {summary['verification_tokens']} |",
+        f"| Verification failures | {summary['verification_failures']} |",
         f"| Answer errors | {summary['answer_errors']} |",
         f"| Avg answer latency | {summary['avg_answer_ms']:.1f} ms |",
         "",
@@ -317,6 +354,7 @@ async def run_evaluation(
     concurrency: int,
     top_k: int,
     filters: RetrievalFilters | None = None,
+    citation_verifier_provider: CitationVerifierProvider = CitationVerifierProvider.NONE,
 ) -> int:
     settings = get_settings()
     if settings.store_backend != "postgres":
@@ -346,6 +384,7 @@ async def run_evaluation(
                         semaphore=semaphore,
                         injection_document_ids=injection_ids,
                         filters=filters,
+                        citation_verifier_provider=citation_verifier_provider,
                     )
                     for case in cases
                 ]
@@ -365,6 +404,7 @@ async def run_evaluation(
         reranker_model=get_reranker_provider().name,
         answer_model=get_llm_provider().name,
         filters=filters,
+        citation_verifier_provider=citation_verifier_provider,
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(report, encoding="utf-8")
@@ -378,6 +418,7 @@ async def run_evaluation(
                     if filters
                     else None
                 ),
+                "citation_verifier_provider": citation_verifier_provider.value,
                 "results": [asdict(result) for result in results],
                 "corpus_ids": corpus_ids,
             },
@@ -403,6 +444,11 @@ def main() -> None:
     parser.add_argument("--region")
     parser.add_argument("--item-type")
     parser.add_argument("--department")
+    parser.add_argument(
+        "--citation-verifier",
+        choices=[provider.value for provider in CitationVerifierProvider],
+        default=CitationVerifierProvider.NONE.value,
+    )
     args = parser.parse_args()
     filters = RetrievalFilters(
         region=args.region,
@@ -419,6 +465,9 @@ def main() -> None:
                 concurrency=args.concurrency,
                 top_k=args.top_k,
                 filters=filters,
+                citation_verifier_provider=CitationVerifierProvider(
+                    args.citation_verifier
+                ),
             )
         )
     )

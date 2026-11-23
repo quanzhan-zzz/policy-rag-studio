@@ -93,6 +93,15 @@ export function AnswerPanel({
               </span>
             ) : null}
             {data.grounding_status ? <span>{data.grounding_status}</span> : null}
+            {data.verification_status && data.verification_status !== 'not_run' ? (
+              <span>
+                核验 {data.verification_status} · 通过 {data.verified_claim_count ?? 0} 条 · 移除{' '}
+                {data.removed_claim_count ?? 0} 条
+              </span>
+            ) : null}
+            {data.verification_fallback_reason ? (
+              <span>核验降级 {data.verification_fallback_reason}</span>
+            ) : null}
             <Link className="text-link" to={`/traces/${data.retrieval.trace_id}`}>
               查看这次回答的 Trace
             </Link>

@@ -11,12 +11,15 @@ from app.schemas import (
     AnswerCitation,
     AnswerRequest,
     AnswerResponse,
+    CitationVerifierProvider,
+    ClaimVerificationRecord,
     QueryPlanningMode,
     RetrievalRun,
     RetrievalStrategy,
     RetrievedChunk,
     TraceStage,
 )
+from app.services.citation_verification import VerificationResult, verify_answer
 from app.services.llm import LLMProvider, TokenUsage, get_llm_provider
 from app.services.query_planning import plan_query
 from app.services.retrieval import (
@@ -33,6 +36,7 @@ SYSTEM_PROMPT = """你是政务政策检索助手。
 回答要简洁、准确，并保留必要的办理条件、材料和地点信息。"""
 
 CITATION_PATTERN = re.compile(r"\[(\d+)\]")
+REMOVED_CLAIM_TEXT = "[已移除的不受支持结论]"
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,6 +96,66 @@ def apply_grounding_guard(
     return answer, valid_ids, invalid_ids, status
 
 
+async def _verify_answer(
+    answer: str,
+    citations: list[AnswerCitation],
+    *,
+    request: AnswerRequest,
+    llm_provider: LLMProvider,
+) -> VerificationResult:
+    settings = get_settings()
+    provider = request.citation_verifier_provider or CitationVerifierProvider(
+        settings.citation_verifier_provider
+    )
+    return await verify_answer(
+        request.query,
+        answer,
+        citations,
+        provider=provider,
+        timeout_seconds=settings.citation_verifier_timeout_seconds,
+        llm_provider=llm_provider,
+    )
+
+
+def _verification_grounding_status(
+    verification: VerificationResult,
+    citation_guard_status: str,
+) -> str:
+    if verification.status in {"abstained", "verification_failed"}:
+        return verification.status
+    if verification.status == "partially_supported":
+        return "partially_supported"
+    return citation_guard_status
+
+
+def _verification_claims(
+    verification: VerificationResult,
+) -> list[ClaimVerificationRecord]:
+    return [
+        ClaimVerificationRecord(
+            text=claim.text if claim.supported else REMOVED_CLAIM_TEXT,
+            verified_text=claim.verified_text if claim.supported else REMOVED_CLAIM_TEXT,
+            supported=claim.supported,
+            citation_ids=list(claim.citation_ids),
+            supported_citation_ids=list(claim.supported_citation_ids),
+            reason=claim.reason,
+            failure_type=claim.failure_type,
+        )
+        for claim in verification.claims
+    ]
+
+
+def _verification_trace_detail(verification: VerificationResult) -> str:
+    fallback = f" · fallback={verification.fallback_reason}" if verification.fallback_reason else ""
+    return (
+        f"{verification.verifier}:{verification.status} · "
+        f"supported={verification.supported_claim_count} "
+        f"removed={verification.removed_claim_count} "
+        f"removed_citations={verification.removed_citation_count} · "
+        f"tokens={verification.usage.total_tokens}{fallback}"
+    )
+
+
 def validate_citations(
     answer: str,
     citations: Sequence[AnswerCitation],
@@ -125,9 +189,7 @@ async def prepare_answer(
     filter_latency_ms = (time.perf_counter() - filter_started) * 1000
     provider = llm_provider or get_llm_provider()
     settings = get_settings()
-    mode = request.query_planning_mode or QueryPlanningMode(
-        settings.query_planning_mode
-    )
+    mode = request.query_planning_mode or QueryPlanningMode(settings.query_planning_mode)
     if mode is QueryPlanningMode.NONE:
         embedding_provider, dense_scores, dense_latency_ms = await prepare_dense_scores(
             store,
@@ -210,10 +272,18 @@ async def answer_query(
             temperature=request.temperature,
             max_tokens=900,
         )
+    verification = await _verify_answer(
+        answer,
+        prepared.citations,
+        request=request,
+        llm_provider=prepared.provider,
+    )
+    answer = verification.answer
     answer, _, invalid_ids, grounding_status = apply_grounding_guard(
         answer,
         prepared.citations,
     )
+    grounding_status = _verification_grounding_status(verification, grounding_status)
     total_ms = (time.perf_counter() - prepared.started_at) * 1000
     await store.complete_trace_generation(
         prepared.run.trace_id,
@@ -225,8 +295,22 @@ async def answer_query(
             output_count=usage.completion_tokens or len(answer),
             detail=(
                 f"{prepared.provider.name} · {grounding_status} · "
-                f"tokens {usage.prompt_tokens}/{usage.completion_tokens}"
+                f"tokens {usage.prompt_tokens}/{usage.completion_tokens} · "
+                f"verify {verification.verifier}:{verification.status} "
+                f"removed={verification.removed_claim_count}"
             ),
+        ),
+        total_ms,
+    )
+    await store.complete_trace_generation(
+        prepared.run.trace_id,
+        TraceStage(
+            key="verification",
+            label="引用支持核验",
+            duration_ms=verification.latency_ms,
+            input_count=len(verification.claims),
+            output_count=verification.supported_claim_count,
+            detail=_verification_trace_detail(verification),
         ),
         total_ms,
     )
@@ -242,6 +326,15 @@ async def answer_query(
         total_tokens=usage.total_tokens,
         invalid_citation_ids=invalid_ids,
         grounding_status=grounding_status,
+        verification_provider=verification.verifier,
+        verification_status=verification.status,
+        verified_claim_count=verification.supported_claim_count,
+        removed_claim_count=verification.removed_claim_count,
+        removed_citation_count=verification.removed_citation_count,
+        verification_tokens=verification.usage.total_tokens,
+        verification_ms=verification.latency_ms,
+        verification_fallback_reason=verification.fallback_reason,
+        verification_claims=_verification_claims(verification),
     )
 
 
@@ -344,10 +437,18 @@ async def stream_answer_query(
         await producer
 
     answer = "".join(parts)
+    verification = await _verify_answer(
+        answer,
+        prepared.citations,
+        request=request,
+        llm_provider=prepared.provider,
+    )
+    answer = verification.answer
     answer, _, invalid_ids, grounding_status = apply_grounding_guard(
         answer,
         prepared.citations,
     )
+    grounding_status = _verification_grounding_status(verification, grounding_status)
     total_ms = (time.perf_counter() - prepared.started_at) * 1000
     await store.complete_trace_generation(
         prepared.run.trace_id,
@@ -360,8 +461,22 @@ async def stream_answer_query(
             detail=(
                 f"{prepared.provider.name} · {grounding_status} · "
                 f"first token {first_token_ms or 0:.1f}ms · "
-                f"tokens {usage.prompt_tokens}/{usage.completion_tokens}"
+                f"tokens {usage.prompt_tokens}/{usage.completion_tokens} · "
+                f"verify {verification.verifier}:{verification.status} "
+                f"removed={verification.removed_claim_count}"
             ),
+        ),
+        total_ms,
+    )
+    await store.complete_trace_generation(
+        prepared.run.trace_id,
+        TraceStage(
+            key="verification",
+            label="引用支持核验",
+            duration_ms=verification.latency_ms,
+            input_count=len(verification.claims),
+            output_count=verification.supported_claim_count,
+            detail=_verification_trace_detail(verification),
         ),
         total_ms,
     )
@@ -380,5 +495,16 @@ async def stream_answer_query(
             "total_tokens": usage.total_tokens,
             "invalid_citation_ids": invalid_ids,
             "grounding_status": grounding_status,
+            "verification_provider": verification.verifier,
+            "verification_status": verification.status,
+            "verified_claim_count": verification.supported_claim_count,
+            "removed_claim_count": verification.removed_claim_count,
+            "removed_citation_count": verification.removed_citation_count,
+            "verification_tokens": verification.usage.total_tokens,
+            "verification_ms": verification.latency_ms,
+            "verification_fallback_reason": verification.fallback_reason,
+            "verification_claims": [
+                claim.model_dump(mode="json") for claim in _verification_claims(verification)
+            ],
         },
     )

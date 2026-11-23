@@ -10,6 +10,7 @@ export type IndexTaskStatus =
 export type RetrievalStrategy = 'dense' | 'bm25' | 'hybrid' | 'hybrid_rerank'
 
 export type QueryPlanningMode = 'none' | 'rewrite' | 'decompose'
+export type CitationVerifierProvider = 'none' | 'rule' | 'llm'
 
 export type RetrievalFilters = {
   region?: string
@@ -133,6 +134,25 @@ export type AnswerResponse = {
   total_tokens?: number
   invalid_citation_ids?: number[]
   grounding_status?: string
+  verification_provider?: string
+  verification_status?: string
+  verified_claim_count?: number
+  removed_claim_count?: number
+  removed_citation_count?: number
+  verification_tokens?: number
+  verification_ms?: number
+  verification_fallback_reason?: string | null
+  verification_claims?: ClaimVerificationRecord[]
+}
+
+export type ClaimVerificationRecord = {
+  text: string
+  verified_text: string
+  supported: boolean
+  citation_ids: number[]
+  supported_citation_ids: number[]
+  reason: string
+  failure_type: string
 }
 
 export type TraceStage = {
