@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type {
   ChunkStrategy,
+  CitationVerifierProvider,
   QueryPlanningMode,
   RetrievalFilters,
   RetrievalStrategy,
@@ -134,6 +135,7 @@ export function useAnswer() {
       temperature?: number
       filters?: RetrievalFilters
       query_planning_mode?: QueryPlanningMode
+      citation_verifier_provider?: CitationVerifierProvider
     }) => api.answer(payload),
   })
 }

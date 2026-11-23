@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import type {
   AnswerResponse,
   ChunkStrategy,
+  CitationVerifierProvider,
   QueryPlanningMode,
   RetrievalFilters,
 } from '../types'
@@ -15,6 +16,7 @@ type AnswerPayload = {
   temperature?: number
   filters?: RetrievalFilters
   query_planning_mode?: QueryPlanningMode
+  citation_verifier_provider?: CitationVerifierProvider
 }
 
 export function useAnswerStream() {

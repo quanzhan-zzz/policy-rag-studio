@@ -2,6 +2,7 @@ import type {
   AnswerResponse,
   ChunkRecord,
   ChunkStrategy,
+  CitationVerifierProvider,
   DocumentSummary,
   EvaluationSummary,
   Health,
@@ -89,6 +90,7 @@ export const api = {
     temperature?: number
     filters?: RetrievalFilters
     query_planning_mode?: QueryPlanningMode
+    citation_verifier_provider?: CitationVerifierProvider
   }) =>
     request<AnswerResponse>('/answer', {
       method: 'POST',
@@ -114,6 +116,7 @@ export async function streamAnswer(
     temperature?: number
     filters?: RetrievalFilters
     query_planning_mode?: QueryPlanningMode
+    citation_verifier_provider?: CitationVerifierProvider
   },
   handlers: AnswerStreamHandlers,
 ): Promise<void> {

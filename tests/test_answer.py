@@ -4,7 +4,12 @@ import time
 
 import pytest
 
-from app.schemas import AnswerRequest, ChunkStrategy, RetrievalStrategy
+from app.schemas import (
+    AnswerRequest,
+    ChunkStrategy,
+    CitationVerifierProvider,
+    RetrievalStrategy,
+)
 from app.services.answer import (
     answer_query,
     apply_grounding_guard,
@@ -68,6 +73,41 @@ class FakeStreamingLLM:
         yield "办理地点是"
         yield "常州市政务服务中心。[1]"
         yield "无效引用[9]"
+
+
+@pytest.mark.asyncio
+async def test_answer_query_applies_rule_citation_verifier() -> None:
+    class UnsafeAnswerLLM:
+        name = "unsafe-answer"
+
+        def chat(self, messages, *, temperature=0.1, max_tokens=800):
+            return "申请材料包括申请书和身份证明。[1]\n所有材料都可以免交。[9]"
+
+    store = InMemoryStore()
+    response = await answer_query(
+        store,
+        AnswerRequest(
+            query="个体工商户登记需要准备哪些申请材料",
+            top_k=3,
+            citation_verifier_provider=CitationVerifierProvider.RULE,
+        ),
+        llm_provider=UnsafeAnswerLLM(),
+    )
+
+    assert "所有材料都可以免交" not in response.answer
+    assert "证据提示" in response.answer
+    assert response.verification_status == "partially_supported"
+    assert response.removed_claim_count == 1
+    assert response.verification_ms >= 0
+    assert len(response.verification_claims) == 2
+    assert [claim.supported for claim in response.verification_claims] == [True, False]
+    assert response.verification_claims[1].reason == "no_valid_citation"
+    assert response.verification_claims[1].text == "[已移除的不受支持结论]"
+    trace = await store.get_trace(response.retrieval.trace_id)
+    assert trace is not None
+    verification_stage = next(stage for stage in trace.stages if stage.key == "verification")
+    assert verification_stage.output_count == 1
+    assert "rule:partially_supported" in verification_stage.detail
 
 
 @pytest.mark.asyncio
@@ -163,8 +203,12 @@ async def test_answer_records_usage_and_generation_trace() -> None:
     assert response.total_tokens == 14
     trace = await store.get_trace(response.retrieval.trace_id)
     assert trace is not None
-    assert trace.stages[-1].key == "generation"
-    assert "tokens 10/4" in trace.stages[-1].detail
+    generation = next(stage for stage in trace.stages if stage.key == "generation")
+    verification = next(stage for stage in trace.stages if stage.key == "verification")
+    assert "tokens 10/4" in generation.detail
+    assert (
+        verification.detail == "none:not_run · supported=0 removed=0 removed_citations=0 · tokens=0"
+    )
 
 
 @pytest.mark.asyncio
@@ -182,7 +226,8 @@ async def test_stream_records_usage_and_generation_trace() -> None:
     assert done["total_tokens"] == 14
     trace = await store.get_trace(done["retrieval"]["trace_id"])
     assert trace is not None
-    assert trace.stages[-1].key == "generation"
+    assert trace.stages[-1].key == "verification"
+    assert trace.stages[-1].detail.startswith("none:not_run")
 
 
 def test_grounding_guard_marks_uncited_answers() -> None:

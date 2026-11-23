@@ -38,6 +38,12 @@ class QueryPlanningMode(StrEnum):
     DECOMPOSE = "decompose"
 
 
+class CitationVerifierProvider(StrEnum):
+    NONE = "none"
+    RULE = "rule"
+    LLM = "llm"
+
+
 class DocumentSummary(BaseModel):
     id: str
     title: str
@@ -191,6 +197,7 @@ class AnswerRequest(BaseModel):
     temperature: float = Field(default=0.1, ge=0.0, le=1.0)
     filters: RetrievalFilters | None = None
     query_planning_mode: QueryPlanningMode | None = None
+    citation_verifier_provider: CitationVerifierProvider | None = None
 
 
 class AnswerCitation(BaseModel):
@@ -201,6 +208,16 @@ class AnswerCitation(BaseModel):
     heading_path: str
     page: int
     text: str
+
+
+class ClaimVerificationRecord(BaseModel):
+    text: str
+    verified_text: str
+    supported: bool
+    citation_ids: list[int] = Field(default_factory=list)
+    supported_citation_ids: list[int] = Field(default_factory=list)
+    reason: str
+    failure_type: str
 
 
 class AnswerResponse(BaseModel):
@@ -216,6 +233,15 @@ class AnswerResponse(BaseModel):
     total_tokens: int = 0
     invalid_citation_ids: list[int] = Field(default_factory=list)
     grounding_status: str = "supported"
+    verification_provider: str = "none"
+    verification_status: str = "not_run"
+    verified_claim_count: int = 0
+    removed_claim_count: int = 0
+    removed_citation_count: int = 0
+    verification_tokens: int = 0
+    verification_ms: float = 0.0
+    verification_fallback_reason: str | None = None
+    verification_claims: list[ClaimVerificationRecord] = Field(default_factory=list)
 
 
 class TraceStage(BaseModel):

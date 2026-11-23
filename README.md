@@ -49,7 +49,7 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - 内置 3 份演示政策与 2 份官方办事指南，支持固定长度、标题层级、递归三种切片
 - 实现 BM25、可配置 Embedding Provider、RRF 融合，以及启发式、LLM、本地 BGE 重排
 - 检索工作台可生成带编号引用的回答，并可直接查看对应 Trace
-- 评测看板实时计算检索指标；离线脚本补充引用质量、LLM 裁判和人工复核工作表
+- 评测看板实时计算检索指标；离线脚本补充引用质量、LLM 裁判、引用支持核验和人工复核工作表
 - PostgreSQL 持久化文档、Chunk、Trace 和 Chunk 向量；内存适配器用于测试与离线演示
 - Redis + Celery Worker 异步执行解析、切片、Embedding 与索引，支持进度、失败重试、取消和 stale-task 恢复
 - Docker Compose 已配置 PostgreSQL/pgvector、Redis、API、Worker、Beat 和 Web
@@ -148,10 +148,24 @@ EMBEDDING_BATCH_SIZE=16
 ```bash
 LLM_API_BASE=https://your-endpoint/v1
 LLM_API_KEY=your-key
-LLM_MODEL=glm-5.3-flash
+LLM_MODEL=GLM-5.3-Flash
 ```
 
-`POST /api/v1/answer` 会把 Hybrid + Rerank 检索结果组装成带编号引用的上下文，再调用文本模型生成回答。`POST /api/v1/answer/stream` 使用同一套 Context Pack，通过 SSE 增量输出，并返回首字延迟、总耗时、Token usage、Grounding 状态和无效引用编号；生成阶段会写回 Trace。
+`POST /api/v1/answer` 会把 Hybrid + Rerank 检索结果组装成带编号引用的上下文，再调用文本模型生成回答。`POST /api/v1/answer/stream` 使用同一套 Context Pack，通过 SSE 增量输出，并返回首字延迟、总耗时、Token usage、Grounding 状态、无效引用编号和逐条结论核验结果；生成与引用核验阶段都会写回 Trace。
+
+引用支持校验默认关闭，可通过请求字段或环境变量启用。配置优先读取请求字段，未传时使用服务配置：
+
+```json
+{"query": "公司变更登记需要哪些材料？", "citation_verifier_provider": "rule"}
+```
+
+```bash
+CITATION_VERIFIER_PROVIDER=none  # none | rule | llm
+CITATION_VERIFIER_MODEL=Qwen3.8-Flash
+CITATION_VERIFIER_TIMEOUT_SECONDS=15
+```
+
+`rule` 验证数字、日期、地点、主体、材料名称、流程步骤和否定/全称条件，超时或异常时失败关闭。实测它把官方引用精确率从 `66.8%` 提升到 `68.33%`、把对抗正确行为从 `23/25` 提升到 `24/25`，但答案完整度从 `4.85` 降到 `4.25`；因此当前不默认开启。详见 [引用支持校验总结](docs/experiments/20261124-citation-verification-summary.md)。
 
 Provider 会对相同文本做进程内缓存；批量文档向量化会尽量合并为一次批处理请求。
 
@@ -168,7 +182,7 @@ RERANKER_PROVIDER=heuristic
 ```bash
 # OpenAI 兼容 Chat 接口作为 listwise reranker
 RERANKER_PROVIDER=llm
-RERANKER_MODEL=glm-5.3-flash
+RERANKER_MODEL=GLM-5.3-Flash
 RERANKER_TIMEOUT_SECONDS=30
 
 # 本地 CrossEncoder；需要 uv sync --extra local
@@ -203,6 +217,10 @@ LLM Reranker 的实测仍受到上游 `429` 限流，报告已标记为无效，
 ## 回答质量评测
 
 回答质量脚本直接走生产回答链路：`Hybrid + Rerank → Context Pack → LLM → citation guard`，并输出 Markdown 报告、逐题 JSON 原始结果和 20 条人工复核工作表。
+
+可选引用支持核验在同一生产链路之后逐条判断结论是否被所引原文支持。同步和流式接口都会返回
+验证状态、通过/移除结论数和逐条失败类型；未支持结论在响应中只保留脱敏占位，不通过结构化字段
+二次泄露。完整配置和取舍见下方 [引用支持校验](#引用支持校验)。
 
 ```bash
 RERANKER_PROVIDER=bge BGE_RERANKER_MODEL=BAAI/bge-reranker-base \
@@ -259,6 +277,25 @@ test split 的 20 条结果：
 失败样本分别是“合伙企业问题混用了公司材料”和“模型重复输出了恶意文档中的伪造密码”。
 报告保留完整回答、引用、Trace 和失败原因：
 [对抗评测报告](docs/experiments/20261124-adversarial-evaluation.md)。
+
+### 引用支持校验
+
+生产回答链路支持 `none / rule / llm` 三种核验器，默认 `none`：
+
+```bash
+CITATION_VERIFIER_PROVIDER=none
+CITATION_VERIFIER_TIMEOUT_SECONDS=15
+```
+
+规则核验覆盖数字、日期、地点、主体、材料名称、流程步骤、否定和全称条件。超时或异常时失败
+关闭，不把未核验结果标记为 supported。逐条结论状态会进入 API 响应和独立 Trace 阶段。
+
+真实数据回放中，规则核验把引用精确率从 `66.8%` 提升到 `68.33%`，把对抗正确行为从
+`23/25` 提升到 `24/25`，并消除观察到的注入泄露；但新生成回答的平均完整度从 `4.85`
+降到 `4.25`，且相似事项仍有 1 个失败。因此不默认开启，LLM 核验器也因上游 `502`
+无法形成有效质量结论。
+
+完整记录：[引用支持校验总结](docs/experiments/20261124-citation-verification-summary.md)。
 
 ### 政策元数据过滤
 
@@ -463,7 +500,7 @@ uv run python -m app.experiments.import_official_guides
 - [x] M2：真实 Reranker 与可信评测
 - [x] M3：流式回答与引用校验
 - [x] M4：CI、E2E、监控与发布
-- [ ] M5：回答质量人工复核、引用支持校验与公网 Demo
+- [ ] M5：回答质量人工复核与公网 Demo（引用支持校验已完成，默认关闭）
 
 `PROJECT_PLAN.md` 保留为项目设计方案；实际执行顺序、验收标准和当前状态以开发路线图为准。
 

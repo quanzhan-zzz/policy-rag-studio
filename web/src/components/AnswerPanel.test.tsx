@@ -65,4 +65,27 @@ describe('AnswerPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: '生成带引用回答' }))
     expect(onGenerate).toHaveBeenCalledOnce()
   })
+
+  it('shows verification outcome and removed claims', () => {
+    render(
+      <MemoryRouter>
+        <AnswerPanel
+          data={{
+            ...answer,
+            verification_status: 'partially_supported',
+            verified_claim_count: 1,
+            removed_claim_count: 2,
+          }}
+          disabled={false}
+          error={null}
+          isPending={false}
+          onGenerate={() => undefined}
+        />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText(/核验 partially_supported/)).toBeInTheDocument()
+    expect(screen.getByText(/通过 1 条/)).toBeInTheDocument()
+    expect(screen.getByText(/移除 2 条/)).toBeInTheDocument()
+  })
 })

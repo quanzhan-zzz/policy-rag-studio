@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     query_planning_mode: Literal["none", "rewrite", "decompose"] = "none"
     query_planning_timeout_seconds: float = 15.0
     query_planning_max_subqueries: int = 4
+    citation_verifier_provider: Literal["none", "rule", "llm"] = "none"
+    citation_verifier_model: str | None = None
+    citation_verifier_timeout_seconds: float = 15.0
 
     @property
     def cors_origins(self) -> list[str]:
