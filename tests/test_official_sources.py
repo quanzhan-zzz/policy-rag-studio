@@ -29,6 +29,8 @@ def test_checked_in_catalog_is_valid() -> None:
         "cz-company-change-registration",
         "cz-public-welfare-post-subsidy",
     }
+    assert {guide.region for guide in catalog.guides} == {"常州市"}
+    assert {guide.item_type for guide in catalog.guides} == {"行政许可", "公共服务"}
 
 
 def test_checked_in_corpus_matches_manifest_hashes() -> None:
@@ -48,6 +50,8 @@ def test_checked_in_corpus_matches_manifest_hashes() -> None:
     assert records.keys() == {guide["id"] for guide in manifest["guides"]}
     for guide in manifest["guides"]:
         record = records[guide["id"]]
+        assert record["region"] == "常州市"
+        assert record["item_type"] in {"行政许可", "公共服务"}
         pdf_path = raw_root / guide["source_pdf"]["path"]
         assert _sha256(pdf_path.read_bytes()) == record["source_pdf_sha256"]
         for attachment in guide["attachments"]:

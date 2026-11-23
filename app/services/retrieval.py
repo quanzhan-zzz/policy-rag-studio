@@ -10,6 +10,7 @@ from app.schemas import (
     ChunkRecord,
     ChunkStrategy,
     RankDetail,
+    RetrievalFilters,
     RetrievalRun,
     RetrievalStrategy,
     RetrievedChunk,
@@ -110,11 +111,12 @@ async def prepare_dense_scores(
     query: str,
     strategy: ChunkStrategy,
     embedding_provider: EmbeddingProvider | None = None,
+    filters: RetrievalFilters | None = None,
 ) -> tuple[EmbeddingProvider, dict[str, float] | None, float]:
     provider = embedding_provider or get_embedding_provider()
     started = time.perf_counter()
     query_vector = await asyncio.to_thread(provider.embed_query, query)
-    stored = dict(await store.dense_scores(strategy, query_vector))
+    stored = dict(await store.dense_scores(strategy, query_vector, filters=filters))
     latency_ms = (time.perf_counter() - started) * 1000
     if not stored:
         return provider, None, latency_ms
@@ -136,10 +138,28 @@ def run_retrieval(
     dense_scores_by_chunk: Mapping[str, float] | None = None,
     precomputed_latency_ms: float = 0.0,
     reranker_provider: RerankerProvider | None = None,
+    filters: RetrievalFilters | None = None,
+    unfiltered_chunk_count: int | None = None,
+    filter_latency_ms: float = 0.0,
 ) -> tuple[RetrievalRun, TraceRecord]:
     started = time.perf_counter() - precomputed_latency_ms / 1000
     trace_id = f"tr_{uuid4().hex[:10]}"
     stages: list[TraceStage] = []
+
+    if filters is not None and filters.has_conditions():
+        stages.append(
+            TraceStage(
+                key="metadata_filter",
+                label="元数据过滤",
+                duration_ms=round(filter_latency_ms, 3),
+                input_count=unfiltered_chunk_count,
+                output_count=len(chunks),
+                detail=(
+                    f"{filters.trace_detail()}；候选 {unfiltered_chunk_count or '未知'} "
+                    f"→ {len(chunks)}；排序：抓取时间→生效日期→更新时间"
+                ),
+            )
+        )
 
     query_tokens = tokenize(query)
     stages.append(

@@ -1,11 +1,12 @@
 import os
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 import pytest
 import pytest_asyncio
 
 from app.config import get_settings
+from app.db.models import DocumentRow
 from app.db.postgres import PostgresStore
 from app.schemas import (
     ChunkStrategy,
@@ -13,6 +14,7 @@ from app.schemas import (
     FailureBucket,
     IndexTaskStatus,
     MetricRow,
+    RetrievalFilters,
     RetrievalStrategy,
     TraceRecord,
     TraceStage,
@@ -118,8 +120,56 @@ async def test_official_seed_contract() -> None:
                 assert document.source_url == seed.source_url
                 assert document.source_retrieved_at == seed.source_retrieved_at
                 assert document.source_sha256 == seed.source_sha256
+                assert document.region == seed.region
+                assert document.item_type == seed.item_type
                 for strategy in ChunkStrategy:
                     assert await store.list_chunks(seed.id, strategy)
+
+            company_filter = RetrievalFilters(
+                region="常州市",
+                item_type="行政许可",
+                official_only=True,
+            )
+            company_chunks = await store.all_chunks(
+                ChunkStrategy.HEADING,
+                filters=company_filter,
+            )
+            assert company_chunks
+            assert {chunk.document_id for chunk in company_chunks} == {
+                "cz-company-change-registration"
+            }
+            assert await store.count_chunks_for_strategy(
+                ChunkStrategy.HEADING,
+                filters=company_filter,
+            ) == len(company_chunks)
+
+            no_match = RetrievalFilters(region="南京市", official_only=True)
+            assert await store.all_chunks(ChunkStrategy.HEADING, filters=no_match) == []
+            assert (
+                await store.count_chunks_for_strategy(
+                    ChunkStrategy.HEADING,
+                    filters=no_match,
+                )
+                == 0
+            )
+
+            historical = RetrievalFilters(
+                official_only=True,
+                effective_from=date(2020, 1, 1),
+            )
+            assert await store.all_chunks(ChunkStrategy.HEADING, filters=historical) == []
+
+            provider = HashEmbeddingProvider(
+                dimensions=get_settings().hash_embedding_dimensions
+            )
+            scores = await store.dense_scores(
+                ChunkStrategy.HEADING,
+                provider.embed_query("法定代表人"),
+                filters=company_filter,
+            )
+            company_chunk_ids = {chunk.id for chunk in company_chunks}
+            assert scores
+            assert {chunk_id for chunk_id, _ in scores}.issubset(company_chunk_ids)
     finally:
         for store in stores:
             await store.close()
@@ -269,3 +319,54 @@ async def test_stale_processing_task_can_be_reclaimed(store: Store) -> None:
     current = await store.get_document(document.id)
     assert current is not None
     assert current.index_task_id == task.id
+
+
+@pytest.mark.asyncio
+async def test_postgres_filter_orders_newer_source_first() -> None:
+    database_url = os.getenv("TEST_DATABASE_URL")
+    if not database_url:
+        pytest.skip("TEST_DATABASE_URL 未配置")
+    store = await PostgresStore.create(
+        database_url,
+        seed_demo_data=False,
+        seed_official_data=False,
+        initialize_schema=True,
+    )
+    try:
+        old = await store.add_upload(
+            "old-version.md",
+            "# 旧版政策\n\n一、办理时限\n10个工作日。".encode(),
+            title="过滤排序旧版",
+        )
+        new = await store.add_upload(
+            "new-version.md",
+            "# 新版政策\n\n一、办理时限\n3个工作日。".encode(),
+            title="过滤排序新版",
+        )
+        async with store.sessions() as session:
+            old_row = await session.get(DocumentRow, old.id)
+            new_row = await session.get(DocumentRow, new.id)
+            assert old_row is not None and new_row is not None
+            for row, retrieved_at in (
+                (old_row, datetime(2025, 1, 1, tzinfo=UTC)),
+                (new_row, datetime(2026, 1, 1, tzinfo=UTC)),
+            ):
+                row.region = "常州市"
+                row.item_type = "测试事项"
+                row.source_name = "测试来源"
+                row.source_url = f"https://example.com/{row.id}"
+                row.source_retrieved_at = retrieved_at
+            await session.commit()
+
+        chunks = await store.all_chunks(
+            ChunkStrategy.HEADING,
+            filters=RetrievalFilters(
+                region="常州市",
+                item_type="测试事项",
+                official_only=True,
+            ),
+        )
+        assert chunks
+        assert chunks[0].document_id == new.id
+    finally:
+        await store.close()

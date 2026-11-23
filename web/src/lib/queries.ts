@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import type { ChunkStrategy, RetrievalStrategy } from '../types'
+import type { ChunkStrategy, RetrievalFilters, RetrievalStrategy } from '../types'
 import { api } from './api'
 
 export function useHealth() {
@@ -127,6 +127,7 @@ export function useAnswer() {
       chunk_strategy: ChunkStrategy
       top_k: number
       temperature?: number
+      filters?: RetrievalFilters
     }) => api.answer(payload),
   })
 }
@@ -138,6 +139,7 @@ export function useCompareRetrieval() {
       strategies: RetrievalStrategy[]
       chunk_strategy: ChunkStrategy
       top_k: number
+      filters?: RetrievalFilters
     }) => api.compareRetrieval(payload),
   })
 }

@@ -17,5 +17,6 @@ https://cz.jszwfw.gov.cn/jszwfw/bscx/itemlist/fr_index.do?webId=5&themid=allzt&d
 
 - 仅使用面向法人公开的办事指南，不使用登录后的个人信息或办件数据。
 - 下载结果用于技术评测时保留官方 URL、抓取时间、SHA-256 和原始文件。
+- 事项目录同时记录 `region` 和 `item_type`，供 PostgreSQL 元数据过滤与评测使用。
 - 站点页面会更新；语料结论以抓取时的文件为准，不作为政务服务承诺。
 - 不运行全站爬虫，不绕过登录、验证码、访问控制或频率限制。

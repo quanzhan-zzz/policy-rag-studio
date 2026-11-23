@@ -9,6 +9,17 @@ export type IndexTaskStatus =
   | 'cancelled'
 export type RetrievalStrategy = 'dense' | 'bm25' | 'hybrid' | 'hybrid_rerank'
 
+export type RetrievalFilters = {
+  region?: string
+  item_type?: string
+  department?: string
+  official_only?: boolean
+  effective_from?: string
+  effective_to?: string
+  retrieved_from?: string
+  retrieved_to?: string
+}
+
 export type DocumentSummary = {
   id: string
   title: string
@@ -26,6 +37,8 @@ export type DocumentSummary = {
   source_url: string | null
   source_retrieved_at: string | null
   source_sha256: string | null
+  region: string | null
+  item_type: string | null
 }
 
 export type IndexTask = {
@@ -91,6 +104,7 @@ export type RetrievalResponse = {
   query: string
   chunk_strategy: ChunkStrategy
   top_k: number
+  filters?: RetrievalFilters | null
   runs: RetrievalRun[]
 }
 

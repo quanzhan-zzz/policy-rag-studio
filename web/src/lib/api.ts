@@ -7,6 +7,7 @@ import type {
   Health,
   IndexTask,
   Overview,
+  RetrievalFilters,
   RetrievalResponse,
   RetrievalStrategy,
   TraceRecord,
@@ -74,6 +75,7 @@ export const api = {
     strategies: RetrievalStrategy[]
     chunk_strategy: ChunkStrategy
     top_k: number
+    filters?: RetrievalFilters
   }) =>
     request<RetrievalResponse>('/retrieval/compare', {
       method: 'POST',
@@ -84,6 +86,7 @@ export const api = {
     chunk_strategy: ChunkStrategy
     top_k: number
     temperature?: number
+    filters?: RetrievalFilters
   }) =>
     request<AnswerResponse>('/answer', {
       method: 'POST',
@@ -107,6 +110,7 @@ export async function streamAnswer(
     chunk_strategy: ChunkStrategy
     top_k: number
     temperature?: number
+    filters?: RetrievalFilters
   },
   handlers: AnswerStreamHandlers,
 ): Promise<void> {

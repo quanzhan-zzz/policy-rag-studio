@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class IndexTaskStatus(StrEnum):
@@ -49,6 +49,8 @@ class DocumentSummary(BaseModel):
     source_url: str | None = None
     source_retrieved_at: datetime | None = None
     source_sha256: str | None = None
+    region: str | None = None
+    item_type: str | None = None
 
 
 class IndexTask(BaseModel):
@@ -87,6 +89,45 @@ class ChunkUpdate(BaseModel):
     text: str = Field(min_length=1, max_length=10_000)
 
 
+class RetrievalFilters(BaseModel):
+    region: str | None = Field(default=None, max_length=64)
+    item_type: str | None = Field(default=None, max_length=64)
+    department: str | None = Field(default=None, max_length=255)
+    official_only: bool = False
+    effective_from: date | None = None
+    effective_to: date | None = None
+    retrieved_from: datetime | None = None
+    retrieved_to: datetime | None = None
+
+    @model_validator(mode="after")
+    def validate_ranges(self) -> "RetrievalFilters":
+        if (
+            self.effective_from is not None
+            and self.effective_to is not None
+            and self.effective_from > self.effective_to
+        ):
+            raise ValueError("effective_from 不能晚于 effective_to")
+        if (
+            self.retrieved_from is not None
+            and self.retrieved_to is not None
+            and self.retrieved_from > self.retrieved_to
+        ):
+            raise ValueError("retrieved_from 不能晚于 retrieved_to")
+        return self
+
+    def has_conditions(self) -> bool:
+        return any(
+            value is not None and value is not False
+            for value in self.model_dump().values()
+        )
+
+    def trace_detail(self) -> str:
+        criteria = self.model_dump(mode="json", exclude_none=True, exclude_defaults=True)
+        if not criteria:
+            return "未设置元数据过滤"
+        return "；".join(f"{key}={value}" for key, value in criteria.items())
+
+
 class RetrievalRequest(BaseModel):
     query: str = Field(min_length=1, max_length=2_000)
     strategies: list[RetrievalStrategy] = Field(
@@ -99,6 +140,7 @@ class RetrievalRequest(BaseModel):
     )
     chunk_strategy: ChunkStrategy = ChunkStrategy.HEADING
     top_k: int = Field(default=5, ge=1, le=20)
+    filters: RetrievalFilters | None = None
 
 
 class RankDetail(BaseModel):
@@ -132,6 +174,7 @@ class RetrievalResponse(BaseModel):
     query: str
     chunk_strategy: ChunkStrategy
     top_k: int
+    filters: RetrievalFilters | None = None
     runs: list[RetrievalRun]
 
 
@@ -140,6 +183,7 @@ class AnswerRequest(BaseModel):
     chunk_strategy: ChunkStrategy = ChunkStrategy.HEADING
     top_k: int = Field(default=5, ge=1, le=10)
     temperature: float = Field(default=0.1, ge=0.0, le=1.0)
+    filters: RetrievalFilters | None = None
 
 
 class AnswerCitation(BaseModel):

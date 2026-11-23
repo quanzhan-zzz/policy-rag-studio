@@ -1,5 +1,6 @@
 import asyncio
 import json
+import time
 from collections.abc import AsyncIterator
 from typing import Annotated
 
@@ -180,14 +181,27 @@ async def update_chunk(chunk_id: str, payload: ChunkUpdate, store: StoreDep) -> 
 
 @router.post("/retrieval/compare", response_model=RetrievalResponse)
 async def compare_retrieval(payload: RetrievalRequest, store: StoreDep) -> RetrievalResponse:
-    chunks = await store.all_chunks(payload.chunk_strategy)
+    filter_started = time.perf_counter()
+    chunks = await store.all_chunks(
+        payload.chunk_strategy,
+        filters=payload.filters,
+    )
     if not chunks:
+        if payload.filters is not None and payload.filters.has_conditions():
+            raise HTTPException(status_code=404, detail="没有符合筛选条件的可检索内容")
         raise HTTPException(status_code=400, detail="当前切片策略下没有可检索内容")
+    unfiltered_chunk_count = (
+        await store.count_chunks_for_strategy(payload.chunk_strategy)
+        if payload.filters is not None and payload.filters.has_conditions()
+        else None
+    )
+    filter_latency_ms = (time.perf_counter() - filter_started) * 1000
     embedding_provider, dense_scores, dense_latency_ms = await prepare_dense_scores(
         store,
         chunks,
         payload.query,
         payload.chunk_strategy,
+        filters=payload.filters,
     )
     runs = []
     for strategy in payload.strategies:
@@ -201,6 +215,9 @@ async def compare_retrieval(payload: RetrievalRequest, store: StoreDep) -> Retri
             embedding_provider=embedding_provider,
             dense_scores_by_chunk=dense_scores,
             precomputed_latency_ms=dense_latency_ms,
+            filters=payload.filters,
+            unfiltered_chunk_count=unfiltered_chunk_count,
+            filter_latency_ms=filter_latency_ms,
         )
         await store.record_trace(trace)
         runs.append(run)
@@ -208,6 +225,7 @@ async def compare_retrieval(payload: RetrievalRequest, store: StoreDep) -> Retri
         query=payload.query,
         chunk_strategy=payload.chunk_strategy,
         top_k=payload.top_k,
+        filters=payload.filters,
         runs=runs,
     )
 
