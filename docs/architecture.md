@@ -123,11 +123,19 @@ predicates for contract consistency. Traces include a `metadata_filter` stage wi
 candidate counts and filter latency. Unmatched filters fail explicitly rather than falling back
 to another region or source.
 
+## Query Planning
+
+An optional planner produces a normalized query or a bounded set of subqueries. The original query
+is retained in the retrieval set, and per-query ranked lists are fused with RRF. Planner timeout or
+invalid output falls back to the original query. Evaluation currently keeps the default at `none`
+because the measured quality gains do not justify the added latency.
+
 ## Retrieval and Grounding Flow
 
 ```mermaid
 flowchart LR
-    Q[Query] --> F[Metadata Filters]
+    Q[Query] --> P[Optional Query Planning]
+    P --> F[Metadata Filters]
     F --> D[Dense / pgvector]
     Q --> B[BM25]
     D --> RRF[RRF Fusion]

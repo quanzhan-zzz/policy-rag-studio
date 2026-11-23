@@ -1,6 +1,11 @@
 import { useCallback, useState } from 'react'
 
-import type { AnswerResponse, ChunkStrategy, RetrievalFilters } from '../types'
+import type {
+  AnswerResponse,
+  ChunkStrategy,
+  QueryPlanningMode,
+  RetrievalFilters,
+} from '../types'
 import { streamAnswer } from './api'
 
 type AnswerPayload = {
@@ -9,6 +14,7 @@ type AnswerPayload = {
   top_k: number
   temperature?: number
   filters?: RetrievalFilters
+  query_planning_mode?: QueryPlanningMode
 }
 
 export function useAnswerStream() {

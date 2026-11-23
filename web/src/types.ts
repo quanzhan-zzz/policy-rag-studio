@@ -9,6 +9,8 @@ export type IndexTaskStatus =
   | 'cancelled'
 export type RetrievalStrategy = 'dense' | 'bm25' | 'hybrid' | 'hybrid_rerank'
 
+export type QueryPlanningMode = 'none' | 'rewrite' | 'decompose'
+
 export type RetrievalFilters = {
   region?: string
   item_type?: string

@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     reranker_api_base: str | None = None
     reranker_api_key: str | None = None
     reranker_timeout_seconds: float = 30.0
+    query_planning_mode: Literal["none", "rewrite", "decompose"] = "none"
+    query_planning_timeout_seconds: float = 15.0
+    query_planning_max_subqueries: int = 4
 
     @property
     def cors_origins(self) -> list[str]:

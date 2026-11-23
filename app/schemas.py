@@ -32,6 +32,12 @@ class RetrievalStrategy(StrEnum):
     HYBRID_RERANK = "hybrid_rerank"
 
 
+class QueryPlanningMode(StrEnum):
+    NONE = "none"
+    REWRITE = "rewrite"
+    DECOMPOSE = "decompose"
+
+
 class DocumentSummary(BaseModel):
     id: str
     title: str
@@ -184,6 +190,7 @@ class AnswerRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=10)
     temperature: float = Field(default=0.1, ge=0.0, le=1.0)
     filters: RetrievalFilters | None = None
+    query_planning_mode: QueryPlanningMode | None = None
 
 
 class AnswerCitation(BaseModel):
