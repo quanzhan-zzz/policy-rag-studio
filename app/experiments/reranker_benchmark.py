@@ -165,6 +165,7 @@ def render_report(
     split: str,
     case_count: int,
     cases: Sequence[EvaluationCase],
+    embedding_provider: str,
 ) -> str:
     baseline = metrics[0]
     lines = [
@@ -173,6 +174,7 @@ def render_report(
         f"- Generated: {generated_at.isoformat()}",
         f"- Dataset: {dataset_name} / {split}",
         f"- Dataset cases: {case_count}",
+        f"- Embedding provider: {embedding_provider}",
         "- Dataset source: `data/eval/policy-synthetic-v1.jsonl`",
         "- Strategy: Hybrid RRF + Top-30 candidate reranking + Top-5 evaluation",
         "",
@@ -272,6 +274,7 @@ async def run_benchmark(
         split=evaluation_set.split,
         case_count=len(evaluation_set.cases),
         cases=evaluation_set.cases,
+        embedding_provider=prepared_cases[0].embedding_provider.name,
     )
     if output is None:
         stamp = generated_at.strftime("%Y%m%d-%H%M%S")

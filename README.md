@@ -3,9 +3,26 @@
 > 政务政策切片与可评测检索平台  
 > A reproducible retrieval workbench for chunking, hybrid search, reranking and evaluation.
 
-![Overview](docs/screenshots/overview.png)
+不是“上传后聊两句”的 Demo，而是把解析、切片、召回、重排、引用和失败原因做成可复核证据的工作台。
 
-![Strategy comparison](docs/screenshots/retrieval.png)
+## 核心指标
+
+以下数据来自固定测试集的真实模型运行，不是界面演示值：
+
+| 指标 | 结果 | 说明 |
+| --- | ---: | --- |
+| 检索 Recall@5 | 94.74% → **100.00%** | 纯 RRF → BGE Reranker |
+| 检索 MRR | 0.6412 → **0.7833** | 正确条款平均排名前移 |
+| 检索 nDCG@5 | 0.7189 → **0.8372** | 排序质量提升 |
+| 引用召回率 | 100.00% | 38 / 38 条回答引用到标注条款 |
+| 引用精确率 | 33.99% | 采纳严格口径，暴露“过度引用”问题 |
+| 无效引用率 | 0.00% | 回答中的引用编号均存在 |
+| LLM 裁判通过率 | 100.00% | 同模型裁判，20 条人工复核待完成 |
+| 回答平均耗时 / Token | 9.23 s / 1659 | qwen embedding + BGE + GLM，本地网络实测 |
+
+评测集为 152 条合成政策问题（开发集 114 / 测试集 38）。完整原始数据、失败样本和限制说明：[检索重排报告](docs/experiments/20261122-real-embedding-reranker-test.md) · [回答质量报告](docs/experiments/20261122-answer-quality-test.md)。
+
+快速体验：`docker compose up --build` → [http://localhost:8080](http://localhost:8080)。架构链路：React 工作台 → FastAPI → PostgreSQL/pgvector + Redis/Celery → Hybrid Retrieval → Rerank → 带引用回答，[查看完整图示](#架构)。
 
 ## 为什么做这个项目
 
@@ -30,9 +47,9 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - FastAPI 后端提供文档、Chunk、检索、Trace 和评测 API
 - React + TypeScript 研究工作台包含 6 个核心页面
 - 内置 3 份演示政策，支持固定长度、标题层级、递归三种切片
-- 实现 BM25、可配置 Embedding Provider、RRF 融合和启发式重排
+- 实现 BM25、可配置 Embedding Provider、RRF 融合，以及启发式、LLM、本地 BGE 重排
 - 检索工作台可生成带编号引用的回答，并可直接查看对应 Trace
-- 评测指标由后端在固定演示集上实时计算
+- 评测看板实时计算检索指标；离线脚本补充引用质量、LLM 裁判和人工复核工作表
 - PostgreSQL 持久化文档、Chunk、Trace 和 Chunk 向量；内存适配器用于测试与离线演示
 - Redis + Celery Worker 异步执行解析、切片、Embedding 与索引，支持进度、失败重试、取消和 stale-task 恢复
 - Docker Compose 已配置 PostgreSQL/pgvector、Redis、API、Worker、Beat 和 Web
@@ -64,6 +81,8 @@ PolicyRAG Studio 把这些问题做成一个可运行、可对比、可量化的
 - 引用来源和执行耗时
 - 基于 Rerank Top-K 生成带编号引用的回答，并可回看原文
 
+![Strategy comparison](docs/screenshots/retrieval.png)
+
 ### 评测看板
 
 使用固定评测集计算 Recall@5、MRR、nDCG@5 和 P95 延迟，展示失败分类。
@@ -90,10 +109,12 @@ flowchart LR
     REPO --> BM25[BM25]
     DENSE --> RRF[RRF Fusion]
     BM25 --> RRF
-    RRF --> RERANK[Heuristic Reranker]
+    RRF --> RERANK[BGE / LLM / Heuristic Reranker]
 ```
 
 默认 `STORE_BACKEND=postgres`。上传接口只创建文档和 `queued` 任务，Worker 按 `parsing → chunking → embedding → ready` 推进。Beat 每 15 秒扫描 stale processing 任务并重新投递；失败任务带错误码和错误信息，可取消或重试。Dense 查询从 `chunk_embeddings` 读取 pgvector 向量并按余弦距离排序。
+
+![Overview](docs/screenshots/overview.png)
 
 ## Embedding Provider 配置
 
@@ -157,27 +178,56 @@ BGE_RERANKER_MODEL=BAAI/bge-reranker-base
 
 评测集包含 152 条合成政策问题，其中开发集 114 条、测试集 38 条。标签固定到真实 Chunk 标题，生成规则见 `data/eval/README.md`。
 
-统一重排实验命令：
+统一重排实验命令（测试集使用真实 qwen embedding）：
 
 ```bash
 uv run python -m app.experiments.reranker_benchmark \
-  --providers heuristic,none \
+  --providers none,heuristic,bge \
   --dataset policy-synthetic-v1 \
   --split test \
-  --output docs/experiments/20261122-reranker-synthetic-test.md
+  --output docs/experiments/20261122-real-embedding-reranker-test.md
 ```
 
-当前 38 条测试集上：
+当前 38 条测试集上（`qwen3.7-text-embedding-flash` 真实向量）：
 
 | Provider | Recall@5 | MRR | nDCG@5 | Rerank P95 | Fallbacks |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Heuristic | 0.9474 | 0.6447 | 0.7203 | 0.6 ms | 0 |
 | Pure RRF | 0.9474 | 0.6412 | 0.7189 | 0.0 ms | 0 |
-| BGE Base | **1.0000** | **0.7833** | **0.8372** | 109.3 ms | 0 |
+| Heuristic | 0.9474 | 0.6447 | 0.7203 | 0.4 ms | 0 |
+| BGE Base | **1.0000** | **0.7833** | **0.8372** | 113.8 ms | 0 |
 
-BGE Reranker 将 MRR 从纯 RRF 的 `0.6412` 提升到 `0.7833`，并消除两个 Top-5 漏召回；代价是 Rerank P95 增加约 `109 ms`。本地模型的 API 费用为 0，CPU 计算和电力成本尚未货币化。
+完整报告见 [`docs/experiments/20261122-real-embedding-reranker-test.md`](docs/experiments/20261122-real-embedding-reranker-test.md)。BGE Reranker 将 MRR 从纯 RRF 的 `0.6412` 提升到 `0.7833`，并消除两个 Top-5 漏召回；代价是 Rerank P95 增加约 `114 ms`。本地模型的 API 费用为 0，CPU 计算和电力成本尚未货币化。
 
 LLM Reranker 的实测仍受到上游 `429` 限流，报告已标记为无效，不作为效果结论。
+
+## 回答质量评测
+
+回答质量脚本直接走生产回答链路：`Hybrid + Rerank → Context Pack → LLM → citation guard`，并输出 Markdown 报告、逐题 JSON 原始结果和 20 条人工复核工作表。
+
+```bash
+RERANKER_PROVIDER=bge BGE_RERANKER_MODEL=BAAI/bge-reranker-base \
+uv run python -m app.experiments.answer_quality \
+  --dataset policy-synthetic-v1 \
+  --split test \
+  --concurrency 2 \
+  --output docs/experiments/20261122-answer-quality-test.md \
+  --review-size 20
+```
+
+评测包含四类信号：
+
+- **引用精确率**：有效引用中，命中标注文档与标题的比例。
+- **引用召回率**：每题是否至少引用到一个标注来源。
+- **Grounding 状态**：生产链路自己的引用合法性校验。
+- **LLM 裁判**：按 faithfulness、relevance、completeness 打 1–5 分，并列出无证据结论。
+
+当前 38 条测试集在 BGE Reranker 零降级配置下结果为引用召回 `100%`、引用精确 `33.99%`、无效引用 `0%`。召回与精确的差异说明模型通常能找到正确证据，但会同时引用多个相关片段，造成严格口径下的过度引用；这不能仅靠“引用编号合法”解释，因此报告保留逐题原文、引用证据和人工复核入口。裁判与回答使用同一模型，结论必须结合人工复核阅读。
+
+相关文件：
+
+- [评测报告](docs/experiments/20261122-answer-quality-test.md)
+- [原始 JSON](docs/experiments/20261122-answer-quality-test.json)
+- [人工复核工作表](docs/experiments/20261122-answer-quality-test-review.md)
 
 ## 技术栈
 
@@ -187,7 +237,7 @@ LLM Reranker 的实测仍受到上游 `429` 限流，报告已标记为无效，
 - FastAPI / Pydantic
 - pytest / Ruff
 - PostgreSQL + pgvector（容器已配置）
-- Redis + Celery（容器已配置，异步索引待接入）
+- Redis + Celery（异步索引、重试、取消与 stale-task 恢复）
 
 **前端**
 
@@ -323,7 +373,8 @@ FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较
 - [x] M1：Redis + Celery 异步索引
 - [x] M2：真实 Reranker 与可信评测
 - [x] M3：流式回答与引用校验
-- [ ] M4：CI、E2E、监控与发布
+- [x] M4：CI、E2E、监控与发布
+- [ ] M5：回答质量人工复核、公网 Demo 与查询规划
 
 `PROJECT_PLAN.md` 保留为项目设计方案；实际执行顺序、验收标准和当前状态以开发路线图为准。
 
