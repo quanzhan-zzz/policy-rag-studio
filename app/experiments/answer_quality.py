@@ -597,7 +597,11 @@ async def run_evaluation(
     if limit:
         cases = cases[:limit]
     provider = get_llm_provider()
-    store = await PostgresStore.create(settings.database_url, seed_demo_data=False)
+    store = await PostgresStore.create(
+        settings.database_url,
+        seed_demo_data=False,
+        seed_official_data=False,
+    )
     semaphore = asyncio.Semaphore(max(1, concurrency))
     try:
         results = await asyncio.gather(

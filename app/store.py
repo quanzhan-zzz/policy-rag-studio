@@ -20,7 +20,7 @@ from app.schemas import (
 from app.services.chunking import chunk_document
 from app.services.embedding import EmbeddingProvider, get_embedding_provider
 from app.services.parsing import parse_document
-from app.services.seed import SEED_DOCUMENTS
+from app.services.seed import get_seed_documents
 from app.services.text import tokenize
 
 
@@ -170,7 +170,13 @@ class InMemoryStore:
 
     backend = "memory"
 
-    def __init__(self, embedding_provider: EmbeddingProvider | None = None) -> None:
+    def __init__(
+        self,
+        embedding_provider: EmbeddingProvider | None = None,
+        *,
+        seed_demo_data: bool = True,
+        seed_official_data: bool = True,
+    ) -> None:
         self.lock = RLock()
         self.embedding_provider = embedding_provider or get_embedding_provider()
         self.documents: dict[str, DocumentSummary] = {}
@@ -183,7 +189,10 @@ class InMemoryStore:
         self.chunk_vectors: dict[str, list[float]] = {}
         self.traces: dict[str, TraceRecord] = {}
         self.evaluations: dict[str, EvaluationSummary] = {}
-        self._seed()
+        self._seed(
+            include_demo=seed_demo_data,
+            include_official=seed_official_data,
+        )
 
     async def ping(self) -> bool:
         return True
@@ -191,8 +200,11 @@ class InMemoryStore:
     async def close(self) -> None:
         return None
 
-    def _seed(self) -> None:
-        for seed in SEED_DOCUMENTS:
+    def _seed(self, *, include_demo: bool, include_official: bool) -> None:
+        for seed in get_seed_documents(
+            include_demo=include_demo,
+            include_official=include_official,
+        ):
             self._create_document(
                 document_id=seed.id,
                 title=seed.title,
@@ -201,6 +213,10 @@ class InMemoryStore:
                 effective_date=seed.effective_date,
                 tags=list(seed.tags),
                 text=seed.text,
+                source_name=seed.source_name,
+                source_url=seed.source_url,
+                source_retrieved_at=seed.source_retrieved_at,
+                source_sha256=seed.source_sha256,
             )
 
     def _create_document(
@@ -212,6 +228,10 @@ class InMemoryStore:
         effective_date: str,
         tags: list[str],
         text: str,
+        source_name: str | None = None,
+        source_url: str | None = None,
+        source_retrieved_at: datetime | None = None,
+        source_sha256: str | None = None,
     ) -> DocumentSummary:
         now = datetime.now(UTC)
         chunks_by_strategy: dict[ChunkStrategy, list[ChunkRecord]] = {}
@@ -232,6 +252,10 @@ class InMemoryStore:
             updated_at=now,
             tags=tags,
             index_progress=100,
+            source_name=source_name,
+            source_url=source_url,
+            source_retrieved_at=source_retrieved_at,
+            source_sha256=source_sha256,
         )
         self.documents[document_id] = document
         self.document_text[document_id] = text

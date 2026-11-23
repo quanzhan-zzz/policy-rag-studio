@@ -36,14 +36,14 @@ export function OverviewPage() {
           <div className="date-block">
             <span>检查日期</span>
             <strong>{observationDate}</strong>
-            <small>本地政策演示库</small>
+            <small>官方来源 + 本地演示</small>
           </div>
         }
       />
 
       <section className="metric-grid">
         <MetricCard
-          detail="公开政策与演示文档"
+          detail="官方办事指南与演示文档"
           label="文档数"
           value={data.document_count}
         />

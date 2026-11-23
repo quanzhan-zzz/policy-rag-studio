@@ -194,6 +194,12 @@ p, h1, h2, h3, h4, h5 { margin: 0; }
 .document-title { display: flex; min-width: 220px; flex-direction: column; gap: 2px; }
 .document-title strong { font-size: 12px; font-weight: 600; }
 .document-title span { color: var(--text-3); font-size: 11px; }
+.document-source-line { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+.source-badge { display: inline-flex; align-items: center; gap: 3px; width: fit-content; padding: 0 5px; font-size: 9.5px; line-height: 17px; border-radius: 3px; text-decoration: none; }
+.source-badge.is-official { color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); background: var(--accent-soft); }
+.source-badge.is-demo { color: var(--text-3); border: 1px solid var(--line); background: var(--surface-2); }
+.source-name { color: var(--text-3); font-size: 9.5px; }
+.source-date { display: block; margin-top: 2px; color: var(--text-3); font-family: var(--sans); font-size: 9.5px; }
 .document-status-cell { display: flex; min-width: 120px; flex-direction: column; gap: 5px; }
 .status-pill { display: inline-flex; align-items: center; gap: 5px; width: fit-content; padding: 0 6px; font-size: 10.5px; font-weight: 500; line-height: 19px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); }
 .status-pill > span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); }

@@ -98,6 +98,12 @@ flowchart LR
     Worker --> Embed[Embedding Provider]
 ```
 
+## Document Provenance
+
+Seeded official guides retain `source_name`, `source_url`, `source_retrieved_at` and the source
+archive SHA-256. Demo documents leave these fields empty, so the API and workbench can distinguish
+synthetic fixtures from official material without relying on title conventions.
+
 ## Data Model
 
 ```mermaid

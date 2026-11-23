@@ -39,6 +39,12 @@ class DocumentRow(Base):
     index_task_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     index_progress: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     index_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_retrieved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    source_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     chunks: Mapped[list["ChunkRow"]] = relationship(
         back_populates="document",
