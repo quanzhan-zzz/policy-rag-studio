@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "source_name": "江苏政务服务网·常州法人服务",
+  "source_base_url": "https://cz.jszwfw.gov.cn",
+  "list_url": "https://cz.jszwfw.gov.cn/jszwfw/bscx/itemlist/fr_index.do?webId=5&themid=allzt&deptid=",
+  "web_id": "5",
+  "guides": [
+    {
+      "id": "cz-company-change-registration",
+      "title": "公司变更登记注册（设区的市级权限）",
+      "ql_kind": "01",
+      "yw_code": "113204000141102350332013104500202",
+      "ql_code": "1132040001411023503320131045002",
+      "tags": ["企业登记", "公司变更", "行政许可"]
+    },
+    {
+      "id": "cz-public-welfare-post-subsidy",
+      "title": "用人单位公益性岗位补贴和社保补贴申领",
+      "ql_kind": "20",
+      "yw_code": "11320400014110315K332201431400601",
+      "ql_code": "11320400014110315K3322014314006",
+      "tags": ["就业补贴", "公益性岗位", "社保补贴", "公共服务"]
+    }
+  ]
+}

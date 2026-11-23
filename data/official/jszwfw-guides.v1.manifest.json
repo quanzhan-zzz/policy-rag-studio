@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "source_name": "江苏政务服务网·常州法人服务",
+  "list_url": "https://cz.jszwfw.gov.cn/jszwfw/bscx/itemlist/fr_index.do?webId=5&themid=allzt&deptid=",
+  "generated_at": "2026-11-23T18:30:39.345165Z",
+  "guides": [
+    {
+      "id": "cz-company-change-registration",
+      "title": "公司变更登记注册（设区的市级权限）",
+      "source_url": "https://cz.jszwfw.gov.cn/jszwfw/bscx/itemlist/bszn.do?webId=5&iddept_yw_inf=113204000141102350332013104500202&ql_kind=01&iddept_ql_inf=1132040001411023503320131045002",
+      "source_pdf": {
+        "remote_name": "公司变更登记注册（设区的市级权限）(详版).pdf",
+        "content_type": "application/octet-stream",
+        "path": "cz-company-change-registration/guide.pdf",
+        "sha256": "65526ed6b8998ce922b5bac858bcb3caa0a862903ed0da5fb0ad4196fcfda0b4",
+        "size_bytes": 157684
+      },
+      "attachments": [
+        {
+          "name": "公司登记（备案）申请书.docx",
+          "url": "https://sxgl.jszwfw.gov.cn:66/audit-qlk-web/rest/frame/pages/basic/attach/attachAction/getContent?isCommondto=true&attachGuid=8fe0ef29-587c-4314-b220-b1532e1c4bd1",
+          "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "path": "cz-company-change-registration/attachments/公司登记（备案）申请书.docx",
+          "sha256": "50b271f609171ccc7ba8279e0d9153b89e7de140f66b255a638b9810f4fe6611",
+          "size_bytes": 84742
+        },
+        {
+          "name": "公司登记（备案）申请书示例.docx",
+          "url": "https://sxgl.jszwfw.gov.cn:66/audit-qlk-web/rest/frame/pages/basic/attach/attachAction/getContent?isCommondto=true&attachGuid=92036235-ee2e-4a93-a317-c0f99710b9aa",
+          "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "path": "cz-company-change-registration/attachments/公司登记（备案）申请书示例.docx",
+          "sha256": "734a1c3064490e99ae7469ef9e0079deb4e0a6989b3412248de7aea275e5c4d8",
+          "size_bytes": 75004
+        }
+      ]
+    },
+    {
+      "id": "cz-public-welfare-post-subsidy",
+      "title": "用人单位公益性岗位补贴和社保补贴申领",
+      "source_url": "https://cz.jszwfw.gov.cn/jszwfw/publicservice/itemlist/showDetail.do?webId=5&iddept_yw_inf=11320400014110315K332201431400601&ql_kind=20&iddept_ql_inf=11320400014110315K3322014314006",
+      "source_pdf": {
+        "remote_name": "用人单位公益性岗位补贴和社保补贴申领(详版).pdf",
+        "content_type": "application/octet-stream",
+        "path": "cz-public-welfare-post-subsidy/guide.pdf",
+        "sha256": "9b04a2bdfd4e7e32d31d87aa416d74970e0f789967160b2f9255b854da1401e5",
+        "size_bytes": 112553
+      },
+      "attachments": [
+        {
+          "name": "用人单位公益性岗位补贴和社保补贴花名册.docx",
+          "url": "https://sxgl.jszwfw.gov.cn:66/audit-qlk-web/rest/frame/pages/basic/attach/attachAction/getContent?isCommondto=true&attachGuid=700900c6-1d06-4c9b-bf89-7316f18de672",
+          "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "path": "cz-public-welfare-post-subsidy/attachments/用人单位公益性岗位补贴和社保补贴花名册.docx",
+          "sha256": "288c1d536d91f8cd257f034b787839b6cc5960e44634132eeb120708ec3597ad",
+          "size_bytes": 12730
+        },
+        {
+          "name": "用人单位公益性岗位补贴和社保补贴花名册.jpg",
+          "url": "https://sxgl.jszwfw.gov.cn:66/audit-qlk-web/rest/frame/pages/basic/attach/attachAction/getContent?isCommondto=true&attachGuid=de1e7e65-72f1-4b07-a096-1f397c66bb91",
+          "content_type": "image/jpeg",
+          "path": "cz-public-welfare-post-subsidy/attachments/用人单位公益性岗位补贴和社保补贴花名册.jpg",
+          "sha256": "7333ebd750ed3150f9edf3a93a853548e78c9eec6838f1b1bfe356da482fd74f",
+          "size_bytes": 74530
+        },
+        {
+          "name": "用人单位公益性岗位补贴和社保补贴申请表.docx",
+          "url": "https://sxgl.jszwfw.gov.cn:66/audit-qlk-web/rest/frame/pages/basic/attach/attachAction/getContent?isCommondto=true&attachGuid=455d027d-6533-44e7-8f37-a17553223558",
+          "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "path": "cz-public-welfare-post-subsidy/attachments/用人单位公益性岗位补贴和社保补贴申请表.docx",
+          "sha256": "4c25e0de9514e1919225b5863cac4a2ce92910a53fc0c3e854f0789ec69a076d",
+          "size_bytes": 13309
+        },
+        {
+          "name": "用人单位公益性岗位补贴和社保补贴申请表.jpg",
+          "url": "https://sxgl.jszwfw.gov.cn:66/audit-qlk-web/rest/frame/pages/basic/attach/attachAction/getContent?isCommondto=true&attachGuid=99a7e7eb-10d4-432e-ab73-0c08845e6d92",
+          "content_type": "image/jpeg",
+          "path": "cz-public-welfare-post-subsidy/attachments/用人单位公益性岗位补贴和社保补贴申请表.jpg",
+          "sha256": "7333ebd750ed3150f9edf3a93a853548e78c9eec6838f1b1bfe356da482fd74f",
+          "size_bytes": 74530
+        }
+      ]
+    }
+  ]
+}
