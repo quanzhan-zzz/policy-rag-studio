@@ -34,6 +34,6 @@ test('upload is queued and reaches the ready state', async ({ page }) => {
 
 test('evaluation page records the active reranker', async ({ page }) => {
   await page.goto('/evaluation')
-  await expect(page.getByText(/Reranker：heuristic/i)).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByText(/Reranker：heuristic/i)).toBeVisible({ timeout: 60_000 })
   await expect(page.getByText('完整指标账本')).toBeVisible()
 })

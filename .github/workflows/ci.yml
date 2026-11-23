@@ -74,7 +74,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: web
@@ -88,19 +88,80 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
+      - name: Validate real-model secrets
+        working-directory: .
+        env:
+          EMBEDDING_API_BASE: ${{ secrets.EMBEDDING_API_BASE }}
+          EMBEDDING_API_KEY: ${{ secrets.EMBEDDING_API_KEY }}
+          EMBEDDING_MODEL: ${{ secrets.EMBEDDING_MODEL }}
+          EMBEDDING_DIMENSIONS: ${{ secrets.EMBEDDING_DIMENSIONS }}
+          LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+        run: |
+          missing=0
+          for name in EMBEDDING_API_BASE EMBEDDING_API_KEY EMBEDDING_MODEL EMBEDDING_DIMENSIONS LLM_API_BASE LLM_API_KEY LLM_MODEL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required for real-environment E2E"
+              missing=1
+            fi
+          done
+          exit "$missing"
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
+      - name: Create real environment
+        working-directory: .
+        env:
+          EMBEDDING_API_BASE: ${{ secrets.EMBEDDING_API_BASE }}
+          EMBEDDING_API_KEY: ${{ secrets.EMBEDDING_API_KEY }}
+          EMBEDDING_MODEL: ${{ secrets.EMBEDDING_MODEL }}
+          EMBEDDING_DIMENSIONS: ${{ secrets.EMBEDDING_DIMENSIONS }}
+          LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+        run: |
+          cat > .env <<EOF
+          APP_ENV=development
+          STORE_BACKEND=postgres
+          SEED_DEMO_DATA=true
+          SEED_OFFICIAL_DATA=true
+          API_CORS_ORIGINS=http://localhost:5173,http://localhost:8080
+          DATABASE_URL=postgresql+asyncpg://policyrag:policyrag@db:5432/policyrag
+          REDIS_URL=redis://redis:6379/0
+          INDEX_TASK_STALE_SECONDS=300
+          EMBEDDING_PROVIDER=openai
+          EMBEDDING_API_BASE=${EMBEDDING_API_BASE}
+          EMBEDDING_API_KEY=${EMBEDDING_API_KEY}
+          OPENAI_EMBEDDING_MODEL=${EMBEDDING_MODEL}
+          EMBEDDING_DIMENSIONS=${EMBEDDING_DIMENSIONS}
+          EMBEDDING_BATCH_SIZE=16
+          LLM_API_BASE=${LLM_API_BASE}
+          LLM_API_KEY=${LLM_API_KEY}
+          LLM_MODEL=${LLM_MODEL}
+          RERANKER_PROVIDER=heuristic
+          RERANKER_TIMEOUT_SECONDS=30
+          EOF
       - name: Start application
         working-directory: .
         run: |
-          cp .env.example .env
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
-          for attempt in $(seq 1 60); do
+          docker compose up -d --build
+          for attempt in $(seq 1 120); do
             if curl -fsS http://127.0.0.1:8000/api/v1/health; then exit 0; fi
             sleep 2
           done
           docker compose logs
           exit 1
+      - name: Verify real providers and official corpus
+        working-directory: .
+        env:
+          EMBEDDING_MODEL: ${{ secrets.EMBEDDING_MODEL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+        run: |
+          overview=$(curl -fsS http://127.0.0.1:8000/api/v1/overview)
+          echo "$overview" | jq -e --arg model "$EMBEDDING_MODEL" '.model_provider | contains($model)'
+          echo "$overview" | jq -e --arg model "$LLM_MODEL" '.llm_provider | contains($model)'
+          curl -fsS http://127.0.0.1:8000/api/v1/documents \
+            | jq -e '[.[] | select(.source_url != null)] | length >= 2'
       - name: Playwright
         env:
           E2E_BASE_URL: http://127.0.0.1:8080
@@ -108,8 +169,17 @@ jobs:
       - name: Dump logs on failure
         if: failure()
         working-directory: .
-        run: docker compose logs --tail=300
+        run: docker compose logs --tail=500
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure
+          path: |
+            web/test-results/
+            web/playwright-report/
+          if-no-files-found: ignore
       - name: Stop application
         if: always()
         working-directory: .
-        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
+        run: docker compose down -v
