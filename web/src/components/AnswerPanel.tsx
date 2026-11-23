@@ -35,9 +35,8 @@ export function AnswerPanel({
     <article aria-live="polite" className="panel answer-panel">
       <header className="answer-head">
         <div>
-          <span className="panel-index">C / ANSWER WITH EVIDENCE</span>
-          <h3>让模型只根据证据回答</h3>
-          <p>使用 Hybrid + Rerank 的 Top-K 候选组装 Context Pack，回答中的编号可以直接回看原文。</p>
+          <h3>证据回答</h3>
+          <p>基于 Hybrid + Rerank 候选生成，引用编号可回查原文。</p>
         </div>
         <button
           className="button button-answer"
@@ -62,11 +61,10 @@ export function AnswerPanel({
 
       {isPending && !data ? (
         <div className="answer-state">
-          <span className="scan-line" />
           <LoaderCircle className="spin" size={18} />
           <div>
-            <strong>正在组装上下文并调用文本模型</strong>
-            <p>检索结果会先编号，再要求模型逐条引用；当前不会把整个知识库交给模型。</p>
+            <strong>正在生成回答</strong>
+            <p>检索结果编号后作为上下文，回答需逐条引用。</p>
           </div>
         </div>
       ) : null}
@@ -75,8 +73,8 @@ export function AnswerPanel({
         <div className="answer-state">
           <Quote size={20} />
           <div>
-            <strong>检索完成后，生成一份可核验回答</strong>
-            <p>先生成回答，再逐条检查引用，确认模型是否忠实于政策原文。</p>
+            <strong>尚无回答</strong>
+            <p>生成后可在此逐条核对引用与原文。</p>
           </div>
         </div>
       ) : null}
@@ -91,7 +89,7 @@ export function AnswerPanel({
             {data.total_ms ? <span>总计 {data.total_ms.toFixed(1)} ms</span> : null}
             {data.total_tokens ? (
               <span>
-                tokens {data.prompt_tokens ?? 0}/{data.completion_tokens ?? 0}
+                Token {data.prompt_tokens ?? 0}/{data.completion_tokens ?? 0}
               </span>
             ) : null}
             {data.grounding_status ? <span>{data.grounding_status}</span> : null}
@@ -106,7 +104,7 @@ export function AnswerPanel({
           ) : null}
           <div className="answer-body">
             <section className="answer-copy">
-              <span className="answer-kicker">QUESTION</span>
+              <span className="answer-kicker">问题</span>
               <h4>{data.query}</h4>
               <div className="answer-prose">
                 {answerLines.map((line, index) => (
@@ -116,8 +114,8 @@ export function AnswerPanel({
             </section>
             <aside className="answer-citations">
               <div className="answer-citations-head">
-                <span className="answer-kicker">SOURCE REGISTER</span>
-                <strong>{data.citations.length.toString().padStart(2, '0')}</strong>
+                <span className="answer-kicker">引用登记</span>
+                <strong>{data.citations.length}</strong>
               </div>
               <div className="answer-citation-list">
                 {data.citations.map((citation) => (

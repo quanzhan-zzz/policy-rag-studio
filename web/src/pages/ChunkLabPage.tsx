@@ -1,4 +1,4 @@
-import { Braces, Check, FileText, RefreshCw, Save } from 'lucide-react'
+import { Check, FileText, RefreshCw, Save } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { PageHeader } from '../components/PageHeader'
@@ -43,23 +43,23 @@ export function ChunkLabPage() {
   return (
     <div className="page-stack chunk-page">
       <PageHeader
-        marker="FIELD NOTE / 03"
-        title="切片不是预处理，是检索设计"
-        description="在原文、Chunk 边界和元数据之间反复校准。当前工作区允许直接修订 Chunk，之后应重新索引并跑同一批评测问题。"
+        title="切片实验"
+        description="对比三种切片策略，检查边界与元数据。"
         aside={
           <div className="lab-stats">
             <div>
-              <span>CHUNKS</span>
+              <span>切片数</span>
               <strong>{activeChunks.data?.length ?? 0}</strong>
             </div>
             <div>
-              <span>AVG TOKENS</span>
+              <span>平均 Token</span>
               <strong>{averageTokens}</strong>
             </div>
           </div>
         }
       />
 
+      <div className="workbench-shell">
       <div className="strategy-switch" role="tablist" aria-label="Chunk 策略">
         {strategies.map((item) => (
           <button
@@ -82,7 +82,7 @@ export function ChunkLabPage() {
 
       <section className="chunk-workbench">
         <aside className="panel chunk-document-rail">
-          <span className="panel-index">A / SOURCE DOCUMENTS</span>
+          <div className="pane-head">源文档</div>
           <div className="document-picker">
             {documents.data!.map((document) => (
               <button
@@ -104,7 +104,7 @@ export function ChunkLabPage() {
             ))}
           </div>
           <div className="chunk-source-meta">
-            <span>ACTIVE FILE</span>
+            <span>当前文件</span>
             <strong>{currentDocument?.file_name}</strong>
             <small>{currentDocument?.effective_date} · {currentDocument?.status}</small>
           </div>
@@ -113,10 +113,8 @@ export function ChunkLabPage() {
         <section className="panel chunk-list-panel">
           <div className="panel-heading compact">
             <div>
-              <span className="panel-index">B / CHUNK MAP</span>
               <h3>{activeChunks.data?.length ?? 0} 个检索单元</h3>
             </div>
-            <Braces size={17} />
           </div>
           {activeChunks.isLoading ? <LoadingState label="正在生成 Chunk" /> : null}
           {activeChunks.isError ? <ErrorState message={activeChunks.error.message} /> : null}
@@ -145,7 +143,6 @@ export function ChunkLabPage() {
         <section className="panel chunk-editor-panel">
           <div className="panel-heading compact">
             <div>
-              <span className="panel-index">C / BOUNDARY EDITOR</span>
               <h3>{selectedChunk?.heading_path ?? '选择一个 Chunk'}</h3>
             </div>
             {selectedChunk ? (
@@ -169,7 +166,7 @@ export function ChunkLabPage() {
               />
               <div className="editor-footer">
                 <span className={dirty ? 'dirty-indicator is-dirty' : 'dirty-indicator'}>
-                  {dirty ? 'UNSAVED CHANGES' : 'SAVED / IN SYNC'}
+                  {dirty ? '有未保存的修改' : '已保存'}
                 </span>
                 <div className="editor-actions">
                   <button
@@ -208,6 +205,7 @@ export function ChunkLabPage() {
           )}
         </section>
       </section>
+      </div>
     </div>
   )
 }

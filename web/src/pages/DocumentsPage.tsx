@@ -42,9 +42,8 @@ export function DocumentsPage() {
   return (
     <div className="page-stack">
       <PageHeader
-        marker="FIELD NOTE / 02"
-        title="文档目录与索引状态"
-        description="上传任务先进入队列，再由 Celery Worker 完成解析、切片、Embedding 和入库。列表会自动轮询真实进度。"
+        title="文档与索引"
+        description="维护政策文件与索引任务。"
         aside={
           <button
             className="button button-primary"
@@ -74,7 +73,6 @@ export function DocumentsPage() {
         <article className="panel registry-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-index">A / DOCUMENT REGISTRY</span>
               <h3>{documents.data!.length} 份政策材料</h3>
             </div>
             <span className="quiet-chip">PDF · DOCX · MD</span>
@@ -183,26 +181,22 @@ export function DocumentsPage() {
         </article>
 
         <aside className="panel ingestion-panel">
-          <span className="panel-index">B / INGESTION RULES</span>
           <h3>解析与安全边界</h3>
           <ul className="rule-list">
             <li>
-              <span>01</span>
               <p>只使用公开政策、办事指南和合成材料，不提交真实办件数据。</p>
             </li>
             <li>
-              <span>02</span>
               <p>上传文件先解析为文本，再按三种 Chunk profile 建立独立索引。</p>
             </li>
             <li>
-              <span>03</span>
               <p>Chunk 可人工修订，修订后应重新跑评测，避免用测试集调参。</p>
             </li>
           </ul>
           <div className="safety-note">
             <ShieldCheck size={18} />
             <div>
-              <strong>Compliance first</strong>
+              <strong>合规优先</strong>
               <p>GitHub 仓库不上传公司代码、数据库或身份证等敏感信息。</p>
             </div>
           </div>

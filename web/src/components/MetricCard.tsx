@@ -1,26 +1,13 @@
-import type { ReactNode } from 'react'
-
 type MetricCardProps = {
   label: string
   value: string | number
   detail: string
-  icon?: ReactNode
-  tone?: 'default' | 'blue' | 'green' | 'amber'
 }
 
-export function MetricCard({
-  label,
-  value,
-  detail,
-  icon,
-  tone = 'default',
-}: MetricCardProps) {
+export function MetricCard({ label, value, detail }: MetricCardProps) {
   return (
-    <article className={`metric-card tone-${tone}`}>
-      <div className="metric-topline">
-        <span>{label}</span>
-        {icon}
-      </div>
+    <article className="metric-card">
+      <span className="metric-label">{label}</span>
       <strong>{value}</strong>
       <p>{detail}</p>
     </article>

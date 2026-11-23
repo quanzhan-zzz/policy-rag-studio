@@ -1,4 +1,3 @@
-import { AlertCircle, FlaskConical, Gauge, Scale } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -38,17 +37,16 @@ export function EvaluationPage() {
   return (
     <div className="page-stack">
       <PageHeader
-        marker="FIELD NOTE / 05"
-        title="评测报告，不是感觉报告"
-        description="同一批政策问题、同一批相关条款，对比检索策略的 Recall@5、MRR、nDCG 和 P95 延迟。指标由后端脚本实时计算。"
+        title="检索评测"
+        description="在冻结测试集上比较召回、排序与延迟。"
         aside={
           <div className="date-block">
-            <span>DATASET</span>
-            <strong>{data.case_count} cases</strong>
+            <span>测试集</span>
+            <strong>{data.case_count} 条</strong>
             <small>
               {data.dataset_name} / {data.split ?? 'all'}
             </small>
-            <small>reranker: {data.reranker_provider ?? 'not recorded'}</small>
+            <small>Reranker：{data.reranker_provider ?? '未记录'}</small>
           </div>
         }
       />
@@ -56,29 +54,22 @@ export function EvaluationPage() {
       <section className="metric-grid evaluation-metrics">
         <MetricCard
           detail={best.label}
-          icon={<FlaskConical size={17} />}
-          label="Best recall@5"
-          tone="blue"
+          label="最佳 Recall@5"
           value={percent(best.recall_at_5)}
         />
         <MetricCard
-          detail="平均 reciprocal rank"
-          icon={<Scale size={17} />}
-          label="Best MRR"
-          tone="green"
+          detail="平均倒序排名"
+          label="最佳 MRR"
           value={best.mrr.toFixed(3)}
         />
         <MetricCard
           detail="前五名排序质量"
-          icon={<Gauge size={17} />}
-          label="Best nDCG@5"
-          tone="amber"
+          label="最佳 nDCG@5"
           value={best.ndcg_at_5.toFixed(3)}
         />
         <MetricCard
           detail="最优策略 P95"
-          icon={<AlertCircle size={17} />}
-          label="Latency"
+          label="P95 延迟"
           value={`${best.p95_ms.toFixed(1)} ms`}
         />
       </section>
@@ -87,10 +78,9 @@ export function EvaluationPage() {
         <article className="panel chart-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-index">A / QUALITY COMPARISON</span>
               <h3>质量指标横向对比</h3>
             </div>
-            <span className="quiet-chip">higher is better</span>
+            <span className="quiet-chip">指标越高越好</span>
           </div>
           <div className="chart-wrap">
             <ResponsiveContainer height="100%" width="100%">
@@ -117,9 +107,9 @@ export function EvaluationPage() {
                     fontSize: 12,
                   }}
                 />
-                <Bar dataKey="recall" fill="var(--signal)" name="Recall@5" radius={[2, 2, 0, 0]} />
-                <Bar dataKey="mrr" fill="var(--teal)" name="MRR" radius={[2, 2, 0, 0]} />
-                <Bar dataKey="ndcg" fill="var(--amber)" name="nDCG@5" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="recall" fill="var(--chart-1)" name="Recall@5" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="mrr" fill="var(--chart-2)" name="MRR" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="ndcg" fill="var(--chart-3)" name="nDCG@5" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -133,15 +123,13 @@ export function EvaluationPage() {
         <article className="panel failure-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-index">B / FAILURE NOTES</span>
               <h3>失败样本分类</h3>
             </div>
           </div>
           {data.failures.length ? (
             <div className="failure-list">
-              {data.failures.map((failure, index) => (
+              {data.failures.map((failure) => (
                 <div key={failure.type}>
-                  <span>{String(index + 1).padStart(2, '0')}</span>
                   <p>{failure.type}</p>
                   <strong>{failure.count}</strong>
                 </div>
@@ -162,10 +150,9 @@ export function EvaluationPage() {
       <article className="panel metric-ledger">
         <div className="panel-heading">
           <div>
-            <span className="panel-index">C / METRIC LEDGER</span>
             <h3>完整指标账本</h3>
           </div>
-          <span className="quiet-chip">generated {new Date(data.generated_at).toLocaleTimeString('zh-CN')}</span>
+          <span className="quiet-chip">生成 {new Date(data.generated_at).toLocaleTimeString('zh-CN')}</span>
         </div>
         <div className="data-table-wrap">
           <table className="data-table">

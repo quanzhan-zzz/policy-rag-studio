@@ -7,43 +7,32 @@ import {
   Route,
   Search,
 } from 'lucide-react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet } from 'react-router-dom'
 
 import { useHealth } from '../lib/queries'
 
 const navItems = [
-  { to: '/', label: '系统总览', short: 'Overview', icon: LayoutDashboard, index: '01' },
-  { to: '/documents', label: '文档管理', short: 'Documents', icon: Files, index: '02' },
-  { to: '/chunk-lab', label: 'Chunk Lab', short: 'Chunk Lab', icon: Blocks, index: '03' },
-  { to: '/retrieval', label: '检索对比', short: 'Retrieval', icon: Search, index: '04' },
-  { to: '/evaluation', label: '评测看板', short: 'Evaluation', icon: BarChart3, index: '05' },
-  { to: '/trace', label: 'Trace 详情', short: 'Trace', icon: Route, index: '06' },
+  { to: '/', label: '总览', icon: LayoutDashboard },
+  { to: '/documents', label: '文档', icon: Files },
+  { to: '/chunk-lab', label: '切片', icon: Blocks },
+  { to: '/retrieval', label: '检索', icon: Search },
+  { to: '/evaluation', label: '评测', icon: BarChart3 },
+  { to: '/trace', label: 'Trace', icon: Route },
 ]
 
-const titles: Record<string, string> = {
-  '/': 'System overview',
-  '/documents': 'Document registry',
-  '/chunk-lab': 'Chunk laboratory',
-  '/retrieval': 'Strategy comparison',
-  '/evaluation': 'Evaluation ledger',
-  '/trace': 'Trace inspector',
-}
 
 export function AppShell() {
-  const location = useLocation()
   const health = useHealth()
-  const pageTitle =
-    titles[location.pathname] ??
-    (location.pathname.startsWith('/trace/') ? 'Trace inspector' : 'Research workbench')
+  const online = health.data?.status === 'ok'
 
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <NavLink className="brand" to="/">
-          <span className="brand-mark">P/R</span>
+        <NavLink aria-label="PolicyRAG" className="brand" to="/">
+          <span className="brand-mark" aria-hidden="true">PR</span>
           <span className="brand-copy">
             <strong>PolicyRAG</strong>
-            <small>Research Studio</small>
+            <small>检索评测</small>
           </span>
         </NavLink>
 
@@ -59,40 +48,30 @@ export function AppShell() {
                 key={item.to}
                 to={item.to}
               >
-                <span className="nav-index">{item.index}</span>
-                <Icon aria-hidden="true" size={17} strokeWidth={1.7} />
-                <span className="nav-copy">
-                  <span>{item.label}</span>
-                  <small>{item.short}</small>
-                </span>
+                <Icon aria-hidden="true" size={17} strokeWidth={1.6} />
+                <span className="nav-copy">{item.label}</span>
               </NavLink>
             )
           })}
         </nav>
 
         <div className="sidebar-foot">
-          <div className="sidebar-footline">
-            <Activity size={14} />
-            <span>DEMO / LOCAL</span>
+          <div className="sidebar-status">
+            <div className={`live-state ${online ? 'is-live' : ''}`}>
+              <span className="live-dot" />
+              <span>{online ? 'API 在线' : 'API 离线'}</span>
+            </div>
+            <span className="version-chip">v0.2</span>
           </div>
-          <p>Public policy fixtures · No company data</p>
+          <div className="sidebar-footline">
+            <Activity size={12} />
+            <span>本地公开数据</span>
+          </div>
+          <p>仅使用政策演示文件，不接入内部数据。</p>
         </div>
       </aside>
 
       <div className="workspace">
-        <header className="topbar">
-          <div>
-            <span className="eyebrow">POLICY INTELLIGENCE / RETRIEVAL OPERATIONS</span>
-            <h1>{pageTitle}</h1>
-          </div>
-          <div className="topbar-actions">
-            <div className={`live-state ${health.data?.status === 'ok' ? 'is-live' : ''}`}>
-              <span className="live-dot" />
-              <span>{health.data?.status === 'ok' ? 'API ONLINE' : 'API OFFLINE'}</span>
-            </div>
-            <span className="version-chip">v0.2.0 / release</span>
-          </div>
-        </header>
         <main className="page-stage">
           <Outlet />
         </main>

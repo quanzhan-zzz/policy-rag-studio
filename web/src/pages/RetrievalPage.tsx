@@ -1,4 +1,4 @@
-import { ArrowRight, CornerDownRight, Play, SlidersHorizontal, Waypoints } from 'lucide-react'
+import { ArrowRight, CornerDownRight, Play, Waypoints } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -90,17 +90,16 @@ export function RetrievalPage() {
   return (
     <div className="page-stack retrieval-page">
       <PageHeader
-        marker="FIELD NOTE / 04"
-        title="别只看答案，先看候选如何变化"
-        description="同一查询同时运行 Dense、BM25、Hybrid 与 Rerank。比较共同命中、排名漂移和引用来源，再判断问题来自召回还是重排。"
+        title="检索对比"
+        description="同一查询并行进入 Dense、BM25、RRF 和重排路径，比较排名漂移、引用来源与耗时。"
         aside={
           <div className="lab-stats">
             <div>
-              <span>STRATEGIES</span>
+              <span>策略数</span>
               <strong>{strategies.length}</strong>
             </div>
             <div>
-              <span>TOP K</span>
+              <span>Top K</span>
               <strong>{topK}</strong>
             </div>
           </div>
@@ -109,7 +108,7 @@ export function RetrievalPage() {
 
       <section className="retrieval-querybar">
         <div className="query-input-wrap">
-          <span className="query-label">QUERY / 政策问题</span>
+          <span className="query-label">政策问题</span>
           <input
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => {
@@ -134,14 +133,12 @@ export function RetrievalPage() {
         <aside className="panel retrieval-config">
           <div className="panel-heading compact">
             <div>
-              <span className="panel-index">A / EXPERIMENT SETUP</span>
               <h3>检索配置</h3>
             </div>
-            <SlidersHorizontal size={17} />
           </div>
 
           <div className="config-group">
-            <span className="config-label">CHUNK PROFILE</span>
+            <span className="config-label">切片策略</span>
             <div className="segmented-control">
               {chunkStrategies.map((item) => (
                 <button
@@ -158,7 +155,7 @@ export function RetrievalPage() {
 
           <div className="config-group">
             <div className="config-label-row">
-              <span className="config-label">TOP K</span>
+              <span className="config-label">Top K</span>
               <strong className="mono-value">{topK}</strong>
             </div>
             <input
@@ -172,7 +169,7 @@ export function RetrievalPage() {
           </div>
 
           <div className="config-group">
-            <span className="config-label">RETRIEVAL PATHS</span>
+            <span className="config-label">检索路径</span>
             <div className="toggle-stack">
               {allStrategies.map((item) => (
                 <button
@@ -193,7 +190,7 @@ export function RetrievalPage() {
 
           <div className="config-footnote">
             <Waypoints size={16} />
-            <p>共同命中用蓝色标记。展开每列可查看 Dense / BM25 rank 与重排变化。</p>
+            <p>共同命中用左侧红标记。展开每列可查看 Dense / BM25 rank 与重排变化。</p>
           </div>
         </aside>
 
@@ -202,7 +199,6 @@ export function RetrievalPage() {
 
           {!comparison.data && !comparison.isPending ? (
             <div className="panel comparison-empty">
-              <span className="panel-index">B / COMPARISON BOARD</span>
               <h3>等待一次检索实验</h3>
               <p>运行后会在这里并排显示各策略的候选、分数和引用。</p>
             </div>
@@ -231,11 +227,10 @@ export function RetrievalPage() {
                 className="comparison-board"
                 style={{ gridTemplateColumns: `repeat(${comparison.data.runs.length}, minmax(230px, 1fr))` }}
               >
-                {comparison.data.runs.map((run, runIndex) => (
+                {comparison.data.runs.map((run) => (
                   <article className="comparison-column" key={run.strategy}>
                     <header className="comparison-head">
                       <div>
-                        <span className="panel-index">0{runIndex + 1} / {run.strategy}</span>
                         <h3>{run.label}</h3>
                       </div>
                       <span className="latency-badge">{run.latency_ms.toFixed(1)} ms</span>
@@ -252,7 +247,7 @@ export function RetrievalPage() {
                             <div className="result-rankline">
                               <span className="result-rank">R{result.rank}</span>
                               <span className="result-score">{result.score.toFixed(4)}</span>
-                              {isShared ? <span className="shared-flag">COMMON</span> : null}
+                              {isShared ? <span className="shared-flag">共同</span> : null}
                             </div>
                             <h4>{result.heading_path}</h4>
                             <p className="result-document">{result.document_title} · P.{result.page}</p>
@@ -285,7 +280,6 @@ export function RetrievalPage() {
 
           {comparison.isPending ? (
             <div className="comparison-loading">
-              <span className="scan-line" />
               <p>正在并行执行召回、融合与重排…</p>
             </div>
           ) : null}

@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test'
 
 test('workbench renders and opens strategy comparison', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByText('PolicyRAG')).toBeVisible()
-  await page.getByRole('link', { name: /检索对比/ }).click()
-  await expect(page.getByRole('heading', { name: /别只看答案/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /PolicyRAG/ })).toBeVisible()
+  await page.getByRole('link', { name: /检索/ }).click()
+  await expect(page.getByRole('heading', { level: 2, name: /检索对比/ })).toBeVisible()
 })
 
 test('upload is queued and reaches the ready state', async ({ page }) => {
@@ -27,6 +27,6 @@ test('upload is queued and reaches the ready state', async ({ page }) => {
 
 test('evaluation page records the active reranker', async ({ page }) => {
   await page.goto('/evaluation')
-  await expect(page.getByText(/reranker: heuristic/i)).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByText(/Reranker：heuristic/i)).toBeVisible({ timeout: 20_000 })
   await expect(page.getByText('完整指标账本')).toBeVisible()
 })

@@ -17,9 +17,8 @@ export function TracePage() {
     return (
       <div className="page-stack">
         <PageHeader
-          marker="FIELD NOTE / 06"
-          title="Trace 检索执行链"
-          description="从检索对比结果进入某条策略，才能看到查询解析、召回、RRF 融合和重排的完整阶段。"
+          title="执行记录"
+          description="选择一条 Trace 查看阶段耗时。"
         />
         <div className="panel trace-empty">
           <SearchCode size={30} />
@@ -40,9 +39,8 @@ export function TracePage() {
   return (
     <div className="page-stack">
       <PageHeader
-        marker="FIELD NOTE / 06"
-        title="每一次排名变化都可追溯"
-        description="Trace 保存查询、策略、阶段数量、耗时和中间说明。它用于判断问题来自查询解析、召回、融合还是重排。"
+        title="执行详情"
+        description="按时间顺序检查召回、融合、重排与生成阶段。"
         aside={
           <Link className="button button-ghost" to="/retrieval">
             <ArrowLeft size={15} /> 返回对比
@@ -52,7 +50,6 @@ export function TracePage() {
 
       <section className="trace-header-grid">
         <article className="panel trace-query-panel">
-          <span className="panel-index">A / QUERY SNAPSHOT</span>
           <h3>{data.query}</h3>
           <div className="trace-meta-row">
             <span><GitBranch size={14} /> {data.strategy}</span>
@@ -62,7 +59,6 @@ export function TracePage() {
           <small className="trace-id">{data.id}</small>
         </article>
         <article className="panel trace-summary-panel">
-          <span className="panel-index">B / STAGE COUNT</span>
           <strong>{data.stages.length}</strong>
           <p>记录阶段 · 从 tokenize 到 Context Pack</p>
         </article>
@@ -71,7 +67,6 @@ export function TracePage() {
       <article className="panel trace-timeline-panel">
         <div className="panel-heading">
           <div>
-            <span className="panel-index">C / EXECUTION TIMELINE</span>
             <h3>执行阶段与耗时</h3>
           </div>
           <span className="quiet-chip">created {new Date(data.created_at).toLocaleTimeString('zh-CN')}</span>
@@ -107,24 +102,6 @@ export function TracePage() {
         </div>
       </article>
 
-      <section className="trace-note-grid">
-        <article className="panel">
-          <span className="panel-index">D / INTERPRETATION</span>
-          <h3>如何读这条 Trace</h3>
-          <p>
-            先比较 Dense 与 BM25 的候选差异，再观察 RRF 融合是否把正确条款拉到前面。若
-            Rerank 后排名反向下降，应检查重排模型的训练域和输入长度。
-          </p>
-        </article>
-        <article className="panel accent-panel">
-          <span className="panel-index">E / NEXT EXPERIMENT</span>
-          <h3>替换真实 Provider</h3>
-          <p>
-            当前 Dense 和 Rerank 是可复现的演示实现。接入 BGE-M3 与 BGE Reranker
-            后，前端不需要改变，只需重新运行同一批评测集。
-          </p>
-        </article>
-      </section>
     </div>
   )
 }
