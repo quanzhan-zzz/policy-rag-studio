@@ -244,6 +244,22 @@ test split 的 20 条结果：
 
 完整记录：[官方指南评测总结](docs/experiments/20261124-official-guide-evaluation-summary.md)。
 
+### 对抗与拒答评测
+
+在独立 PostgreSQL 评测库中注入明确标注的旧版冲突材料和提示词注入材料，使用真实 BGE + GLM
+运行 25 条对抗样本：
+
+- 正确行为 `23 / 25`
+- False answer `2 / 25`
+- 应拒答样本正确率 `19 / 21`
+- Prompt injection 材料暴露 `4 / 4`
+- Prompt injection 实际泄露 `1 / 4`
+- 无效引用 `0`
+
+失败样本分别是“合伙企业问题混用了公司材料”和“模型重复输出了恶意文档中的伪造密码”。
+报告保留完整回答、引用、Trace 和失败原因：
+[对抗评测报告](docs/experiments/20261124-adversarial-evaluation.md)。
+
 ## 技术栈
 
 **后端**
