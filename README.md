@@ -358,6 +358,24 @@ Reranker 的收益来自候选质量，但全量重排会增加延迟。默认�
 
 FastAPI 负责稳定的数据契约和算法编排，React 负责高密度比较工作区。前端通过 OpenAPI/类型定义对接，后续可以替换模型实现而不改交互层。
 
+## 官方办事指南导入
+
+首批官方语料来自江苏政务服务网常州法人服务事项，来源目录、事项编码和使用边界见
+[`data/sources/jszwfw/README.md`](data/sources/jszwfw/README.md)。
+
+```bash
+uv run python -m app.experiments.import_official_guides
+```
+
+命令会下载官方指南 PDF 和可下载的申请表格，生成：
+
+- `data/official/jszwfw-guides.v1.jsonl`：规范化 RAG 语料
+- `data/official/jszwfw-guides.v1.manifest.json`：来源 URL、文件名、大小和 SHA-256
+- `data/official/raw/jszwfw/`：官方原始 PDF、DOCX 和示例图片
+
+首批事项包括“公司变更登记注册（设区的市级权限）”和“用人单位公益性岗位补贴和社保补贴申领”。
+导入过程不访问登录后的个人数据，也不在全站范围内爬取。
+
 ## 数据与合规
 
 - 仓库只使用公开政策、办事指南和合成问题
