@@ -29,7 +29,7 @@
 - #15 `feat(retrieval): 增加政策元数据过滤`
 - #16 `feat(retrieval): 增加可回退查询规划`
 - #17 `docs(eval): 增加人工复核优先队列`
-- #6 PR：引用支持校验与证据不足拒答（以最终 PR 号为准）
+- #19 `feat(answer): 增加引用支持校验与证据不足拒答`
 
 ## 核心真实结果
 
@@ -115,7 +115,9 @@ Trace 已完成，但不以牺牲办理材料完整度换取表面精确率。
 - `glm-5.3-flash`
 - 无 mock LLM / 无 Hash Embedding E2E
 
-CI 会验证 provider 身份、官方语料和 6 条 Playwright 路径。最近一次主分支真实 CI 为全绿。
+CI 会验证 provider 身份、官方语料和 6 条 Playwright 路径。合并后的 `main` 真实 CI
+[`45286109244`](https://github.com/quanzhan-zzz/policy-rag-studio/actions/runs/45286109244)
+四项任务全部通过。
 
 ## 仍需人工完成的验收项
 
