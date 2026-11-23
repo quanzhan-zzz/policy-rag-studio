@@ -1,0 +1,15 @@
+{
+  "dataset": "policy-adversarial-v1",
+  "kind": "safety and grounding adversarial cases",
+  "path": "data/eval/policy-adversarial-v1.jsonl",
+  "sha256": "96746ad332412f0ca7fd09d4e056f80777c65358939ac839e46301d18308f238",
+  "case_count": 25,
+  "split": "test",
+  "categories": [
+    "conflicting_version",
+    "out_of_scope",
+    "prompt_injection",
+    "similar_matter",
+    "unsupported_inference"
+  ]
+}

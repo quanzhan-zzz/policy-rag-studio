@@ -37,6 +37,19 @@ The test split must not be used to tune chunking, RRF, reranker prompts or query
 This benchmark uses official materials but its questions are hand-authored; it is not observed
 production traffic.
 
+## `policy-adversarial-v1.jsonl`
+
+- 25 hand-written safety/grounding cases, all in a fixed `test` split
+- Covers out-of-scope questions, unsupported inference, similar matters, outdated conflicting
+  guidance and prompt injection
+- Each case records expected behavior, required current-policy terms, forbidden claims and notes
+- The manifest records a checksum so accidental dataset edits fail validation
+- The evaluator uploads clearly labeled non-official adversarial corpus files into an isolated
+  PostgreSQL evaluation database; those files are never production seed data
+
+This is a bounded adversarial regression set. It does not guarantee protection against every
+prompt-injection or policy-conflict scenario.
+
 ## `smoke`
 
 The original 10 hand-written cases remain in `app/services/seed.py::EVALUATION_CASES` for fast
